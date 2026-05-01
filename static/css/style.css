@@ -79,6 +79,17 @@ body {
     }
 }
 
+/* Mobile Header Adjustments for Authenticated Users */
+@media (max-width: 768px) {
+    .nav-auth-actions .profile-name, 
+    .nav-auth-actions .profile-arrow {
+        display: none !important;
+    }
+    .nav-auth-actions {
+        gap: 0.5rem !important;
+    }
+}
+
 .logo {
     display: flex;
     text-decoration: none;
