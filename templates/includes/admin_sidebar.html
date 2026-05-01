@@ -61,12 +61,12 @@
                 </a>
             </li>
             <li>
-                <a href="#" class="sidebar-item">
+                <a href="{{ url_for('admin_settings') }}" class="sidebar-item {% if request.endpoint == 'admin_settings' %}active{% endif %}">
                     <i class='bx bx-cog'></i> <span>Settings</span>
                 </a>
             </li>
             <li>
-                <a href="#" class="sidebar-item">
+                <a href="{{ url_for('admin_reports') }}" class="sidebar-item {% if request.endpoint == 'admin_reports' %}active{% endif %}">
                     <i class='bx bx-bar-chart'></i> <span>Reports</span>
                 </a>
             </li>

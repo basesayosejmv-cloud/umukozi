@@ -253,8 +253,11 @@ def register():
         elif user_type == 'employer':
             employer = Employer(user_id=new_user.id)
             db.session.add(employer)
-        
         db.session.commit()
+        
+        # Send email notification to admin about new registration
+        send_user_registration_notification(new_user)
+        
         flash('Registration successful! Please login.')
         return redirect(url_for('login'))
     
@@ -534,6 +537,10 @@ def admin_approve_verification(user_type, profile_id):
         profile.user.rejection_reason = None
     
     db.session.commit()
+    
+    # Send email notification to user about approval
+    send_user_approval_notification(profile.user)
+    
     flash('Verification approved successfully!', 'success')
     return redirect(url_for('admin_verification'))
 
@@ -557,6 +564,10 @@ def admin_reject_verification(user_type, profile_id):
         profile.user.rejection_reason = reason
     
     db.session.commit()
+    
+    # Send email notification to user about rejection
+    send_user_rejection_notification(profile.user, reason)
+    
     flash(f'Verification rejected. Reason: {reason}', 'warning')
     return redirect(url_for('admin_verification'))
 
@@ -880,6 +891,10 @@ def admin_approve_user(user_id):
     user.rejection_reason = None
     
     db.session.commit()
+    
+    # Send email notification to user about approval
+    send_user_approval_notification(user)
+    
     flash(f'User {user.full_name} has been approved successfully.', 'success')
     return redirect(url_for('admin_users'))
 
@@ -899,6 +914,10 @@ def admin_reject_user(user_id):
     user.rejection_reason = reason
     
     db.session.commit()
+    
+    # Send email notification to user about rejection
+    send_user_rejection_notification(user, reason)
+    
     flash(f'User {user.full_name} has been rejected.', 'warning')
     return redirect(url_for('admin_users'))
 
@@ -1099,6 +1118,9 @@ def worker_apply_job(job_id):
     
     db.session.add(application)
     db.session.commit()
+    
+    # Send email notification to employer and admin about new job application
+    send_job_application_notification(application)
     
     flash('🎉 Application submitted successfully! Good luck.', 'success')
     return redirect(url_for('worker_applications'))
@@ -1365,22 +1387,20 @@ A worker has been hired on the Umukozi platform:
 Worker Details:
 - Name: {worker.user.full_name}
 - Email: {worker.user.email}
-- Phone: {worker.user.phone_number}
-- Experience: {worker.experience_years or 'Not specified'} years
-- Location: {worker.district or 'Not specified'}
+- Phone: {worker.user.phone}
+- District: {worker.district or 'Not specified'}
 
 Employer Details:
 - Name: {employer.user.full_name}
 - Email: {employer.user.email}
-- Company: {employer.company_name or 'Not specified'}
+- Company: {employer.company_name}
 
 Job Details:
 - Title: {job.title}
-- Category: {job.category}
-- Location: {job.location}
-- Salary: {job.salary_range}
+- Type: {job.job_type}
+- Location: {job.district}
 
-Action Required: The worker's status has been automatically updated to 'busy'. 
+The worker's availability status has been automatically updated to 'busy'.
 You can update the worker's status from the admin dashboard if needed.
 
 Best regards,
@@ -1395,7 +1415,7 @@ A worker application has been rejected on the Umukozi platform:
 Worker Details:
 - Name: {worker.user.full_name}
 - Email: {worker.user.email}
-- Phone: {worker.user.phone_number}
+- Phone: {worker.user.phone}
 
 Employer Details:
 - Name: {employer.user.full_name}
@@ -1403,18 +1423,181 @@ Employer Details:
 
 Job Details:
 - Title: {job.title}
-- Category: {job.category}
-- Location: {job.location}
+- Type: {job.job_type}
 
 Best regards,
 Umukozi System
             """
         
-        # Send email to all admins
+        # Send email to all admin users
         for admin in admin_users:
+            try:
+                msg = MIMEMultipart()
+                msg['From'] = f"{from_name} <{smtp_username}>"
+                msg['To'] = admin.email
+                msg['Subject'] = subject
+                
+                msg.attach(MIMEText(body, 'plain'))
+                
+                # Send email
+                if smtp_encryption == 'ssl':
+                    server = smtplib.SMTP_SSL(smtp_server, smtp_port)
+                else:
+                    server = smtplib.SMTP(smtp_server, smtp_port)
+                    if smtp_encryption == 'tls':
+                        server.starttls()
+                
+                server.login(smtp_username, smtp_password)
+                server.send_message(msg)
+                server.quit()
+                
+            except Exception as e:
+                print(f"Failed to send email to {admin.email}: {e}")
+                continue
+        
+    except Exception as e:
+        print(f"Error sending admin hiring notification: {e}")
+
+def send_user_registration_notification(user):
+    """Send email notification to admin when a new user registers"""
+    try:
+        # Check if email notifications are enabled
+        email_config_db = EmailConfig.query.filter_by(is_active=True).first()
+        
+        if not email_config_db or not email_config_db.enable_notifications:
+            return
+        
+        # Get admin users
+        admin_users = User.query.filter_by(user_type='admin').all()
+        
+        if not admin_users:
+            return
+        
+        # Get email configuration from database
+        smtp_server = email_config_db.smtp_server
+        smtp_port = int(email_config_db.smtp_port)
+        smtp_username = email_config_db.smtp_username
+        smtp_password = email_config_db.smtp_password
+        smtp_encryption = email_config_db.smtp_encryption
+        from_name = email_config_db.from_name
+        
+        if not all([smtp_server, smtp_username, smtp_password]):
+            return
+        
+        import smtplib
+        from email.mime.text import MIMEText
+        from email.mime.multipart import MIMEMultipart
+        
+        # Create email content
+        user_type = user.user_type.title()
+        body = f"""
+Dear Admin,
+
+A new user has registered on the Umukozi platform:
+
+User Details:
+- Name: {user.full_name}
+- Email: {user.email}
+- Phone: {user.phone}
+- User Type: {user_type}
+- Registration Date: {user.created_at.strftime('%Y-%m-%d %H:%M:%S')}
+- Status: {'Approved' if user.is_approved else 'Pending Approval'}
+
+Please review and approve this user's account.
+
+Best regards,
+Umukozi System
+        """
+        
+        subject = f"New User Registration: {user.full_name} ({user_type})"
+        
+        # Send email to all admin users
+        for admin in admin_users:
+            try:
+                msg = MIMEMultipart()
+                msg['From'] = f"{from_name} <{smtp_username}>"
+                msg['To'] = admin.email
+                msg['Subject'] = subject
+                
+                msg.attach(MIMEText(body, 'plain'))
+                
+                # Send email
+                if smtp_encryption == 'ssl':
+                    server = smtplib.SMTP_SSL(smtp_server, smtp_port)
+                else:
+                    server = smtplib.SMTP(smtp_server, smtp_port)
+                    if smtp_encryption == 'tls':
+                        server.starttls()
+                
+                server.login(smtp_username, smtp_password)
+                server.send_message(msg)
+                server.quit()
+                
+            except Exception as e:
+                print(f"Failed to send registration email to {admin.email}: {e}")
+                continue
+        
+    except Exception as e:
+        print(f"Error sending user registration notification: {e}")
+
+def send_user_approval_notification(user):
+    """Send email notification to user when their account is approved"""
+    try:
+        # Check if email notifications are enabled
+        email_config_db = EmailConfig.query.filter_by(is_active=True).first()
+        
+        if not email_config_db or not email_config_db.enable_welcome_emails:
+            return
+        
+        # Get email configuration from database
+        smtp_server = email_config_db.smtp_server
+        smtp_port = int(email_config_db.smtp_port)
+        smtp_username = email_config_db.smtp_username
+        smtp_password = email_config_db.smtp_password
+        smtp_encryption = email_config_db.smtp_encryption
+        from_name = email_config_db.from_name
+        
+        if not all([smtp_server, smtp_username, smtp_password]):
+            return
+        
+        import smtplib
+        from email.mime.text import MIMEText
+        from email.mime.multipart import MIMEMultipart
+        
+        # Create email content
+        user_type = user.user_type.title()
+        body = f"""
+Dear {user.full_name},
+
+Congratulations! Your account has been approved on the Umukozi platform.
+
+Account Details:
+- Email: {user.email}
+- User Type: {user_type}
+- Approval Date: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}
+
+You can now log in to your account and start using the platform:
+- Login URL: http://localhost:5000/login
+
+{"As a Worker, you can:" if user.user_type == 'worker' else "As an Employer, you can:"}
+{"• Browse and apply for jobs" if user.user_type == 'worker' else "• Post job opportunities"}
+{"• Create and manage your profile" if user.user_type == 'worker' else "• Manage job applications"}
+{"• Receive job notifications" if user.user_type == 'worker' else "• Find qualified workers"}
+{"• Connect with employers" if user.user_type == 'worker' else "• Contact potential candidates"}
+
+If you have any questions or need assistance, please don't hesitate to contact our support team.
+
+Best regards,
+Umukozi Team
+        """
+        
+        subject = f"Account Approved - Welcome to Umukozi!"
+        
+        # Send email to user
+        try:
             msg = MIMEMultipart()
             msg['From'] = f"{from_name} <{smtp_username}>"
-            msg['To'] = admin.email
+            msg['To'] = user.email
             msg['Subject'] = subject
             
             msg.attach(MIMEText(body, 'plain'))
@@ -1431,9 +1614,234 @@ Umukozi System
             server.send_message(msg)
             server.quit()
             
+        except Exception as e:
+            print(f"Failed to send approval email to {user.email}: {e}")
+        
     except Exception as e:
-        # Log error but don't fail the application process
-        print(f"Error sending admin notification: {e}")
+        print(f"Error sending user approval notification: {e}")
+
+def send_user_rejection_notification(user, reason):
+    """Send email notification to user when their account is rejected"""
+    try:
+        # Check if email notifications are enabled
+        email_config_db = EmailConfig.query.filter_by(is_active=True).first()
+        
+        if not email_config_db or not email_config_db.enable_welcome_emails:
+            return
+        
+        # Get email configuration from database
+        smtp_server = email_config_db.smtp_server
+        smtp_port = int(email_config_db.smtp_port)
+        smtp_username = email_config_db.smtp_username
+        smtp_password = email_config_db.smtp_password
+        smtp_encryption = email_config_db.smtp_encryption
+        from_name = email_config_db.from_name
+        
+        if not all([smtp_server, smtp_username, smtp_password]):
+            return
+        
+        import smtplib
+        from email.mime.text import MIMEText
+        from email.mime.multipart import MIMEMultipart
+        
+        # Create email content
+        user_type = user.user_type.title()
+        body = f"""
+Dear {user.full_name},
+
+We regret to inform you that your account registration on the Umukozi platform has been reviewed and could not be approved at this time.
+
+Account Details:
+- Email: {user.email}
+- User Type: {user_type}
+- Registration Date: {user.created_at.strftime('%Y-%m-%d %H:%M:%S')}
+
+Reason for Rejection:
+{reason or 'No specific reason provided'}
+
+If you believe this is a mistake or would like to appeal this decision, please:
+1. Review our platform requirements and guidelines
+2. Ensure all provided information is accurate and complete
+3. Contact our support team for further assistance
+
+You may re-register with updated information after addressing the issues mentioned above.
+
+We appreciate your interest in the Umukozi platform and wish you the best in your job search or recruitment efforts.
+
+Best regards,
+Umukozi Team
+        """
+        
+        subject = f"Account Registration Update - Umukozi Platform"
+        
+        # Send email to user
+        try:
+            msg = MIMEMultipart()
+            msg['From'] = f"{from_name} <{smtp_username}>"
+            msg['To'] = user.email
+            msg['Subject'] = subject
+            
+            msg.attach(MIMEText(body, 'plain'))
+            
+            # Send email
+            if smtp_encryption == 'ssl':
+                server = smtplib.SMTP_SSL(smtp_server, smtp_port)
+            else:
+                server = smtplib.SMTP(smtp_server, smtp_port)
+                if smtp_encryption == 'tls':
+                    server.starttls()
+            
+            server.login(smtp_username, smtp_password)
+            server.send_message(msg)
+            server.quit()
+            
+        except Exception as e:
+            print(f"Failed to send rejection email to {user.email}: {e}")
+        
+    except Exception as e:
+        print(f"Error sending user rejection notification: {e}")
+
+def send_job_application_notification(application):
+    """Send email notification to employer and admin when a worker applies for a job"""
+    try:
+        # Check if email notifications are enabled
+        email_config_db = EmailConfig.query.filter_by(is_active=True).first()
+        
+        if not email_config_db or not email_config_db.enable_job_alerts:
+            return
+        
+        # Get email configuration from database
+        smtp_server = email_config_db.smtp_server
+        smtp_port = int(email_config_db.smtp_port)
+        smtp_username = email_config_db.smtp_username
+        smtp_password = email_config_db.smtp_password
+        smtp_encryption = email_config_db.smtp_encryption
+        from_name = email_config_db.from_name
+        
+        if not all([smtp_server, smtp_username, smtp_password]):
+            return
+        
+        import smtplib
+        from email.mime.text import MIMEText
+        from email.mime.multipart import MIMEMultipart
+        
+        worker = application.worker
+        job = application.job
+        employer = job.employer
+        
+        # Send email to employer
+        employer_body = f"""
+Dear {employer.user.full_name},
+
+A new worker has applied for your job posting on the Umukozi platform:
+
+Job Details:
+- Title: {job.title}
+- Type: {job.job_type}
+- Location: {job.district}, {job.province}
+- Posted: {job.created_at.strftime('%Y-%m-%d')}
+
+Worker Details:
+- Name: {worker.user.full_name}
+- Email: {worker.user.email}
+- Phone: {worker.user.phone}
+- District: {worker.district or 'Not specified'}
+- Experience: {worker.experience_years or 'Not specified'} years
+- Skills: {worker.skills or 'Not specified'}
+
+Application Details:
+- Applied: {application.applied_at.strftime('%Y-%m-%d %H:%M:%S')}
+- Status: {application.status.title()}
+
+Log in to your employer dashboard to review this application and contact the worker if interested.
+
+Best regards,
+Umukozi Team
+        """
+        
+        employer_subject = f"New Job Application: {worker.user.full_name} applied for {job.title}"
+        
+        try:
+            msg = MIMEMultipart()
+            msg['From'] = f"{from_name} <{smtp_username}>"
+            msg['To'] = employer.user.email
+            msg['Subject'] = employer_subject
+            
+            msg.attach(MIMEText(employer_body, 'plain'))
+            
+            # Send email
+            if smtp_encryption == 'ssl':
+                server = smtplib.SMTP_SSL(smtp_server, smtp_port)
+            else:
+                server = smtplib.SMTP(smtp_server, smtp_port)
+                if smtp_encryption == 'tls':
+                    server.starttls()
+            
+            server.login(smtp_username, smtp_password)
+            server.send_message(msg)
+            server.quit()
+            
+        except Exception as e:
+            print(f"Failed to send job application email to employer {employer.user.email}: {e}")
+        
+        # Send notification to admin if enabled
+        if email_config_db.enable_notifications:
+            admin_users = User.query.filter_by(user_type='admin').all()
+            
+            admin_body = f"""
+Dear Admin,
+
+A new job application has been submitted on the Umukozi platform:
+
+Job Details:
+- Title: {job.title}
+- Type: {job.job_type}
+- Location: {job.district}, {job.province}
+- Employer: {employer.company_name}
+
+Worker Details:
+- Name: {worker.user.full_name}
+- Email: {worker.user.email}
+- Phone: {worker.user.phone}
+- District: {worker.district or 'Not specified'}
+
+Application Details:
+- Applied: {application.applied_at.strftime('%Y-%m-%d %H:%M:%S')}
+- Status: {application.status.title()}
+
+Best regards,
+Umukozi System
+            """
+            
+            admin_subject = f"New Job Application: {worker.user.full_name} → {job.title}"
+            
+            for admin in admin_users:
+                try:
+                    msg = MIMEMultipart()
+                    msg['From'] = f"{from_name} <{smtp_username}>"
+                    msg['To'] = admin.email
+                    msg['Subject'] = admin_subject
+                    
+                    msg.attach(MIMEText(admin_body, 'plain'))
+                    
+                    # Send email
+                    if smtp_encryption == 'ssl':
+                        server = smtplib.SMTP_SSL(smtp_server, smtp_port)
+                    else:
+                        server = smtplib.SMTP(smtp_server, smtp_port)
+                        if smtp_encryption == 'tls':
+                            server.starttls()
+                    
+                    server.login(smtp_username, smtp_password)
+                    server.send_message(msg)
+                    server.quit()
+                    
+                except Exception as e:
+                    print(f"Failed to send job application email to admin {admin.email}: {e}")
+                    continue
+        
+    except Exception as e:
+        print(f"Error sending job application notification: {e}")
 
 @app.route('/employer/activity')
 @login_required
