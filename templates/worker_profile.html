@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}{{ worker.user.full_name }} - Worker Profile{% endblock %}
+
+{% block content %}
+<!-- Mobile Sidebar Toggle -->
+<button class="mobile-sidebar-toggle" onclick="toggleSidebar()">☰</button>
+<div class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<div class="dashboard-layout">
+    <!-- Sidebar -->
+    {% if current_user.user_type == 'employer' %}
+        {% include 'includes/employer_sidebar.html' %}
+    {% elif current_user.user_type == 'worker' %}
+        {% include 'includes/worker_sidebar.html' %}
+    {% endif %}
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="card" style="max-width: 800px; margin: 0 auto;">
+            <!-- Worker Header -->
+            <div style="display: flex; align-items: center; gap: 2rem; padding: 2rem; border-bottom: 1px solid var(--border-color);">
+                <div class="worker-avatar {% if worker.profile_picture %}has-profile-picture{% else %}default-avatar{% endif %}" style="width: 120px; height: 120px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: white; flex-shrink: 0;">
+                    {% if worker.profile_picture %}
+                        <img src="{{ url_for('static', filename='uploads/' + worker.profile_picture) }}" style="width: 100%; height: 100%; object-fit: cover;" alt="{{ worker.user.full_name }}">
+                    {% else %}
+                        {{ worker.user.full_name[0].upper() }}
+                    {% endif %}
+                </div>
+                
+                <div style="flex: 1;">
+                    <h1 style="font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem;">{{ worker.user.full_name }}</h1>
+                    <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                        {{ worker.district or 'Location N/A' }}, {{ worker.province or '' }}
+                    </p>
+                    
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                        {% if worker.is_verified %}
+                            <span class="badge badge-success">
+                                <i class='bx bxs-check-circle'></i> Verified
+                            </span>
+                        {% endif %}
+                        <span class="badge badge-{{ 'success' if worker.availability_status == 'available' else 'warning' if worker.availability_status == 'busy' else 'danger' }}">
+                            {{ worker.availability_status|title }}
+                        </span>
+                        {% if worker.experience_years %}
+                            <span class="badge badge-outline">
+                                {{ worker.experience_years }} years experience
+                            </span>
+                        {% endif %}
+                    </div>
+                    
+                    {% if current_user.user_type == 'employer' %}
+                        <div style="display: flex; gap: 1rem;">
+                            {% if contact_info and contact_info.has_access %}
+                                <button onclick="showContactModal('{{ worker.user.full_name }}', '{{ contact_info.phone }}', '{{ contact_info.email }}')" class="btn btn-primary">
+                                    <i class='bx bx-phone'></i> Contact Worker
+                                </button>
+                            {% else %}
+                                <button class="btn btn-primary payment-modal-btn" data-worker-id="{{ worker.id }}" data-worker-name="{{ worker.user.full_name|replace('\'', '\\\'') }}">
+                                    <i class='bx bx-credit-card'></i> Get Contact Info
+                                </button>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Worker Details -->
+            <div style="padding: 2rem;">
+                <!-- Professional Summary -->
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">Professional Summary</h3>
+                    <p style="color: var(--text-secondary); line-height: 1.6;">
+                        {{ worker.professional_summary or 'No professional summary provided.' }}
+                    </p>
+                </div>
+                
+                <!-- Skills -->
+                {% if worker.skills %}
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">Skills</h3>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                        {% for skill in worker.skills.split(',') %}
+                            <span style="background: rgba(37, 99, 235, 0.08); color: var(--primary-color); padding: 0.5rem 1rem; border-radius: 2rem; font-size: 0.875rem; font-weight: 600; border: 1px solid rgba(37, 99, 235, 0.1);">
+                                {{ skill.strip() }}
+                            </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Services -->
+                {% if worker.services_offered %}
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">Services Offered</h3>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                        {% for service in worker.services_offered.split(',') %}
+                            <span style="background: rgba(16, 185, 129, 0.08); color: var(--secondary-color); padding: 0.5rem 1rem; border-radius: 2rem; font-size: 0.875rem; font-weight: 600; border: 1px solid rgba(16, 185, 129, 0.1);">
+                                {{ service.strip() }}
+                            </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Experience Details -->
+                {% if worker.experience_details %}
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">Experience Details</h3>
+                    <p style="color: var(--text-secondary); line-height: 1.6;">
+                        {{ worker.experience_details }}
+                    </p>
+                </div>
+                {% endif %}
+                
+                <!-- Rates -->
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">Rates</h3>
+                    <div style="display: flex; gap: 2rem;">
+                        {% if worker.hourly_rate %}
+                            <div>
+                                <span style="color: var(--text-secondary);">Hourly Rate:</span>
+                                <strong>{{ worker.hourly_rate }} FRW</strong>
+                            </div>
+                        {% endif %}
+                        {% if worker.monthly_rate %}
+                            <div>
+                                <span style="color: var(--text-secondary);">Monthly Rate:</span>
+                                <strong>{{ worker.monthly_rate }} FRW</strong>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Reference -->
+                {% if worker.reference_name %}
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">Reference</h3>
+                    <p style="color: var(--text-secondary);">
+                        <strong>{{ worker.reference_name }}</strong> - {{ worker.reference_relationship }}<br>
+                        Phone: {{ worker.reference_phone }}
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add event listener to payment modal button
+    const paymentButton = document.querySelector('.payment-modal-btn');
+    if (paymentButton) {
+        paymentButton.addEventListener('click', function() {
+            const workerId = this.getAttribute('data-worker-id');
+            const workerName = this.getAttribute('data-worker-name');
+            if (typeof showPlatformPaymentModal === 'function') {
+                showPlatformPaymentModal(workerId, workerName);
+            } else {
+                alert('Please complete the payment to access worker contact information.');
+            }
+        });
+    }
+});
+
+function showContactModal(workerName, phone, email) {
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    `;
+    
+    modal.innerHTML = `
+        <div style="background: white; padding: 2rem; border-radius: 1rem; max-width: 400px; width: 90%;">
+            <h3 style="margin-bottom: 1rem;">Contact ${workerName}</h3>
+            <div style="margin-bottom: 1rem;">
+                <p style="margin-bottom: 0.5rem;"><strong>Phone:</strong> ${phone}</p>
+                <p style="margin-bottom: 1rem;"><strong>Email:</strong> ${email}</p>
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <button onclick="window.open('https://wa.me/${phone.replace(/[^0-9]/g, '')}', '_blank')" 
+                        style="flex: 1; padding: 0.75rem; background: #25D366; color: white; border: none; border-radius: 0.5rem; cursor: pointer;">
+                    WhatsApp
+                </button>
+                <button onclick="window.location.href='tel:${phone}'" 
+                        style="flex: 1; padding: 0.75rem; background: var(--primary-color); color: white; border: none; border-radius: 0.5rem; cursor: pointer;">
+                    Call
+                </button>
+                <button onclick="this.closest('div[style*=position]').remove()" 
+                        style="padding: 0.75rem; background: var(--gray-color); color: white; border: none; border-radius: 0.5rem; cursor: pointer;">
+                    Close
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+}
+</script>
+{% endblock %}

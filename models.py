@@ -323,7 +323,6 @@ class WorkerContactAccess(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     employer_id = db.Column(db.Integer, db.ForeignKey('employer.id'), nullable=False)
     worker_id = db.Column(db.Integer, db.ForeignKey('worker.id'), nullable=False)
-    payment_id = db.Column(db.Integer, db.ForeignKey('payment.id'), nullable=False)
     
     # Access Details
     access_granted = db.Column(db.Boolean, default=False)
@@ -332,13 +331,36 @@ class WorkerContactAccess(db.Model):
     whatsapp_accessible = db.Column(db.Boolean, default=False)
     
     # Timestamps
-    granted_at = db.Column(db.DateTime)
-    expires_at = db.Column(db.DateTime)  # Optional expiry date
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    expires_at = db.Column(db.DateTime, nullable=True)
+
+class EmailConfig(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # SMTP Configuration
+    smtp_server = db.Column(db.String(200), nullable=False)
+    smtp_port = db.Column(db.Integer, nullable=False, default=587)
+    smtp_encryption = db.Column(db.String(10), nullable=False, default='tls')  # 'tls', 'ssl', 'none'
+    smtp_username = db.Column(db.String(200), nullable=False)
+    smtp_password = db.Column(db.String(200), nullable=False)
+    
+    # Email Settings
+    from_name = db.Column(db.String(100), nullable=False, default='Umukozi')
+    reply_to = db.Column(db.String(200))
+    
+    # Email Features
+    enable_notifications = db.Column(db.Boolean, default=True)
+    enable_welcome_emails = db.Column(db.Boolean, default=True)
+    enable_job_alerts = db.Column(db.Boolean, default=True)
+    enable_verification_emails = db.Column(db.Boolean, default=True)
+    
+    # Metadata
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     
     # Relationships
-    employer = db.relationship('Employer', backref='contact_access')
-    worker = db.relationship('Worker', backref='access_granted')
-    payment = db.relationship('Payment', backref='access_records')
-    
+    creator = db.relationship('User', backref='email_configs_created')
     def __repr__(self):
         return f'<WorkerContactAccess {self.id}: {self.employer_id} -> {self.worker_id}>'

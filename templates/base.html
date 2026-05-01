@@ -35,15 +35,15 @@
                 <a href="{{ url_for('index') }}" class="logo logo-animated">
                     <span style="--i:1; --c:#2563eb;">U</span><span style="--i:2; --c:#ef4444;">M</span><span style="--i:3; --c:#10b981;">U</span><span style="--i:4; --c:#f59e0b;">K</span><span style="--i:5; --c:#8b5cf6;">O</span><span style="--i:6; --c:#14b8a6;">Z</span><span style="--i:7; --c:#f43f5e;">I</span>
                 </a>
-                {% endif %}
-                
-                {% if not current_user.is_authenticated %}
                 <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
                     <i class='bx bx-menu'></i>
                 </button>
                 {% endif %}
-                
+
                 {% if current_user.is_authenticated %}
+                <button class="mobile-sidebar-toggle" onclick="toggleSidebar()" style="background: none; border: none; font-size: 1.75rem; cursor: pointer; color: var(--text-primary); display: none; align-items: center; justify-content: center; padding: 0.25rem;">
+                    <i class='bx bx-menu-alt-left'></i>
+                </button>
                 <div class="nav-auth-actions" style="display: flex; align-items: center; gap: 1rem; margin-left: auto;">
                     <button id="pwa-install-btn" onclick="installApp()" style="display: none; background: linear-gradient(135deg, #4F46E5, #7C3AED); color: white; border: none; padding: 6px 12px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px;">
                         <i class='bx bxs-download'></i> Install

@@ -88,6 +88,13 @@ body {
     .nav-auth-actions {
         gap: 0.5rem !important;
     }
+    .mobile-sidebar-toggle {
+        display: flex !important;
+    }
+}
+
+.mobile-sidebar-toggle {
+    display: none;
 }
 
 .logo {

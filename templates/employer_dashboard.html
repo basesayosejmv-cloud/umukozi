@@ -3,8 +3,6 @@
 {% block title %}Employer Dashboard - Umukozi{% endblock %}
 
 {% block content %}
-<!-- Mobile Sidebar Toggle -->
-<button class="mobile-sidebar-toggle" onclick="toggleSidebar()">☰</button>
 <div class="sidebar-overlay" onclick="closeSidebar()"></div>
 
 <div class="dashboard-layout">
@@ -164,8 +162,8 @@
                     </div>
                     
                     <div style="width: 100%; padding-top: 1.25rem; border-top: 1px solid var(--border-color); display: flex; justify-content: center; gap: 0.75rem;">
-                        <a href="#" class="btn btn-primary btn-sm" style="flex: 1; border-radius: 0.75rem;">Contact</a>
-                        <a href="#" class="btn btn-outline btn-sm" style="padding: 0.4rem 0.6rem; border-radius: 0.75rem;">Profile</a>
+                        <button class="btn btn-primary btn-sm contact-worker-btn" data-worker-id="{{ worker.id }}" data-worker-name="{{ worker.user.full_name|replace('\'', '\\\'') }}" style="flex: 1; border-radius: 0.75rem;">Contact</button>
+                        <a href="{{ url_for('worker_profile', worker_id=worker.id) }}" class="btn btn-outline btn-sm" style="padding: 0.4rem 0.6rem; border-radius: 0.75rem;">Profile</a>
                     </div>
                 </div>
                 {% endfor %}
@@ -602,4 +600,93 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add event listeners to contact buttons
+    const contactButtons = document.querySelectorAll('.contact-worker-btn');
+    contactButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const workerId = this.getAttribute('data-worker-id');
+            const workerName = this.getAttribute('data-worker-name');
+            showContactOptions(workerId, workerName);
+        });
+    });
+});
+
+function showContactOptions(workerId, workerName) {
+    // Check if employer has access to contact info
+    fetch(`/employer/worker-contact/${workerId}`, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.has_access) {
+            // Show contact options if access is available
+            showContactModal(workerName, data.phone, data.email);
+        } else {
+            // Show payment modal if no access
+            if (typeof showPlatformPaymentModal === 'function') {
+                showPlatformPaymentModal(workerId, workerName);
+            } else {
+                alert('Please complete the payment to access worker contact information.');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error checking contact access:', error);
+        alert('Unable to check contact access. Please try again.');
+    });
+}
+
+function showContactModal(workerName, phone, email) {
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    `;
+    
+    modal.innerHTML = `
+        <div style="background: white; padding: 2rem; border-radius: 1rem; max-width: 400px; width: 90%;">
+            <h3 style="margin-bottom: 1rem;">Contact ${workerName}</h3>
+            <div style="margin-bottom: 1rem;">
+                <p style="margin-bottom: 0.5rem;"><strong>Phone:</strong> ${phone}</p>
+                <p style="margin-bottom: 1rem;"><strong>Email:</strong> ${email}</p>
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <button onclick="window.open('https://wa.me/${phone.replace(/[^0-9]/g, '')}', '_blank')" 
+                        style="flex: 1; padding: 0.75rem; background: #25D366; color: white; border: none; border-radius: 0.5rem; cursor: pointer;">
+                    WhatsApp
+                </button>
+                <button onclick="window.location.href='tel:${phone}'" 
+                        style="flex: 1; padding: 0.75rem; background: var(--primary-color); color: white; border: none; border-radius: 0.5rem; cursor: pointer;">
+                    Call
+                </button>
+                <button onclick="this.closest('div[style*=position]').remove()" 
+                        style="padding: 0.75rem; background: var(--gray-color); color: white; border: none; border-radius: 0.5rem; cursor: pointer;">
+                    Close
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+}
+</script>
 {% endblock %}

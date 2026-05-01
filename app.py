@@ -36,7 +36,7 @@ if os.getenv('FLASK_ENV') == 'production':
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 # Import models and db
-from models import db, User, Worker, Employer, Job, Application, Review, Message, Notification, Payment, WorkerContactAccess
+from models import db, User, Worker, Employer, Job, Application, Review, Message, Notification, Payment, WorkerContactAccess, EmailConfig
 
 # Initialize extensions
 db.init_app(app)
@@ -271,12 +271,49 @@ def dashboard():
         return render_template('worker_dashboard.html', worker=worker)
     elif current_user.user_type == 'employer':
         employer = Employer.query.filter_by(user_id=current_user.id).first()
-        workers = Worker.query.limit(8).all()
+        # Show verified and available workers first, then others
+        workers = Worker.query.filter(
+            Worker.is_verified == True,
+            Worker.availability_status == 'available'
+        ).limit(8).all()
+        
+        # If not enough verified available workers, add more workers
+        if len(workers) < 8:
+            additional_workers = Worker.query.filter(
+                Worker.id.notin_([w.id for w in workers])
+            ).limit(8 - len(workers)).all()
+            workers.extend(additional_workers)
+        
         return render_template('employer_dashboard.html', employer=employer, workers=workers)
     elif current_user.user_type == 'admin':
         return redirect(url_for('admin_dashboard'))
     else:
         return redirect(url_for('index'))
+
+@app.route('/worker/profile/<int:worker_id>')
+@login_required
+def worker_profile(worker_id):
+    worker = Worker.query.get_or_404(worker_id)
+    
+    # Get contact info if user is employer and has access
+    contact_info = None
+    if current_user.user_type == 'employer':
+        employer = Employer.query.filter_by(user_id=current_user.id).first()
+        contact_info = get_worker_contact_info(employer.id, worker.id)
+    
+    return render_template('worker_profile.html', worker=worker, contact_info=contact_info)
+
+@app.route('/employer/worker-contact/<int:worker_id>')
+@login_required
+def employer_worker_contact(worker_id):
+    if current_user.user_type != 'employer':
+        return jsonify({'error': 'Access denied'}), 403
+    
+    employer = Employer.query.filter_by(user_id=current_user.id).first()
+    worker = Worker.query.get_or_404(worker_id)
+    
+    contact_info = get_worker_contact_info(employer.id, worker.id)
+    return jsonify(contact_info)
 
 # Admin Dashboard Route
 @app.route('/admin/dashboard')
@@ -1285,11 +1322,10 @@ def reject_application(application_id):
 def send_admin_hiring_notification(application, action):
     """Send email notification to admin when a worker is hired/rejected"""
     try:
-        from flask import session
-        
         # Check if email notifications are enabled
-        session_config = session.get('email_config', {})
-        if not session_config.get('enable_notifications', True):
+        email_config_db = EmailConfig.query.filter_by(is_active=True).first()
+        
+        if not email_config_db or not email_config_db.enable_notifications:
             return
         
         # Get admin users
@@ -1298,13 +1334,13 @@ def send_admin_hiring_notification(application, action):
         if not admin_users:
             return
         
-        # Get email configuration
-        smtp_server = session_config.get('smtp_server') or os.getenv('SMTP_SERVER')
-        smtp_port = int(session_config.get('smtp_port') or os.getenv('SMTP_PORT', '587'))
-        smtp_username = session_config.get('smtp_username') or os.getenv('SMTP_USERNAME')
-        smtp_password = session_config.get('smtp_password') or os.getenv('SMTP_PASSWORD')
-        smtp_encryption = session_config.get('smtp_encryption') or os.getenv('SMTP_ENCRYPTION', 'tls')
-        from_name = session_config.get('from_name') or os.getenv('EMAIL_FROM_NAME', 'Umukozi')
+        # Get email configuration from database
+        smtp_server = email_config_db.smtp_server
+        smtp_port = int(email_config_db.smtp_port)
+        smtp_username = email_config_db.smtp_username
+        smtp_password = email_config_db.smtp_password
+        smtp_encryption = email_config_db.smtp_encryption
+        from_name = email_config_db.from_name
         
         if not all([smtp_server, smtp_username, smtp_password]):
             return
@@ -1691,48 +1727,80 @@ def admin_email_settings():
         flash('Access denied. Admin privileges required.', 'error')
         return redirect(url_for('dashboard'))
     
-    from flask import session
+    # Get active email config from database or create default
+    email_config_db = EmailConfig.query.filter_by(is_active=True).first()
     
-    # Initialize email config in session if not exists
-    if 'email_config' not in session:
-        session['email_config'] = {
-            'smtp_server': os.getenv('SMTP_SERVER', ''),
-            'smtp_port': os.getenv('SMTP_PORT', '587'),
-            'smtp_encryption': os.getenv('SMTP_ENCRYPTION', 'tls'),
-            'smtp_username': os.getenv('SMTP_USERNAME', ''),
-            'smtp_password': os.getenv('SMTP_PASSWORD', ''),
-            'from_name': os.getenv('EMAIL_FROM_NAME', 'Umukozi'),
-            'reply_to': os.getenv('EMAIL_REPLY_TO', ''),
-            'enable_notifications': os.getenv('ENABLE_EMAIL_NOTIFICATIONS', 'true').lower() == 'true',
-            'enable_welcome_emails': os.getenv('ENABLE_WELCOME_EMAILS', 'true').lower() == 'true',
-            'enable_job_alerts': os.getenv('ENABLE_JOB_ALERTS', 'true').lower() == 'true',
-            'enable_verification_emails': os.getenv('ENABLE_VERIFICATION_EMAILS', 'true').lower() == 'true'
-        }
+    if not email_config_db:
+        # Create default email config from environment variables
+        email_config_db = EmailConfig(
+            smtp_server=os.getenv('SMTP_SERVER', ''),
+            smtp_port=int(os.getenv('SMTP_PORT', '587')),
+            smtp_encryption=os.getenv('SMTP_ENCRYPTION', 'tls'),
+            smtp_username=os.getenv('SMTP_USERNAME', ''),
+            smtp_password=os.getenv('SMTP_PASSWORD', ''),
+            from_name=os.getenv('EMAIL_FROM_NAME', 'Umukozi'),
+            reply_to=os.getenv('EMAIL_REPLY_TO', ''),
+            enable_notifications=os.getenv('ENABLE_EMAIL_NOTIFICATIONS', 'true').lower() == 'true',
+            enable_welcome_emails=os.getenv('ENABLE_WELCOME_EMAILS', 'true').lower() == 'true',
+            enable_job_alerts=os.getenv('ENABLE_JOB_ALERTS', 'true').lower() == 'true',
+            enable_verification_emails=os.getenv('ENABLE_VERIFICATION_EMAILS', 'true').lower() == 'true',
+            created_by=current_user.id
+        )
+        db.session.add(email_config_db)
+        db.session.commit()
     
-    email_config = session['email_config']
+    # Convert database object to dictionary for template
+    email_config = {
+        'smtp_server': email_config_db.smtp_server,
+        'smtp_port': str(email_config_db.smtp_port),
+        'smtp_encryption': email_config_db.smtp_encryption,
+        'smtp_username': email_config_db.smtp_username,
+        'smtp_password': email_config_db.smtp_password,
+        'from_name': email_config_db.from_name,
+        'reply_to': email_config_db.reply_to or '',
+        'enable_notifications': email_config_db.enable_notifications,
+        'enable_welcome_emails': email_config_db.enable_welcome_emails,
+        'enable_job_alerts': email_config_db.enable_job_alerts,
+        'enable_verification_emails': email_config_db.enable_verification_emails
+    }
     
     if request.method == 'POST':
         try:
-            # Update session with form data
-            session['email_config'] = {
-                'smtp_server': request.form.get('smtp_server', ''),
-                'smtp_port': request.form.get('smtp_port', '587'),
-                'smtp_encryption': request.form.get('smtp_encryption', 'tls'),
-                'smtp_username': request.form.get('smtp_username', ''),
-                'smtp_password': request.form.get('smtp_password', ''),
-                'from_name': request.form.get('from_name', 'Umukozi'),
-                'reply_to': request.form.get('reply_to', ''),
-                'enable_notifications': request.form.get('enable_notifications') == 'on',
-                'enable_welcome_emails': request.form.get('enable_welcome_emails') == 'on',
-                'enable_job_alerts': request.form.get('enable_job_alerts') == 'on',
-                'enable_verification_emails': request.form.get('enable_verification_emails') == 'on'
-            }
-            session.modified = True  # Mark session as modified
+            # Update database record
+            email_config_db.smtp_server = request.form.get('smtp_server', '')
+            email_config_db.smtp_port = int(request.form.get('smtp_port', '587'))
+            email_config_db.smtp_encryption = request.form.get('smtp_encryption', 'tls')
+            email_config_db.smtp_username = request.form.get('smtp_username', '')
+            email_config_db.smtp_password = request.form.get('smtp_password', '')
+            email_config_db.from_name = request.form.get('from_name', 'Umukozi')
+            email_config_db.reply_to = request.form.get('reply_to', '')
+            email_config_db.enable_notifications = request.form.get('enable_notifications') == 'on'
+            email_config_db.enable_welcome_emails = request.form.get('enable_welcome_emails') == 'on'
+            email_config_db.enable_job_alerts = request.form.get('enable_job_alerts') == 'on'
+            email_config_db.enable_verification_emails = request.form.get('enable_verification_emails') == 'on'
+            email_config_db.updated_at = datetime.utcnow()
             
-            email_config = session['email_config']
-            flash('Email settings updated successfully!', 'success')
+            db.session.commit()
+            
+            # Update email_config dict for template
+            email_config = {
+                'smtp_server': email_config_db.smtp_server,
+                'smtp_port': str(email_config_db.smtp_port),
+                'smtp_encryption': email_config_db.smtp_encryption,
+                'smtp_username': email_config_db.smtp_username,
+                'smtp_password': email_config_db.smtp_password,
+                'from_name': email_config_db.from_name,
+                'reply_to': email_config_db.reply_to or '',
+                'enable_notifications': email_config_db.enable_notifications,
+                'enable_welcome_emails': email_config_db.enable_welcome_emails,
+                'enable_job_alerts': email_config_db.enable_job_alerts,
+                'enable_verification_emails': email_config_db.enable_verification_emails
+            }
+            
+            flash('Email settings updated successfully and saved to database!', 'success')
             
         except Exception as e:
+            db.session.rollback()
             flash(f'Error updating email settings: {str(e)}', 'error')
     
     return render_template('admin_email_settings.html', email_config=email_config)
@@ -1751,17 +1819,25 @@ def admin_test_email_connection():
         if not request.is_json:
             return jsonify({'success': False, 'error': 'Request must be JSON'}), 400
         
-        # Get email configuration from session, request, or environment variables
-        from flask import session
+        # Get email configuration from database, request, or environment variables
         data = request.get_json() or {}
         
-        # Try session first, then request data, then environment variables
-        session_config = session.get('email_config', {})
-        smtp_server = data.get('smtp_server') or session_config.get('smtp_server') or os.getenv('SMTP_SERVER')
-        smtp_port = int(data.get('smtp_port') or session_config.get('smtp_port') or os.getenv('SMTP_PORT', '587'))
-        smtp_username = data.get('smtp_username') or session_config.get('smtp_username') or os.getenv('SMTP_USERNAME')
-        smtp_password = data.get('smtp_password') or session_config.get('smtp_password') or os.getenv('SMTP_PASSWORD')
-        smtp_encryption = data.get('smtp_encryption') or session_config.get('smtp_encryption') or os.getenv('SMTP_ENCRYPTION', 'tls')
+        # Try database first, then request data, then environment variables
+        email_config_db = EmailConfig.query.filter_by(is_active=True).first()
+        
+        if email_config_db:
+            smtp_server = data.get('smtp_server') or email_config_db.smtp_server
+            smtp_port = int(data.get('smtp_port') or email_config_db.smtp_port)
+            smtp_username = data.get('smtp_username') or email_config_db.smtp_username
+            smtp_password = data.get('smtp_password') or email_config_db.smtp_password
+            smtp_encryption = data.get('smtp_encryption') or email_config_db.smtp_encryption
+        else:
+            # Fallback to environment variables
+            smtp_server = data.get('smtp_server') or os.getenv('SMTP_SERVER')
+            smtp_port = int(data.get('smtp_port') or os.getenv('SMTP_PORT', '587'))
+            smtp_username = data.get('smtp_username') or os.getenv('SMTP_USERNAME')
+            smtp_password = data.get('smtp_password') or os.getenv('SMTP_PASSWORD')
+            smtp_encryption = data.get('smtp_encryption') or os.getenv('SMTP_ENCRYPTION', 'tls')
         
         if not all([smtp_server, smtp_username, smtp_password]):
             return jsonify({'success': False, 'error': 'Missing SMTP configuration'})
@@ -1799,15 +1875,24 @@ def admin_send_test_email():
         if not test_email:
             return jsonify({'success': False, 'error': 'Email address required'})
         
-        # Get email configuration from session or environment variables
-        from flask import session
-        session_config = session.get('email_config', {})
-        smtp_server = session_config.get('smtp_server') or os.getenv('SMTP_SERVER')
-        smtp_port = int(session_config.get('smtp_port') or os.getenv('SMTP_PORT', '587'))
-        smtp_username = session_config.get('smtp_username') or os.getenv('SMTP_USERNAME')
-        smtp_password = session_config.get('smtp_password') or os.getenv('SMTP_PASSWORD')
-        smtp_encryption = session_config.get('smtp_encryption') or os.getenv('SMTP_ENCRYPTION', 'tls')
-        from_name = session_config.get('from_name') or os.getenv('EMAIL_FROM_NAME', 'Umukozi')
+        # Get email configuration from database or environment variables
+        email_config_db = EmailConfig.query.filter_by(is_active=True).first()
+        
+        if email_config_db:
+            smtp_server = email_config_db.smtp_server
+            smtp_port = int(email_config_db.smtp_port)
+            smtp_username = email_config_db.smtp_username
+            smtp_password = email_config_db.smtp_password
+            smtp_encryption = email_config_db.smtp_encryption
+            from_name = email_config_db.from_name
+        else:
+            # Fallback to environment variables
+            smtp_server = os.getenv('SMTP_SERVER')
+            smtp_port = int(os.getenv('SMTP_PORT', '587'))
+            smtp_username = os.getenv('SMTP_USERNAME')
+            smtp_password = os.getenv('SMTP_PASSWORD')
+            smtp_encryption = os.getenv('SMTP_ENCRYPTION', 'tls')
+            from_name = os.getenv('EMAIL_FROM_NAME', 'Umukozi')
         
         if not all([smtp_server, smtp_username, smtp_password]):
             return jsonify({'success': False, 'error': 'Email not configured'})
