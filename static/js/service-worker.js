@@ -1,4 +1,4 @@
-const CACHE_NAME = 'umukozi-v1';
+const CACHE_NAME = 'umukozi-v2';
 const urlsToCache = [
   '/',
   '/static/css/style.css',
@@ -19,37 +19,43 @@ self.addEventListener('install', event => {
   );
 });
 
-// Fetch event - serve from cache when offline
+// Fetch event - Network first for pages, Cache first for statics
 self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Cache hit - return response
-        if (response) {
-          return response;
-        }
+  // Always fetch non-GET requests from network
+  if (event.request.method !== 'GET') {
+    return;
+  }
 
-        // Clone the request
-        const fetchRequest = event.request.clone();
+  const url = new URL(event.request.url);
 
-        return fetch(fetchRequest).then(response => {
-          // Check if valid response
-          if(!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-
-          // Clone the response
-          const responseToCache = response.clone();
-
-          caches.open(CACHE_NAME)
-            .then(cache => {
-              cache.put(event.request, responseToCache);
-            });
-
-          return response;
+  // Static assets use Cache First
+  if (url.pathname.startsWith('/static/') || url.hostname.includes('fonts') || url.hostname.includes('unpkg')) {
+    event.respondWith(
+      caches.match(event.request).then(response => {
+        if (response) return response;
+        return fetch(event.request).then(networkResponse => {
+          if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') return networkResponse;
+          const cacheCopy = networkResponse.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, cacheCopy));
+          return networkResponse;
         });
       })
-  );
+    );
+  } else {
+    // Pages / Dynamic Data use Network First
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          // Update cache with fresh version
+          const cacheCopy = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, cacheCopy));
+          return response;
+        })
+        .catch(() => {
+          return caches.match(event.request);
+        })
+    );
+  }
 });
 
 // Activate event - clean up old caches
