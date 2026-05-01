@@ -533,8 +533,10 @@
                 installBtn.style.display = 'block';
             }
             
-            // Also show install banner
-            showInstallPrompt();
+            // Show install banner after 2 minutes (120,000 milliseconds)
+            setTimeout(() => {
+                showInstallPrompt();
+            }, 120000);
         });
 
         // Show install prompt to user

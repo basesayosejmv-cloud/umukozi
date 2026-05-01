@@ -175,38 +175,42 @@
 </div>
 
 <!-- Worker Profile Modal -->
-<div id="workerProfileModal" class="modal-overlay" style="display: none;" onclick="closeWorkerProfile(event)" data-workers='[
+<script>
+window.workersDataPayload = [
     {% for worker_data in workers_with_contact_status %}
     {% set worker = worker_data.worker %}
     {
         "id": {{ worker.id }},
-        "name": "{{ worker.user.full_name|replace('"', '\\"')|replace("'", "\\'") }}",
-        "phone": "{{ worker_data.phone }}",
-        "hasAccess": {{ worker_data.has_access|lower }},
-        "profile_picture": "{{ worker.profile_picture|replace('"', '\\"')|replace("'", "\\'") or '' }}",
-        "id_photo": "{{ worker.id_photo|replace('"', '\\"')|replace("'", "\\'") or '' }}",
-        "national_id_number": "{{ (worker.national_id_number or '')|replace('"', '\\"')|replace("'", "\\'") }}",
-        "bio": "{{ (worker.bio or 'No bio available.')|replace('"', '\\"')|replace("'", "\\'")|replace('\n', '\\n')|replace('\r', '\\r') }}",
-        "skills": "{{ (worker.skills or '')|replace('"', '\\"')|replace("'", "\\'") }}",
+        "name": {{ worker.user.full_name | tojson | safe }},
+        "phone": {{ worker_data.phone | tojson | safe }},
+        "hasAccess": {{ 'true' if worker_data.has_access else 'false' }},
+        "profile_picture": {{ (worker.profile_picture or '') | tojson | safe }},
+        "id_photo": {{ (worker.id_photo or '') | tojson | safe }},
+        "national_id_number": {{ (worker.national_id_number or '') | tojson | safe }},
+        "bio": {{ (worker.bio or 'No bio available.') | tojson | safe }},
+        "skills": {{ (worker.skills or '') | tojson | safe }},
         "experience_years": {{ worker.experience_years or 0 }},
-        "experience_details": "{{ (worker.experience_details or '')|replace('"', '\\"')|replace("'", "\\'")|replace('\n', '\\n')|replace('\r', '\\r') }}",
+        "experience_details": {{ (worker.experience_details or '') | tojson | safe }},
         "hourly_rate": {{ worker.hourly_rate or 'null' }},
-        "district": "{{ (worker.district or '')|replace('"', '\\"')|replace("'", "\\'") }}",
-        "province": "{{ (worker.province or '')|replace('"', '\\"')|replace("'", "\\'") }}",
-        "phone": "{{ worker.user.phone|replace('"', '\\"')|replace("'", "\\'") }}",
+        "district": {{ (worker.district or '') | tojson | safe }},
+        "province": {{ (worker.province or '') | tojson | safe }},
+        "worker_phone": {{ worker.user.phone | tojson | safe }},
         "is_verified": {{ 'true' if worker.is_verified else 'false' }},
-        "availability_status": "{{ worker.availability_status|replace('"', '\\"')|replace("'", "\\'") }}",
+        "availability_status": {{ (worker.availability_status or 'available') | tojson | safe }},
         "reviews": [
             {% for review in worker.received_reviews %}
             {
                 "rating": {{ review.rating }},
-                "comment": "{{ review.comment|replace('"', '\\"')|replace("'", "\\'")|replace('\n', '\\n')|replace('\r', '\\r') }}"
+                "comment": {{ review.comment | tojson | safe }}
             }{% if not loop.last %},{% endif %}
             {% endfor %}
         ]
     }{% if not loop.last %},{% endif %}
     {% endfor %}
-]'>
+];
+</script>
+
+<div id="workerProfileModal" class="modal-overlay" style="display: none;" onclick="closeWorkerProfile(event)">
     <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto; border-radius: 1.5rem;" onclick="event.stopPropagation()">
         <div class="modal-header" style="padding: 2rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
             <h3 style="margin: 0;">Worker Profile</h3>
@@ -254,10 +258,7 @@ function clearFilters() {
 }
 
 function viewWorkerProfile(workerId) {
-    // Get worker data from HTML data attribute
-    const modal = document.getElementById('workerProfileModal');
-    const workersData = modal.getAttribute('data-workers');
-    const workers = JSON.parse(workersData);
+    const workers = window.workersDataPayload || [];
     
     const worker = workers.find(w => w.id === workerId);
     if (!worker) return;

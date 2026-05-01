@@ -98,17 +98,17 @@
         </div>
 
         <!-- Stats Overview -->
-        <div class="grid grid-4" style="margin-bottom: 2rem;">
-            <div class="card text-center">
-                <div style="font-size: 2rem; font-weight: bold; color: var(--primary-color);">{{ employer.total_jobs_posted }}</div>
-                <p style="color: var(--text-secondary); font-size: 0.875rem;">Jobs Posted</p>
+        <div class="stats-grid" style="margin-bottom: 2rem;">
+            <div class="stat-card">
+                <div class="stat-number" style="color: var(--primary-color);">{{ employer.total_jobs_posted }}</div>
+                <p class="stat-label">Jobs Posted</p>
             </div>
-            <div class="card text-center">
-                <div style="font-size: 2rem; font-weight: bold; color: var(--secondary-color);">{{ employer.jobs|selectattr('status', 'equalto', 'filled')|list|length }}</div>
-                <p style="color: var(--text-secondary); font-size: 0.875rem;">Positions Filled</p>
+            <div class="stat-card">
+                <div class="stat-number" style="color: var(--secondary-color);">{{ employer.jobs|selectattr('status', 'equalto', 'filled')|list|length }}</div>
+                <p class="stat-label">Positions Filled</p>
             </div>
-            <div class="card text-center">
-                <div style="font-size: 2rem; font-weight: bold; color: var(--accent-color);">
+            <div class="stat-card">
+                <div class="stat-number" style="color: var(--accent-color);">
                     {% set total_applications = 0 %}
                     {% for job in employer.jobs %}
                         {% if job.status == 'open' %}
@@ -117,11 +117,11 @@
                     {% endfor %}
                     {{ total_applications }}
                 </div>
-                <p style="color: var(--text-secondary); font-size: 0.875rem;">Active Applications</p>
+                <p class="stat-label">Active Applications</p>
             </div>
-            <div class="card text-center">
-                <div style="font-size: 2rem; font-weight: bold; color: var(--danger-color);">{% if employer.average_rating %}{{ "%.1f"|format(employer.average_rating) }}{% else %}0.0{% endif %}</div>
-                <p style="color: var(--text-secondary); font-size: 0.875rem;">Average Rating</p>
+            <div class="stat-card">
+                <div class="stat-number" style="color: var(--danger-color);">{% if employer.average_rating %}{{ "%.1f"|format(employer.average_rating) }}{% else %}0.0{% endif %}</div>
+                <p class="stat-label">Average Rating</p>
             </div>
         </div>
 
@@ -493,6 +493,111 @@ document.addEventListener('DOMContentLoaded', function() {
     
     .floating-payment-banner p {
         font-size: 0.8rem !important;
+    }
+}
+
+/* Stats Grid - Responsive Layout */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid var(--border-color);
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin: 0;
+}
+
+/* Responsive breakpoints for stats grid */
+@media (max-width: 1024px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .stat-card {
+        padding: 1.25rem;
+    }
+    
+    .stat-number {
+        font-size: 2.25rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .stat-card {
+        padding: 1rem;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .stat-card {
+        padding: 0.875rem;
+    }
+    
+    .stat-number {
+        font-size: 1.75rem;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .stats-grid {
+        gap: 0.5rem;
+    }
+    
+    .stat-card {
+        padding: 0.75rem;
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
     }
 }
 
