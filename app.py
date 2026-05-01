@@ -11,11 +11,17 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Import Render configuration
+try:
+    from render_config import setup_render_environment
+    database_url = setup_render_environment()
+except ImportError:
+    database_url = os.getenv('DATABASE_URL', 'sqlite:///umukozi.db')
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-here')
 
-# Database configuration - support both SQLite (development) and PostgreSQL (production/Docker)
-database_url = os.getenv('DATABASE_URL', 'sqlite:///umukozi.db')
+# Database configuration - support both SQLite (development) and PostgreSQL (production)
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -44,12 +50,23 @@ if not os.path.exists('logs'):
 
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] %(message)s',
+    format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
     handlers=[
         logging.FileHandler('logs/app.log'),
         logging.StreamHandler()
     ]
 )
+
+# Configure SQLAlchemy logging for database operations
+if os.getenv('FLASK_ENV') == 'production':
+    logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+    logging.getLogger('sqlalchemy.pool').setLevel(logging.INFO)
+    
+    # Add separate database log file
+    db_logger = logging.getLogger('sqlalchemy.engine')
+    db_handler = logging.FileHandler('logs/database.log')
+    db_handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s] %(name)s: %(message)s'))
+    db_logger.addHandler(db_handler)
 
 # Error handlers
 @app.errorhandler(404)
