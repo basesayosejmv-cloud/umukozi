@@ -232,11 +232,22 @@
 <script>
 // Test email connection
 function testEmailConnection() {
+    // Get form data
+    const formData = new FormData(document.getElementById('emailSettingsForm'));
+    const data = {
+        smtp_server: formData.get('smtp_server'),
+        smtp_port: formData.get('smtp_port'),
+        smtp_username: formData.get('smtp_username'),
+        smtp_password: formData.get('smtp_password'),
+        smtp_encryption: formData.get('smtp_encryption')
+    };
+    
     fetch('/admin/test-email-connection', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-        }
+        },
+        body: JSON.stringify(data)
     })
     .then(response => response.json())
     .then(data => {

@@ -207,15 +207,66 @@ function makeCall(phone) {
 }
 
 function acceptApplication(applicationId) {
-    if (confirm('Are you sure you want to accept this application?')) {
-        alert('Application accepted! Application ID: ' + applicationId);
+    if (confirm('Are you sure you want to accept this application? This will notify the admin and update the worker status.')) {
+        fetch('/employer/application/' + applicationId + '/accept', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Application accepted successfully! Admin has been notified.', 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showNotification('Error accepting application: ' + data.error, 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('Error accepting application: ' + error, 'error');
+        });
     }
 }
 
 function rejectApplication(applicationId) {
     if (confirm('Are you sure you want to reject this application?')) {
-        alert('Application rejected! Application ID: ' + applicationId);
+        fetch('/employer/application/' + applicationId + '/reject', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Application rejected successfully.', 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showNotification('Error rejecting application: ' + data.error, 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('Error rejecting application: ' + error, 'error');
+        });
     }
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = 'alert alert-' + type;
+    notification.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px; padding: 1rem; border-radius: 0.5rem; background: ' + 
+        (type === 'success' ? 'var(--success-color)' : 'var(--danger-color)') + 
+        '; color: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);';
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 5000);
 }
 
 // Handle sidebar item clicks

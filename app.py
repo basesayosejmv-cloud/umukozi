@@ -1211,6 +1211,194 @@ def employer_applications():
     
     return render_template('employer_applications.html', employer=employer, applications_with_contact_status=applications_with_contact_status)
 
+@app.route('/employer/application/<int:application_id>/accept', methods=['POST'])
+@login_required
+def accept_application(application_id):
+    if current_user.user_type != 'employer':
+        return jsonify({'success': False, 'error': 'Access denied'}), 403
+    
+    try:
+        application = Application.query.get_or_404(application_id)
+        employer = Employer.query.filter_by(user_id=current_user.id).first()
+        
+        # Verify this application belongs to the employer's job
+        if application.job.employer_id != employer.id:
+            return jsonify({'success': False, 'error': 'Access denied'}), 403
+        
+        # Update application status
+        application.status = 'accepted'
+        application.updated_at = datetime.utcnow()
+        
+        # Update worker availability status to 'busy'
+        worker = application.worker
+        worker.availability_status = 'busy'
+        
+        # Update job status to 'filled'
+        application.job.status = 'filled'
+        
+        db.session.commit()
+        
+        # Send email notification to admin
+        send_admin_hiring_notification(application, 'accepted')
+        
+        return jsonify({
+            'success': True, 
+            'message': f'Application accepted. {worker.user.full_name} is now marked as busy.'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/employer/application/<int:application_id>/reject', methods=['POST'])
+@login_required
+def reject_application(application_id):
+    if current_user.user_type != 'employer':
+        return jsonify({'success': False, 'error': 'Access denied'}), 403
+    
+    try:
+        application = Application.query.get_or_404(application_id)
+        employer = Employer.query.filter_by(user_id=current_user.id).first()
+        
+        # Verify this application belongs to the employer's job
+        if application.job.employer_id != employer.id:
+            return jsonify({'success': False, 'error': 'Access denied'}), 403
+        
+        # Update application status
+        application.status = 'rejected'
+        application.updated_at = datetime.utcnow()
+        
+        db.session.commit()
+        
+        # Send email notification to admin
+        send_admin_hiring_notification(application, 'rejected')
+        
+        return jsonify({
+            'success': True, 
+            'message': 'Application rejected successfully.'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)})
+
+def send_admin_hiring_notification(application, action):
+    """Send email notification to admin when a worker is hired/rejected"""
+    try:
+        from flask import session
+        
+        # Check if email notifications are enabled
+        session_config = session.get('email_config', {})
+        if not session_config.get('enable_notifications', True):
+            return
+        
+        # Get admin users
+        admin_users = User.query.filter_by(user_type='admin').all()
+        
+        if not admin_users:
+            return
+        
+        # Get email configuration
+        smtp_server = session_config.get('smtp_server') or os.getenv('SMTP_SERVER')
+        smtp_port = int(session_config.get('smtp_port') or os.getenv('SMTP_PORT', '587'))
+        smtp_username = session_config.get('smtp_username') or os.getenv('SMTP_USERNAME')
+        smtp_password = session_config.get('smtp_password') or os.getenv('SMTP_PASSWORD')
+        smtp_encryption = session_config.get('smtp_encryption') or os.getenv('SMTP_ENCRYPTION', 'tls')
+        from_name = session_config.get('from_name') or os.getenv('EMAIL_FROM_NAME', 'Umukozi')
+        
+        if not all([smtp_server, smtp_username, smtp_password]):
+            return
+        
+        import smtplib
+        from email.mime.text import MIMEText
+        from email.mime.multipart import MIMEMultipart
+        
+        # Create email content
+        worker = application.worker
+        employer = application.job.employer
+        job = application.job
+        
+        subject = f"Worker {action.title()}: {worker.user.full_name}"
+        
+        if action == 'accepted':
+            body = f"""
+Dear Admin,
+
+A worker has been hired on the Umukozi platform:
+
+Worker Details:
+- Name: {worker.user.full_name}
+- Email: {worker.user.email}
+- Phone: {worker.user.phone_number}
+- Experience: {worker.experience_years or 'Not specified'} years
+- Location: {worker.district or 'Not specified'}
+
+Employer Details:
+- Name: {employer.user.full_name}
+- Email: {employer.user.email}
+- Company: {employer.company_name or 'Not specified'}
+
+Job Details:
+- Title: {job.title}
+- Category: {job.category}
+- Location: {job.location}
+- Salary: {job.salary_range}
+
+Action Required: The worker's status has been automatically updated to 'busy'. 
+You can update the worker's status from the admin dashboard if needed.
+
+Best regards,
+Umukozi System
+            """
+        else:  # rejected
+            body = f"""
+Dear Admin,
+
+A worker application has been rejected on the Umukozi platform:
+
+Worker Details:
+- Name: {worker.user.full_name}
+- Email: {worker.user.email}
+- Phone: {worker.user.phone_number}
+
+Employer Details:
+- Name: {employer.user.full_name}
+- Email: {employer.user.email}
+
+Job Details:
+- Title: {job.title}
+- Category: {job.category}
+- Location: {job.location}
+
+Best regards,
+Umukozi System
+            """
+        
+        # Send email to all admins
+        for admin in admin_users:
+            msg = MIMEMultipart()
+            msg['From'] = f"{from_name} <{smtp_username}>"
+            msg['To'] = admin.email
+            msg['Subject'] = subject
+            
+            msg.attach(MIMEText(body, 'plain'))
+            
+            # Send email
+            if smtp_encryption == 'ssl':
+                server = smtplib.SMTP_SSL(smtp_server, smtp_port)
+            else:
+                server = smtplib.SMTP(smtp_server, smtp_port)
+                if smtp_encryption == 'tls':
+                    server.starttls()
+            
+            server.login(smtp_username, smtp_password)
+            server.send_message(msg)
+            server.quit()
+            
+    except Exception as e:
+        # Log error but don't fail the application process
+        print(f"Error sending admin notification: {e}")
+
 @app.route('/employer/activity')
 @login_required
 def employer_activity():
@@ -1443,6 +1631,32 @@ def admin_worker_action(worker_id, action):
     flash(f'Worker action "{action}" completed successfully.', 'success')
     return redirect(url_for('admin_workers'))
 
+@app.route('/admin/worker/<int:worker_id>/update-status', methods=['POST'])
+@login_required
+def admin_update_worker_status(worker_id):
+    if current_user.user_type != 'admin':
+        return jsonify({'success': False, 'error': 'Access denied'}), 403
+    
+    try:
+        worker = Worker.query.get_or_404(worker_id)
+        new_status = request.json.get('status')
+        
+        if new_status not in ['available', 'busy', 'unavailable']:
+            return jsonify({'success': False, 'error': 'Invalid status'}), 400
+        
+        old_status = worker.availability_status
+        worker.availability_status = new_status
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Worker status updated from {old_status} to {new_status}'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)})
+
 @app.route('/admin/employer/<int:employer_id>/<string:action>', methods=['POST'])
 @login_required
 def admin_employer_action(employer_id, action):
@@ -1477,25 +1691,30 @@ def admin_email_settings():
         flash('Access denied. Admin privileges required.', 'error')
         return redirect(url_for('dashboard'))
     
-    # Get current email configuration from environment variables or database
-    email_config = {
-        'smtp_server': os.getenv('SMTP_SERVER', ''),
-        'smtp_port': os.getenv('SMTP_PORT', '587'),
-        'smtp_encryption': os.getenv('SMTP_ENCRYPTION', 'tls'),
-        'smtp_username': os.getenv('SMTP_USERNAME', ''),
-        'smtp_password': os.getenv('SMTP_PASSWORD', ''),
-        'from_name': os.getenv('EMAIL_FROM_NAME', 'Umukozi'),
-        'reply_to': os.getenv('EMAIL_REPLY_TO', ''),
-        'enable_notifications': os.getenv('ENABLE_EMAIL_NOTIFICATIONS', 'true').lower() == 'true',
-        'enable_welcome_emails': os.getenv('ENABLE_WELCOME_EMAILS', 'true').lower() == 'true',
-        'enable_job_alerts': os.getenv('ENABLE_JOB_ALERTS', 'true').lower() == 'true',
-        'enable_verification_emails': os.getenv('ENABLE_VERIFICATION_EMAILS', 'true').lower() == 'true'
-    }
+    from flask import session
+    
+    # Initialize email config in session if not exists
+    if 'email_config' not in session:
+        session['email_config'] = {
+            'smtp_server': os.getenv('SMTP_SERVER', ''),
+            'smtp_port': os.getenv('SMTP_PORT', '587'),
+            'smtp_encryption': os.getenv('SMTP_ENCRYPTION', 'tls'),
+            'smtp_username': os.getenv('SMTP_USERNAME', ''),
+            'smtp_password': os.getenv('SMTP_PASSWORD', ''),
+            'from_name': os.getenv('EMAIL_FROM_NAME', 'Umukozi'),
+            'reply_to': os.getenv('EMAIL_REPLY_TO', ''),
+            'enable_notifications': os.getenv('ENABLE_EMAIL_NOTIFICATIONS', 'true').lower() == 'true',
+            'enable_welcome_emails': os.getenv('ENABLE_WELCOME_EMAILS', 'true').lower() == 'true',
+            'enable_job_alerts': os.getenv('ENABLE_JOB_ALERTS', 'true').lower() == 'true',
+            'enable_verification_emails': os.getenv('ENABLE_VERIFICATION_EMAILS', 'true').lower() == 'true'
+        }
+    
+    email_config = session['email_config']
     
     if request.method == 'POST':
         try:
-            # Update environment variables (in production, these would be saved to a config file or database)
-            email_config.update({
+            # Update session with form data
+            session['email_config'] = {
                 'smtp_server': request.form.get('smtp_server', ''),
                 'smtp_port': request.form.get('smtp_port', '587'),
                 'smtp_encryption': request.form.get('smtp_encryption', 'tls'),
@@ -1507,10 +1726,10 @@ def admin_email_settings():
                 'enable_welcome_emails': request.form.get('enable_welcome_emails') == 'on',
                 'enable_job_alerts': request.form.get('enable_job_alerts') == 'on',
                 'enable_verification_emails': request.form.get('enable_verification_emails') == 'on'
-            })
+            }
+            session.modified = True  # Mark session as modified
             
-            # Here you would typically save these to a database or config file
-            # For now, we'll just show a success message
+            email_config = session['email_config']
             flash('Email settings updated successfully!', 'success')
             
         except Exception as e:
@@ -1528,12 +1747,21 @@ def admin_test_email_connection():
         import smtplib
         from email.mime.text import MIMEText
         
-        # Get email configuration
-        smtp_server = request.json.get('smtp_server') or os.getenv('SMTP_SERVER')
-        smtp_port = int(request.json.get('smtp_port') or os.getenv('SMTP_PORT', '587'))
-        smtp_username = request.json.get('smtp_username') or os.getenv('SMTP_USERNAME')
-        smtp_password = request.json.get('smtp_password') or os.getenv('SMTP_PASSWORD')
-        smtp_encryption = request.json.get('smtp_encryption') or os.getenv('SMTP_ENCRYPTION', 'tls')
+        # Handle empty JSON request
+        if not request.is_json:
+            return jsonify({'success': False, 'error': 'Request must be JSON'}), 400
+        
+        # Get email configuration from session, request, or environment variables
+        from flask import session
+        data = request.get_json() or {}
+        
+        # Try session first, then request data, then environment variables
+        session_config = session.get('email_config', {})
+        smtp_server = data.get('smtp_server') or session_config.get('smtp_server') or os.getenv('SMTP_SERVER')
+        smtp_port = int(data.get('smtp_port') or session_config.get('smtp_port') or os.getenv('SMTP_PORT', '587'))
+        smtp_username = data.get('smtp_username') or session_config.get('smtp_username') or os.getenv('SMTP_USERNAME')
+        smtp_password = data.get('smtp_password') or session_config.get('smtp_password') or os.getenv('SMTP_PASSWORD')
+        smtp_encryption = data.get('smtp_encryption') or session_config.get('smtp_encryption') or os.getenv('SMTP_ENCRYPTION', 'tls')
         
         if not all([smtp_server, smtp_username, smtp_password]):
             return jsonify({'success': False, 'error': 'Missing SMTP configuration'})
@@ -1571,13 +1799,15 @@ def admin_send_test_email():
         if not test_email:
             return jsonify({'success': False, 'error': 'Email address required'})
         
-        # Get email configuration
-        smtp_server = os.getenv('SMTP_SERVER')
-        smtp_port = int(os.getenv('SMTP_PORT', '587'))
-        smtp_username = os.getenv('SMTP_USERNAME')
-        smtp_password = os.getenv('SMTP_PASSWORD')
-        smtp_encryption = os.getenv('SMTP_ENCRYPTION', 'tls')
-        from_name = os.getenv('EMAIL_FROM_NAME', 'Umukozi')
+        # Get email configuration from session or environment variables
+        from flask import session
+        session_config = session.get('email_config', {})
+        smtp_server = session_config.get('smtp_server') or os.getenv('SMTP_SERVER')
+        smtp_port = int(session_config.get('smtp_port') or os.getenv('SMTP_PORT', '587'))
+        smtp_username = session_config.get('smtp_username') or os.getenv('SMTP_USERNAME')
+        smtp_password = session_config.get('smtp_password') or os.getenv('SMTP_PASSWORD')
+        smtp_encryption = session_config.get('smtp_encryption') or os.getenv('SMTP_ENCRYPTION', 'tls')
+        from_name = session_config.get('from_name') or os.getenv('EMAIL_FROM_NAME', 'Umukozi')
         
         if not all([smtp_server, smtp_username, smtp_password]):
             return jsonify({'success': False, 'error': 'Email not configured'})

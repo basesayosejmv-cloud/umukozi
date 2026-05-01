@@ -164,19 +164,40 @@
                                 {% endif %}
                             </td>
                             <td style="padding: 1rem; border-bottom: 1px solid var(--border-color);">
-                                {% if worker.is_suspended %}
-                                    <span class="badge" style="background: var(--danger-color); color: white; font-size: 0.75rem;">
-                                        <i class='bx bxs-user-x'></i> Suspended
-                                    </span>
-                                {% elif worker.is_verified %}
-                                    <span class="badge badge-success" style="font-size: 0.75rem;">
-                                        <i class='bx bxs-check-circle'></i> Active
-                                    </span>
-                                {% else %}
-                                    <span class="badge badge-warning" style="font-size: 0.75rem;">
-                                        <i class='bx bxs-time-five'></i> Pending
-                                    </span>
-                                {% endif %}
+                                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                    <!-- Availability Status -->
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <span style="font-size: 0.75rem; color: var(--text-secondary);">Availability:</span>
+                                        <select class="availability-status-select" data-worker-id="{{ worker.id }}" 
+                                                style="font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 0.25rem; border: 1px solid var(--border-color);">
+                                            <option value="available" {% if worker.availability_status == 'available' %}selected{% endif %}>
+                                                🟢 Available
+                                            </option>
+                                            <option value="busy" {% if worker.availability_status == 'busy' %}selected{% endif %}>
+                                                🟡 Busy
+                                            </option>
+                                            <option value="unavailable" {% if worker.availability_status == 'unavailable' %}selected{% endif %}>
+                                                🔴 Unavailable
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <!-- Account Status -->
+                                    <div>
+                                        {% if worker.is_suspended %}
+                                            <span class="badge" style="background: var(--danger-color); color: white; font-size: 0.75rem;">
+                                                <i class='bx bxs-user-x'></i> Suspended
+                                            </span>
+                                        {% elif worker.is_verified %}
+                                            <span class="badge badge-success" style="font-size: 0.75rem;">
+                                                <i class='bx bxs-check-circle'></i> Active
+                                            </span>
+                                        {% else %}
+                                            <span class="badge badge-warning" style="font-size: 0.75rem;">
+                                                <i class='bx bxs-time-five'></i> Pending
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
                             </td>
                             <td style="padding: 1rem; border-bottom: 1px solid var(--border-color);">
                                 <div style="font-size: 0.875rem; color: var(--text-secondary);">
@@ -256,18 +277,7 @@
 
 <script>
 // Worker data for filtering - populated server-side
-let workersData = [
-    {% for worker in workers %}
-    {
-        id: {{ worker.id }},
-        name: "{{ worker.user.full_name|lower }}",
-        email: "{{ worker.user.email|lower }}",
-        phone: "{{ worker.user.phone }}",
-        status: "{{ 'suspended' if worker.user.is_blocked else 'active' }}",
-        verified: "{{ 'true' if worker.is_verified else 'false' }}"
-    }{% if not loop.last %},{% endif %}
-    {% endfor %}
-];
+let workersData = {{ workers|map(attribute='id')|map('int')|list|tojson if workers else '[]' }};
 
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
@@ -528,6 +538,64 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// Handle availability status updates
+document.addEventListener('DOMContentLoaded', function() {
+    const statusSelects = document.querySelectorAll('.availability-status-select');
+    
+    statusSelects.forEach(select => {
+        select.addEventListener('change', function() {
+            const workerId = this.getAttribute('data-worker-id');
+            const newStatus = this.value;
+            
+            if (confirm(`Update worker availability status to ${newStatus}?`)) {
+                updateWorkerStatus(workerId, newStatus);
+            } else {
+                // Revert to original status if cancelled
+                location.reload();
+            }
+        });
+    });
+});
+
+function updateWorkerStatus(workerId, newStatus) {
+    fetch(`/admin/worker/${workerId}/update-status`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ status: newStatus })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+        } else {
+            showNotification('Error updating status: ' + data.error, 'error');
+            location.reload(); // Reload to show original status
+        }
+    })
+    .catch(error => {
+        showNotification('Error updating status: ' + error, 'error');
+        location.reload(); // Reload to show original status
+    });
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = 'alert alert-' + type;
+    notification.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px; padding: 1rem; border-radius: 0.5rem; background: ' + 
+        (type === 'success' ? 'var(--success-color)' : 'var(--danger-color)') + 
+        '; color: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);';
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 5000);
+}
 </script>
 
 <style>
@@ -1008,7 +1076,6 @@ document.head.appendChild(style);
     font-size: 0.875rem;
     font-weight: 600;
     color: #dc2626;
-}
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
 }
 </style>
