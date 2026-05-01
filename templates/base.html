@@ -489,15 +489,32 @@
             }
         });
 
-        // PWA Service Worker Registration and Install Prompt
+        // PWA Service Worker Registration and Nuke Old Caches
         let deferredPrompt;
         
-        // Register Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
+                // Force update or unregister old buggy service workers
+                navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                    for(let registration of registrations) {
+                        registration.update();
+                    }
+                });
+                
+                // Clear any excessively aggressive caches unconditionally to free locked browsers
+                if (window.caches) {
+                    caches.keys().then(function(names) {
+                        for (let name of names) {
+                            if (name === 'umukozi-v1' || name === 'umukozi-v2') {
+                                caches.delete(name);
+                            }
+                        }
+                    });
+                }
+
                 navigator.serviceWorker.register('/service-worker.js')
                     .then(function(registration) {
-                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                        console.log('ServiceWorker registration successful');
                     })
                     .catch(function(error) {
                         console.log('ServiceWorker registration failed: ', error);
