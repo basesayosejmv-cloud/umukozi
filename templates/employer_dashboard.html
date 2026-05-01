@@ -14,7 +14,7 @@
     <!-- Main Content -->
     <main class="main-content">
         <!-- Floating Payment Reminder Banner -->
-        <div id="paymentReminderBanner" class="floating-payment-banner" style="
+        <div id="paymentReminderBanner" class="floating-payment-banner" style="display: none;"
             position: fixed;
             top: 20px;
             right: 20px;
@@ -247,6 +247,7 @@
     </main>
 </div>
 
+
 <script>
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
@@ -266,6 +267,34 @@ function postNewJob() {
     window.location.href = '{{ url_for("employer_post_job") }}';
 }
 
+// Ensure profile dropdown functionality is available
+function toggleProfileDropdown() {
+    const profileDropdown = document.getElementById('profileDropdown');
+    if (profileDropdown) {
+        profileDropdown.classList.toggle('active');
+        
+        // Close notification dropdown if open
+        const notifDropdown = document.getElementById('notificationDropdown');
+        if (notifDropdown) {
+            notifDropdown.classList.remove('active');
+        }
+    }
+}
+
+// Ensure notification dropdown functionality is available
+function toggleNotificationDropdown() {
+    const notifDropdown = document.getElementById('notificationDropdown');
+    if (notifDropdown) {
+        notifDropdown.classList.toggle('active');
+        
+        // Close profile dropdown if open
+        const profileDropdown = document.getElementById('profileDropdown');
+        if (profileDropdown) {
+            profileDropdown.classList.remove('active');
+        }
+    }
+}
+
 // Handle sidebar item clicks
 document.querySelectorAll('.sidebar-item').forEach(item => {
     item.addEventListener('click', function(e) {
@@ -281,7 +310,7 @@ document.querySelectorAll('.sidebar-item').forEach(item => {
     });
 });
 
-// Close sidebar when clicking outside on mobile
+// Close sidebar when clicking outside on mobile and handle dropdowns
 document.addEventListener('click', function(event) {
     const sidebar = document.getElementById('sidebar');
     const toggle = document.querySelector('.mobile-sidebar-toggle');
@@ -292,43 +321,83 @@ document.addEventListener('click', function(event) {
         sidebar.classList.contains('active')) {
         closeSidebar();
     }
+    
+    // Close profile dropdown when clicking outside (preserve base.html functionality)
+    const profileDropdown = document.getElementById('profileDropdown');
+    if (profileDropdown && !profileDropdown.contains(event.target)) {
+        profileDropdown.classList.remove('active');
+    }
+
+    // Close notification dropdown when clicking outside (preserve base.html functionality)
+    const notifDropdown = document.getElementById('notificationDropdown');
+    if (notifDropdown && !notifDropdown.contains(event.target)) {
+        notifDropdown.classList.remove('active');
+    }
 });
 
-// Floating Payment Banner Functionality
-function dismissPaymentBanner() {
+// Floating Payment Banner - 10 second show/hide functionality
+let bannerInterval;
+let bannerTimeout;
+
+function showPaymentBanner() {
+    const banner = document.getElementById('paymentReminderBanner');
+    if (banner) {
+        banner.style.display = 'block';
+        setTimeout(() => {
+            banner.style.animation = 'slideInPulse 3s ease-in-out infinite';
+        }, 10);
+        
+        // Auto-hide after 5 seconds
+        bannerTimeout = setTimeout(() => {
+            hidePaymentBanner();
+        }, 5000);
+    }
+}
+
+function hidePaymentBanner() {
     const banner = document.getElementById('paymentReminderBanner');
     if (banner) {
         banner.style.animation = 'slideOut 0.5s ease-out forwards';
         setTimeout(() => {
-            banner.remove();
-            // Store dismissal in localStorage to not show again for 24 hours
-            localStorage.setItem('paymentBannerDismissed', Date.now().toString());
+            banner.style.display = 'none';
         }, 500);
+        
+        // Clear any pending timeout
+        if (bannerTimeout) {
+            clearTimeout(bannerTimeout);
+        }
     }
 }
 
-// Check if banner should be shown (not dismissed in last 24 hours)
-function shouldShowPaymentBanner() {
-    const dismissed = localStorage.getItem('paymentBannerDismissed');
-    if (!dismissed) return true;
-    
-    const dismissedTime = parseInt(dismissed);
-    const twentyFourHours = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-    return (Date.now() - dismissedTime) > twentyFourHours;
+function dismissPaymentBanner() {
+    hidePaymentBanner();
 }
 
-// Show banner if it should be displayed
+// Start the banner cycle - show every 1 minute
+function startBannerCycle() {
+    // Show first banner after 2 seconds
+    setTimeout(() => {
+        showPaymentBanner();
+        
+        // Then show every 1 minute (60,000 milliseconds)
+        bannerInterval = setInterval(() => {
+            showPaymentBanner();
+        }, 60000);
+    }, 2000);
+}
+
+// Initialize banner cycle when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    if (shouldShowPaymentBanner()) {
-        const banner = document.getElementById('paymentReminderBanner');
-        if (banner) {
-            banner.style.display = 'block';
-        }
-    } else {
-        const banner = document.getElementById('paymentReminderBanner');
-        if (banner) {
-            banner.remove();
-        }
+    startBannerCycle();
+});
+
+// Stop banner cycle when user leaves the page
+window.addEventListener('beforeunload', function() {
+    if (bannerInterval) {
+        clearInterval(bannerInterval);
+    }
+    if (bannerTimeout) {
+        clearTimeout(bannerTimeout);
     }
 });
 
@@ -347,6 +416,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
 </script>
 
 <style>
@@ -425,5 +495,6 @@ document.addEventListener('DOMContentLoaded', function() {
         font-size: 0.8rem !important;
     }
 }
+
 </style>
 {% endblock %}

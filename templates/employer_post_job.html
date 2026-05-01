@@ -11,7 +11,7 @@
                 📝 Post a New Job
             </h2>
             <p style="color: var(--text-secondary);">
-                Create a detailed job posting to attract qualified workers for your needs.
+                Create a job posting with the essential information
             </p>
         </div>
     </div>
@@ -19,9 +19,9 @@
     <!-- Job Posting Form -->
     <form method="POST" enctype="multipart/form-data">
         <div class="card">
-            <!-- Basic Information -->
+            <!-- Job Title -->
             <div class="form-section">
-                <h3 style="margin-bottom: 1.5rem;">Basic Information</h3>
+                <h3 style="margin-bottom: 1.5rem;">Job Title</h3>
                 
                 <div class="form-group">
                     <label class="form-label">Job Title *</label>
@@ -30,84 +30,47 @@
                            placeholder="e.g., House Helper, Childcare Provider, Cook" required>
                     <small style="color: var(--text-secondary);">Be specific about the role</small>
                 </div>
+            </div>
 
+            <!-- Job Description -->
+            <div class="form-section">
+                <h3 style="margin-bottom: 1.5rem;">Job Description</h3>
+                
                 <div class="form-group">
-                    <label class="form-label">Job Description *</label>
+                    <label class="form-label">Description *</label>
                     <textarea name="description" class="form-control" rows="6" 
-                              placeholder="Describe the job responsibilities, duties, and what the worker will be doing..." required>{{ form_data.description if form_data else '' }}</textarea>
+                              placeholder="Describe the job and what the worker will be doing..." required>{{ form_data.description if form_data else '' }}</textarea>
                     <small style="color: var(--text-secondary);">Be detailed to attract the right candidates</small>
                 </div>
+            </div>
 
+            <!-- Responsibilities -->
+            <div class="form-section">
+                <h3 style="margin-bottom: 1.5rem;">Responsibilities</h3>
+                
                 <div class="form-group">
-                    <label class="form-label">Job Type *</label>
-                    <select name="job_type" class="form-control" required>
-                        <option value="">Select job type...</option>
-                        <option value="full_time" {% if form_data and form_data.job_type == 'full_time' %}selected{% endif %}>Full Time</option>
-                        <option value="part_time" {% if form_data and form_data.job_type == 'part_time' %}selected{% endif %}>Part Time</option>
-                        <option value="temporary" {% if form_data and form_data.job_type == 'temporary' %}selected{% endif %}>Temporary</option>
-                        <option value="live_in" {% if form_data and form_data.job_type == 'live_in' %}selected{% endif %}>Live In</option>
-                    </select>
+                    <label class="form-label">Key Responsibilities *</label>
+                    <textarea name="responsibilities" class="form-control" rows="6" 
+                              placeholder="List the main duties and responsibilities..." required>{{ form_data.responsibilities if form_data else '' }}</textarea>
+                    <small style="color: var(--text-secondary);">List each responsibility on a new line</small>
                 </div>
             </div>
 
-            <!-- Location Information -->
+            <!-- Location -->
             <div class="form-section">
-                <h3 style="margin-bottom: 1.5rem;">Job Location</h3>
-                
-                <div class="grid grid-2">
-                    <div class="form-group">
-                        <label class="form-label">Province</label>
-                        <select name="province" class="form-control">
-                            <option value="">Select province...</option>
-                            <option value="kigali" {% if form_data and form_data.province == 'kigali' %}selected{% endif %}>Kigali</option>
-                            <option value="northern" {% if form_data and form_data.province == 'northern' %}selected{% endif %}>Northern</option>
-                            <option value="southern" {% if form_data and form_data.province == 'southern' %}selected{% endif %}>Southern</option>
-                            <option value="eastern" {% if form_data and form_data.province == 'eastern' %}selected{% endif %}>Eastern</option>
-                            <option value="western" {% if form_data and form_data.province == 'western' %}selected{% endif %}>Western</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">District</label>
-                        <input type="text" name="district" class="form-control" 
-                               value="{{ form_data.district if form_data else '' }}"
-                               placeholder="e.g., Gasabo, Nyarugenge">
-                    </div>
-                </div>
-                
-                <div class="grid grid-2">
-                    <div class="form-group">
-                        <label class="form-label">Sector</label>
-                        <input type="text" name="sector" class="form-control" 
-                               value="{{ form_data.sector if form_data else '' }}"
-                               placeholder="e.g., Kimihurura, Kacyiru">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Cell</label>
-                        <input type="text" name="cell" class="form-control" 
-                               value="{{ form_data.cell if form_data else '' }}"
-                               placeholder="Cell name">
-                    </div>
-                </div>
+                <h3 style="margin-bottom: 1.5rem;">Location</h3>
                 
                 <div class="form-group">
-                    <label class="form-label">Village</label>
-                    <input type="text" name="village" class="form-control" 
-                           value="{{ form_data.village if form_data else '' }}"
-                           placeholder="Village name">
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Address Details</label>
-                    <textarea name="address_details" class="form-control" rows="3" 
-                              placeholder="Additional address information, landmarks, etc...">{{ form_data.address_details if form_data else '' }}</textarea>
+                    <label class="form-label">Job Location *</label>
+                    <textarea name="location" class="form-control" rows="3" 
+                              placeholder="Enter the complete job address (Province, District, Sector, etc.)" required>{{ form_data.location if form_data else '' }}</textarea>
+                    <small style="color: var(--text-secondary);">Include all location details for workers to find the job</small>
                 </div>
             </div>
 
-            <!-- Compensation -->
+            <!-- Salary -->
             <div class="form-section">
-                <h3 style="margin-bottom: 1.5rem;">Compensation</h3>
+                <h3 style="margin-bottom: 1.5rem;">Salary</h3>
                 
                 <div class="grid grid-2">
                     <div class="form-group">
@@ -142,87 +105,10 @@
                 <h3 style="margin-bottom: 1.5rem;">Requirements</h3>
                 
                 <div class="form-group">
-                    <label class="form-label">Skills Required</label>
-                    <textarea name="skills_required" class="form-control" rows="3" 
-                              placeholder="List the skills needed (e.g., Cleaning, Cooking, Childcare, Laundry, Gardening...)">{{ form_data.skills_required if form_data else '' }}</textarea>
-                    <small style="color: var(--text-secondary);">Separate skills with commas</small>
-                </div>
-                
-                <div class="grid grid-2">
-                    <div class="form-group">
-                        <label class="form-label">Experience Required</label>
-                        <select name="experience_required" class="form-control">
-                            <option value="">Select experience level...</option>
-                            <option value="no_experience" {% if form_data and form_data.experience_required == 'no_experience' %}selected{% endif %}>No Experience Required</option>
-                            <option value="less_than_1_year" {% if form_data and form_data.experience_required == 'less_than_1_year' %}selected{% endif %}>Less than 1 year</option>
-                            <option value="1_2_years" {% if form_data and form_data.experience_required == '1_2_years' %}selected{% endif %}>1-2 years</option>
-                            <option value="3_5_years" {% if form_data and form_data.experience_required == '3_5_years' %}selected{% endif %}>3-5 years</option>
-                            <option value="more_than_5_years" {% if form_data and form_data.experience_required == 'more_than_5_years' %}selected{% endif %}>More than 5 years</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Education Required</label>
-                        <input type="text" name="education_required" class="form-control" 
-                               value="{{ form_data.education_required if form_data else '' }}"
-                               placeholder="e.g., High School, Certificate, None">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Languages Required</label>
-                    <textarea name="languages_required" class="form-control" rows="2" 
-                              placeholder="e.g., Kinyarwanda, English, French">{{ form_data.languages_required if form_data else '' }}</textarea>
-                    <small style="color: var(--text-secondary);">Separate languages with commas</small>
-                </div>
-            </div>
-
-            <!-- Schedule -->
-            <div class="form-section">
-                <h3 style="margin-bottom: 1.5rem;">Work Schedule</h3>
-                
-                <div class="grid grid-2">
-                    <div class="form-group">
-                        <label class="form-label">Working Hours</label>
-                        <input type="text" name="working_hours" class="form-control" 
-                               value="{{ form_data.working_hours if form_data else '' }}"
-                               placeholder="e.g., 8:00 AM - 5:00 PM">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Working Days</label>
-                        <input type="text" name="working_days" class="form-control" 
-                               value="{{ form_data.working_days if form_data else '' }}"
-                               placeholder="e.g., Monday - Friday">
-                    </div>
-                </div>
-                
-                <div class="grid grid-2">
-                    <div class="form-group">
-                        <label class="form-label">Start Date</label>
-                        <input type="date" name="start_date" class="form-control" 
-                               value="{{ form_data.start_date if form_data else '' }}">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">End Date (for temporary jobs)</label>
-                        <input type="date" name="end_date" class="form-control" 
-                               value="{{ form_data.end_date if form_data else '' }}">
-                        <small style="color: var(--text-secondary);">Leave blank for permanent positions</small>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Additional Options -->
-            <div class="form-section">
-                <h3 style="margin-bottom: 1.5rem;">Additional Options</h3>
-                
-                <div class="form-group">
-                    <label style="display: flex; align-items: center; gap: 0.5rem;">
-                        <input type="checkbox" name="is_urgent" {% if form_data and form_data.is_urgent %}checked{% endif %}>
-                        <span>Mark as Urgent</span>
-                    </label>
-                    <small style="color: var(--text-secondary);">Urgent jobs will be highlighted to workers</small>
+                    <label class="form-label">Requirements *</label>
+                    <textarea name="requirements" class="form-control" rows="6" 
+                              placeholder="List the skills, experience, and qualifications needed..." required>{{ form_data.requirements if form_data else '' }}</textarea>
+                    <small style="color: var(--text-secondary);">Include all requirements for this position</small>
                 </div>
             </div>
 
@@ -270,8 +156,10 @@
 document.querySelector('form').addEventListener('submit', function(e) {
     const requiredFields = [
         'title',
-        'description', 
-        'job_type'
+        'description',
+        'responsibilities',
+        'location',
+        'requirements'
     ];
     
     let isValid = true;
