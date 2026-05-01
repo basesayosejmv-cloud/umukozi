@@ -1,6 +1,8 @@
 <aside class="sidebar modern-sidebar admin-sidebar" id="sidebar">
-    <div class="sidebar-logo">
-        <span class="logo-text" style="color: var(--danger-color);">ADMIN</span>
+    <div class="sidebar-logo" style="margin-bottom: 2rem; padding-left: 0.5rem;">
+        <a href="{{ url_for('index') }}" class="logo logo-animated" style="font-size: 24px;">
+            <span style="--i:1; --c:#2563eb;">U</span><span style="--i:2; --c:#ef4444;">M</span><span style="--i:3; --c:#10b981;">U</span><span style="--i:4; --c:#f59e0b;">K</span><span style="--i:5; --c:#8b5cf6;">O</span><span style="--i:6; --c:#14b8a6;">Z</span><span style="--i:7; --c:#f43f5e;">I</span>
+        </a>
     </div>
     <nav class="sidebar-menu">
         <ul class="sidebar-nav-list">
@@ -53,6 +55,11 @@
         <div class="sidebar-divider"></div>
         <ul class="sidebar-nav-list">
             <div class="nav-section-title">System</div>
+            <li>
+                <a href="{{ url_for('admin_email_settings') }}" class="sidebar-item {% if request.endpoint == 'admin_email_settings' %}active{% endif %}">
+                    <i class='bx bx-envelope'></i> <span>Email Settings</span>
+                </a>
+            </li>
             <li>
                 <a href="#" class="sidebar-item">
                     <i class='bx bx-cog'></i> <span>Settings</span>

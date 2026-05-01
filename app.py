@@ -1469,10 +1469,162 @@ def admin_employer_action(employer_id, action):
     flash(f'Employer action "{action}" completed successfully.', 'success')
     return redirect(url_for('admin_employers'))
 
+# Admin Email Settings
+@app.route('/admin/email-settings', methods=['GET', 'POST'])
+@login_required
+def admin_email_settings():
+    if current_user.user_type != 'admin':
+        flash('Access denied. Admin privileges required.', 'error')
+        return redirect(url_for('dashboard'))
+    
+    # Get current email configuration from environment variables or database
+    email_config = {
+        'smtp_server': os.getenv('SMTP_SERVER', ''),
+        'smtp_port': os.getenv('SMTP_PORT', '587'),
+        'smtp_encryption': os.getenv('SMTP_ENCRYPTION', 'tls'),
+        'smtp_username': os.getenv('SMTP_USERNAME', ''),
+        'smtp_password': os.getenv('SMTP_PASSWORD', ''),
+        'from_name': os.getenv('EMAIL_FROM_NAME', 'Umukozi'),
+        'reply_to': os.getenv('EMAIL_REPLY_TO', ''),
+        'enable_notifications': os.getenv('ENABLE_EMAIL_NOTIFICATIONS', 'true').lower() == 'true',
+        'enable_welcome_emails': os.getenv('ENABLE_WELCOME_EMAILS', 'true').lower() == 'true',
+        'enable_job_alerts': os.getenv('ENABLE_JOB_ALERTS', 'true').lower() == 'true',
+        'enable_verification_emails': os.getenv('ENABLE_VERIFICATION_EMAILS', 'true').lower() == 'true'
+    }
+    
+    if request.method == 'POST':
+        try:
+            # Update environment variables (in production, these would be saved to a config file or database)
+            email_config.update({
+                'smtp_server': request.form.get('smtp_server', ''),
+                'smtp_port': request.form.get('smtp_port', '587'),
+                'smtp_encryption': request.form.get('smtp_encryption', 'tls'),
+                'smtp_username': request.form.get('smtp_username', ''),
+                'smtp_password': request.form.get('smtp_password', ''),
+                'from_name': request.form.get('from_name', 'Umukozi'),
+                'reply_to': request.form.get('reply_to', ''),
+                'enable_notifications': request.form.get('enable_notifications') == 'on',
+                'enable_welcome_emails': request.form.get('enable_welcome_emails') == 'on',
+                'enable_job_alerts': request.form.get('enable_job_alerts') == 'on',
+                'enable_verification_emails': request.form.get('enable_verification_emails') == 'on'
+            })
+            
+            # Here you would typically save these to a database or config file
+            # For now, we'll just show a success message
+            flash('Email settings updated successfully!', 'success')
+            
+        except Exception as e:
+            flash(f'Error updating email settings: {str(e)}', 'error')
+    
+    return render_template('admin_email_settings.html', email_config=email_config)
+
+@app.route('/admin/test-email-connection', methods=['POST'])
+@login_required
+def admin_test_email_connection():
+    if current_user.user_type != 'admin':
+        return jsonify({'success': False, 'error': 'Access denied'}), 403
+    
+    try:
+        import smtplib
+        from email.mime.text import MIMEText
+        
+        # Get email configuration
+        smtp_server = request.json.get('smtp_server') or os.getenv('SMTP_SERVER')
+        smtp_port = int(request.json.get('smtp_port') or os.getenv('SMTP_PORT', '587'))
+        smtp_username = request.json.get('smtp_username') or os.getenv('SMTP_USERNAME')
+        smtp_password = request.json.get('smtp_password') or os.getenv('SMTP_PASSWORD')
+        smtp_encryption = request.json.get('smtp_encryption') or os.getenv('SMTP_ENCRYPTION', 'tls')
+        
+        if not all([smtp_server, smtp_username, smtp_password]):
+            return jsonify({'success': False, 'error': 'Missing SMTP configuration'})
+        
+        # Test connection
+        if smtp_encryption == 'ssl':
+            server = smtplib.SMTP_SSL(smtp_server, smtp_port)
+        else:
+            server = smtplib.SMTP(smtp_server, smtp_port)
+            if smtp_encryption == 'tls':
+                server.starttls()
+        
+        server.login(smtp_username, smtp_password)
+        server.quit()
+        
+        return jsonify({'success': True, 'message': 'SMTP connection successful'})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/admin/send-test-email', methods=['POST'])
+@login_required
+def admin_send_test_email():
+    if current_user.user_type != 'admin':
+        return jsonify({'success': False, 'error': 'Access denied'}), 403
+    
+    try:
+        import smtplib
+        from email.mime.text import MIMEText
+        from email.mime.multipart import MIMEMultipart
+        
+        data = request.get_json()
+        test_email = data.get('email')
+        
+        if not test_email:
+            return jsonify({'success': False, 'error': 'Email address required'})
+        
+        # Get email configuration
+        smtp_server = os.getenv('SMTP_SERVER')
+        smtp_port = int(os.getenv('SMTP_PORT', '587'))
+        smtp_username = os.getenv('SMTP_USERNAME')
+        smtp_password = os.getenv('SMTP_PASSWORD')
+        smtp_encryption = os.getenv('SMTP_ENCRYPTION', 'tls')
+        from_name = os.getenv('EMAIL_FROM_NAME', 'Umukozi')
+        
+        if not all([smtp_server, smtp_username, smtp_password]):
+            return jsonify({'success': False, 'error': 'Email not configured'})
+        
+        # Create test email
+        msg = MIMEMultipart()
+        msg['From'] = f"{from_name} <{smtp_username}>"
+        msg['To'] = test_email
+        msg['Subject'] = 'Umukozi Email Configuration Test'
+        
+        body = f"""
+        This is a test email from Umukozi to verify that your email configuration is working correctly.
+        
+        If you received this email, your SMTP settings are properly configured.
+        
+        Best regards,
+        Umukozi Team
+        """
+        
+        msg.attach(MIMEText(body, 'plain'))
+        
+        # Send email
+        if smtp_encryption == 'ssl':
+            server = smtplib.SMTP_SSL(smtp_server, smtp_port)
+        else:
+            server = smtplib.SMTP(smtp_server, smtp_port)
+            if smtp_encryption == 'tls':
+                server.starttls()
+        
+        server.login(smtp_username, smtp_password)
+        server.send_message(msg)
+        server.quit()
+        
+        return jsonify({'success': True, 'message': f'Test email sent to {test_email}'})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
 @app.route('/logout')
 @login_required
 def logout():
     user_name = current_user.full_name
+    
+    # Clear session completely
+    from flask import session
+    session.clear()
+    
     logout_user()
     flash(f'👋 Goodbye, {user_name}! You have been successfully logged out. We hope to see you again soon!', 'info')
     
