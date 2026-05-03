@@ -82,66 +82,88 @@
                 <div class="grid grid-3" style="gap: 1.5rem;">
                 {% for worker_data in workers_with_contact_status %}
                 {% set worker = worker_data.worker %}
-                <div class="card worker-card" style="padding: 1.75rem; border-radius: 1.5rem; display: flex; flex-direction: column; transition: all 0.3s ease;">
-                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
-                        <div class="worker-avatar {% if worker.profile_picture %}has-profile-picture{% else %}default-avatar{% endif %}" style="width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; font-weight: bold; flex-shrink: 0; overflow: hidden; color: white;">
-                            {% if worker.profile_picture %}
-                                <img src="{{ url_for('static', filename='uploads/' + worker.profile_picture) }}" style="width: 100%; height: 100%; object-fit: cover;">
-                            {% else %}
-                                {{ worker.user.full_name[0].upper() }}
-                            {% endif %}
-                        </div>
-                        <div style="text-align: right;">
-                            {% if worker.is_verified %}
-                                <div class="badge badge-success" style="font-size: 0.65rem; margin-bottom: 0.4rem; justify-content: flex-end;">✓ Verified</div>
-                            {% endif %}
-                            <div class="badge badge-{{ 'success' if worker.availability_status == 'available' else 'warning' if worker.availability_status == 'busy' else 'secondary' }}" style="font-size: 0.65rem; justify-content: flex-end;">
+                <div class="card worker-card" style="padding: 1.5rem; border-radius: 1.5rem; display: flex; flex-direction: column; align-items: center; text-align: center; height: 100%; border: 1px solid var(--border-color); position: relative; overflow: hidden; background: white; transition: all 0.3s ease;">
+                    <!-- Verification Badge Overlay -->
+                    {% if worker.is_verified %}
+                    <div style="position: absolute; top: 1rem; right: 1rem; background: #dcfce7; color: #166534; padding: 0.25rem 0.6rem; border-radius: 2rem; font-size: 0.65rem; font-weight: 700; display: flex; align-items: center; gap: 0.25rem;">
+                        <i class='bx bxs-check-shield'></i> Verified
+                    </div>
+                    {% endif %}
+
+                    <!-- Avatar Section -->
+                    <div class="worker-avatar {% if worker.profile_picture %}has-profile-picture{% else %}default-avatar{% endif %}" style="width: 90px; height: 90px; border-radius: 50%; margin-bottom: 1.25rem; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 2.25rem; font-weight: 800; color: white; border: 4px solid #f8fafc; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+                        {% if worker.profile_picture %}
+                            <img src="{{ url_for('static', filename='uploads/' + worker.profile_picture) }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                            {{ worker.user.full_name[0].upper() }}
+                        {% endif %}
+                    </div>
+
+                    <!-- Name & Status -->
+                    <div style="margin-bottom: 0.75rem;">
+                        <h4 style="margin: 0 0 0.25rem 0; font-size: 1.25rem; font-weight: 800; letter-spacing: -0.01em;">{{ worker.user.full_name }}</h4>
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                            <span class="badge badge-{{ 'success' if worker.availability_status == 'available' else 'warning' if worker.availability_status == 'busy' else 'secondary' }}" style="font-size: 0.6rem; padding: 0.2rem 0.5rem; border-radius: 0.5rem;">
                                 {{ worker.availability_status|title }}
+                            </span>
+                            <div style="color: var(--accent-color); font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 0.1rem;">
+                                <i class='bx bxs-star'></i>
+                                <span>{% if worker.average_rating %}{{ "%.1f"|format(worker.average_rating) }}{% else %}5.0{% endif %}</span>
                             </div>
                         </div>
                     </div>
 
-                    <div style="margin-bottom: 1.25rem;">
-                        <h4 style="margin: 0 0 0.25rem 0; font-size: 1.15rem; font-weight: 700;">{{ worker.user.full_name }}</h4>
-                        <p style="color: var(--text-secondary); font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem;">
-                            <span>📍</span> {{ worker.district or 'Location N/A' }} 
-                            <span style="opacity: 0.3;">|</span>
-                            <span>💼</span> {{ worker.experience_years or 0 }}y Experience
-                        </p>
-                    </div>
-
-                    <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.5rem; display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
-                        {{ worker.bio if worker.bio else 'Reliable professional with a commitment to excellence and customer satisfaction.' }}
-                    </p>
-
-                    <div style="margin-bottom: 1.5rem; flex-grow: 1;">
-                        <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
-                            {% if worker.skills %}
-                                {% for skill in worker.skills.split(',')[:4] %}
-                                    <span style="background: rgba(37, 99, 235, 0.08); color: var(--primary-color); padding: 0.3rem 0.75rem; border-radius: 2rem; font-size: 0.75rem; font-weight: 600; border: 1px solid rgba(37, 99, 235, 0.1);">
-                                        {{ skill.strip() }}
-                                    </span>
-                                {% endfor %}
-                            {% endif %}
+                    <!-- Info Grid -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; width: 100%; margin-bottom: 1.25rem; padding: 0.75rem; background: #f8fafc; border-radius: 1rem;">
+                        <div style="text-align: left;">
+                            <span style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 0.1rem;">Location</span>
+                            <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 0.25rem;">
+                                <i class='bx bxs-map' style="color: var(--danger-color);"></i>
+                                {{ worker.district or 'Kigali' }}
+                            </span>
+                        </div>
+                        <div style="text-align: left;">
+                            <span style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 0.1rem;">Experience</span>
+                            <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 0.25rem;">
+                                <i class='bx bxs-briefcase' style="color: var(--primary-color);"></i>
+                                {{ worker.experience_years or 0 }} Years
+                            </span>
                         </div>
                     </div>
 
-                    <div style="display: flex; gap: 0.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border-color); margin-top: auto;">
-                        <button class="btn btn-outline btn-sm" onclick="viewWorkerProfile({{ worker.id }})" style="flex: 1; padding: 0.5rem 0; border-radius: 0.75rem; font-size: 0.85rem;">{{ _('view_profile') }}</button>
+                    <!-- Bio Snippet -->
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1.25rem; min-height: 2.4rem; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                        {{ worker.bio if worker.bio else 'Reliable professional with a commitment to excellence.' }}
+                    </p>
+
+                    <!-- Skills -->
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.35rem; justify-content: center; margin-bottom: 1.5rem;">
+                        {% if worker.skills %}
+                            {% for skill in worker.skills.split(',')[:3] %}
+                                <span style="background: rgba(37, 99, 235, 0.05); color: var(--primary-color); padding: 0.25rem 0.6rem; border-radius: 2rem; font-size: 0.65rem; font-weight: 700; border: 1px solid rgba(37, 99, 235, 0.1);">
+                                    {{ skill.strip() }}
+                                </span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <!-- Actions -->
+                    <div style="width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; border-top: 1px solid #f1f5f9; padding-top: 1.25rem; margin-top: auto;">
+                        <button class="btn btn-outline btn-sm" onclick="viewWorkerProfile({{ worker.id }})" style="padding: 0.6rem; border-radius: 0.75rem; font-size: 0.8rem; font-weight: 700;">Profile</button>
+                        
                         {% if worker_data.has_access %}
-                        <button onclick="openWhatsApp('{{ worker_data.phone }}')" class="btn btn-sm" style="flex: 1; padding: 0.5rem 0; border-radius: 0.75rem; background-color: #25D366; color: white; display: flex; align-items: center; justify-content: center; gap: 0.25rem; font-size: 0.85rem; border: none; cursor: pointer;">
-                            <i class='bx bxl-whatsapp' style="font-size: 1.1rem;"></i> WhatsApp
-                        </button>
-                        <button onclick="makeCall('{{ worker_data.phone }}')" class="btn btn-primary btn-sm" style="flex: 1; padding: 0.5rem 0; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 0.25rem; font-size: 0.85rem; border: none; cursor: pointer;">
-                            <i class='bx bxs-phone' style="font-size: 1.1rem;"></i> Call
-                        </button>
+                            <div style="display: flex; gap: 0.25rem;">
+                                <button onclick="openWhatsApp('{{ worker_data.phone }}')" class="btn btn-sm" style="flex: 1; padding: 0.6rem; border-radius: 0.75rem; background: #25D366; color: white; border: none; cursor: pointer;" title="WhatsApp">
+                                    <i class='bx bxl-whatsapp' style="font-size: 1.1rem;"></i>
+                                </button>
+                                <button onclick="makeCall('{{ worker_data.phone }}')" class="btn btn-primary btn-sm" style="flex: 1; padding: 0.6rem; border-radius: 0.75rem; border: none; cursor: pointer;" title="Call">
+                                    <i class='bx bxs-phone' style="font-size: 1.1rem;"></i>
+                                </button>
+                            </div>
                         {% else %}
-                        <button onclick="showPlatformPaymentModal({{ worker.id }}, '{{ worker.user.full_name|replace('\'', '\\\'') }}')" class="btn btn-sm" style="flex: 1; padding: 0.5rem 0; border-radius: 0.75rem; background-color: #6c757d; color: white; display: flex; align-items: center; justify-content: center; gap: 0.25rem; font-size: 0.85rem; border: none; cursor: pointer;">
-                            <i class='bx bxl-whatsapp' style="font-size: 1.1rem;"></i> WhatsApp
-                        </button>
-                        <button onclick="showPlatformPaymentModal({{ worker.id }}, '{{ worker.user.full_name|replace('\'', '\\\'') }}')" class="btn btn-primary btn-sm" style="flex: 1; padding: 0.5rem 0; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 0.25rem; font-size: 0.85rem; border: none; cursor: pointer; background-color: #6c757d;">
-                            <i class='bx bxs-phone' style="font-size: 1.1rem;"></i> Call
-                        </button>
+                            <button onclick="showPlatformPaymentModal({{ worker.id }}, '{{ worker.user.full_name|replace('\'', '\\\'') }}')" class="btn btn-primary btn-sm" style="padding: 0.6rem; border-radius: 0.75rem; background: var(--text-primary); border: none;">
+                                <i class='bx bxs-lock-alt' style="margin-right: 0.25rem; font-size: 0.9rem;"></i> Unlock
+                            </button>
                         {% endif %}
                     </div>
                 </div>
