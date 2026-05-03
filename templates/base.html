@@ -194,7 +194,8 @@
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Footer -->
+    <!-- Footer - Only visible on homepage -->
+    {% if request.endpoint == 'index' %}
     <footer class="footer" style="background: var(--text-primary); color: var(--white); padding: 3rem 0; margin-top: 4rem;">
         <div class="container">
             <div class="grid grid-4">
@@ -219,6 +220,7 @@
             </div>
         </div>
     </footer>
+    {% endif %}
 
     <!-- Logout Confirmation Modal -->
     <div id="logoutModal" class="modal-overlay">
