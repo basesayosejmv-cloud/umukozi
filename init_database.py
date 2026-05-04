@@ -17,6 +17,62 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from app import app, db
 from models import User, Worker, Employer, Job, Application, Review, Message, Notification, Payment, WorkerContactAccess, AdminMessage, AdminNotification, MessageTemplate, NotificationPreference
 
+def run_migrations():
+    """Run schema migrations to add missing columns"""
+    print("🔄 Running schema migrations...")
+    from sqlalchemy import text
+    
+    try:
+        inspector = db.inspect(db.engine)
+        
+        # 1. Update Worker table
+        worker_columns = [col['name'] for col in inspector.get_columns('worker')]
+        missing_worker_cols = [
+            ('age', 'INTEGER'),
+            ('date_of_birth', 'DATE'),
+            ('id_photo', 'VARCHAR(200)'),
+            ('experience_details', 'TEXT'),
+            ('reference_name', 'VARCHAR(100)'),
+            ('reference_phone', 'VARCHAR(20)'),
+            ('reference_relationship', 'VARCHAR(50)'),
+            ('national_id_number', 'VARCHAR(30)')
+        ]
+        
+        for col_name, col_type in missing_worker_cols:
+            if col_name not in worker_columns:
+                print(f"   Adding column worker.{col_name}...")
+                with db.engine.connect() as conn:
+                    conn.execute(text(f"ALTER TABLE worker ADD COLUMN {col_name} {col_type}"))
+                    conn.commit()
+                print(f"   ✅ Added worker.{col_name}")
+        
+        # 2. Update Payment table
+        payment_columns = [col['name'] for col in inspector.get_columns('payment')]
+        if 'verified_by' not in payment_columns:
+            print("   Adding column payment.verified_by...")
+            with db.engine.connect() as conn:
+                conn.execute(text("ALTER TABLE payment ADD COLUMN verified_by INTEGER REFERENCES \"user\"(id)"))
+                conn.commit()
+            print("   ✅ Added payment.verified_by")
+
+        # 3. Update EmailConfig table (if exists)
+        try:
+            email_config_columns = [col['name'] for col in inspector.get_columns('email_config')]
+            if email_config_columns and 'created_by' not in email_config_columns:
+                print("   Adding column email_config.created_by...")
+                with db.engine.connect() as conn:
+                    conn.execute(text("ALTER TABLE email_config ADD COLUMN created_by INTEGER REFERENCES \"user\"(id)"))
+                    conn.commit()
+                print("   ✅ Added email_config.created_by")
+        except:
+            pass # Table might not exist yet
+            
+        print("✅ Schema migrations completed!")
+        return True
+    except Exception as e:
+        print(f"❌ Migration failed: {str(e)}")
+        return True
+
 def init_database():
     """Initialize database with all tables"""
     print("🔧 Initializing database...")
@@ -27,6 +83,9 @@ def init_database():
             print("📊 Creating database tables...")
             db.create_all()
             print("✅ Database tables created successfully!")
+            
+            # Run migrations to add missing columns
+            run_migrations()
             
             # Check if admin user exists
             admin_user = User.query.filter_by(user_type='admin').first()
