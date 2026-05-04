@@ -65,9 +65,9 @@
 
         <!-- Worker Listings Grid -->
         <div style="margin-bottom: 3rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                <h3 style="font-weight: 800;">{{ _('available_workers', count=workers|length) }}</h3>
-                <div style="display: flex; gap: 0.75rem; align-items: center;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+                <h3 style="font-weight: 800; margin: 0;">{{ _('available_workers', count=workers|length) }}</h3>
+                <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
                     <label style="font-size: 0.875rem; color: var(--text-secondary);">{{ _('sort_by') }}</label>
                     <select class="form-control" style="width: auto; border-radius: 0.75rem; height: 38px;">
                         <option>{{ _('most_recent') }}</option>
@@ -79,7 +79,7 @@
             </div>
             
             {% if workers_with_contact_status %}
-                <div class="grid grid-3" style="gap: 1.5rem;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem;">
                 {% for worker_data in workers_with_contact_status %}
                 {% set worker = worker_data.worker %}
                 <div class="card worker-card" style="padding: 1.5rem; border-radius: 1.5rem; display: flex; flex-direction: column; align-items: center; text-align: center; height: 100%; border: 1px solid var(--border-color); position: relative; overflow: hidden; background: white; transition: all 0.3s ease;">
@@ -110,6 +110,7 @@
                                 <i class='bx bxs-star'></i>
                                 <span>{% if worker.average_rating %}{{ "%.1f"|format(worker.average_rating) }}{% else %}5.0{% endif %}</span>
                             </div>
+                        </div>
                     </div>
 
                     <!-- Info Row -->

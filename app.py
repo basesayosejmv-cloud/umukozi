@@ -306,7 +306,7 @@ def register():
         db.session.commit()
         
         # Send email notification to admin about new registration
-        send_user_registration_notification(new_user)
+        # send_user_registration_notification(new_user)
         
         # Add welcome notification
         welcome_notif = Notification(
@@ -605,7 +605,7 @@ def admin_approve_verification(user_type, profile_id):
     db.session.commit()
     
     # Send email notification to user about approval
-    send_user_approval_notification(profile.user)
+    # send_user_approval_notification(profile.user)
     
     # Add in-app notification
     approval_notif = Notification(
@@ -640,7 +640,7 @@ def admin_reject_verification(user_type, profile_id):
     db.session.commit()
     
     # Send email notification to user about rejection
-    send_user_rejection_notification(profile.user, reason)
+    # send_user_rejection_notification(profile.user, reason)
     
     flash(f'Verification rejected. Reason: {reason}', 'warning')
     return redirect(url_for('admin_verification'))
@@ -966,9 +966,6 @@ def admin_approve_user(user_id):
     
     db.session.commit()
     
-    # Send email notification to user about approval
-    send_user_approval_notification(user)
-    
     flash(f'User {user.full_name} has been approved successfully.', 'success')
     return redirect(url_for('admin_users'))
 
@@ -990,7 +987,7 @@ def admin_reject_user(user_id):
     db.session.commit()
     
     # Send email notification to user about rejection
-    send_user_rejection_notification(user, reason)
+    # send_user_rejection_notification(user, reason)
     
     flash(f'User {user.full_name} has been rejected.', 'warning')
     return redirect(url_for('admin_users'))
@@ -1194,7 +1191,7 @@ def worker_apply_job(job_id):
     db.session.commit()
     
     # Send email notification to employer and admin about new job application
-    send_job_application_notification(application)
+    # send_job_application_notification(application)
     
     # Notify employer in-app
     employer_notif = Notification(
@@ -1387,7 +1384,7 @@ def accept_application(application_id):
         db.session.commit()
         
         # Send email notification to admin
-        send_admin_hiring_notification(application, 'accepted')
+        # send_admin_hiring_notification(application, 'accepted')
         
         return jsonify({
             'success': True, 
@@ -1426,7 +1423,7 @@ def reject_application(application_id):
         db.session.commit()
         
         # Send email notification to admin
-        send_admin_hiring_notification(application, 'rejected')
+        # send_admin_hiring_notification(application, 'rejected')
         
         return jsonify({
             'success': True, 
