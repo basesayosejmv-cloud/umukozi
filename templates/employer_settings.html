@@ -204,14 +204,33 @@
 
                     <!-- Account & Security -->
                     <div id="account-tab" class="tab-content">
-                        <h3 style="margin-bottom: 1.5rem; font-size: 1.25rem;">Security</h3>
-                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--light-bg); border-radius: 0.75rem;">
-                                <div>
-                                    <div style="font-weight: 600;">Account Password</div>
-                                    <div style="font-size: 0.8rem; color: var(--text-secondary);">Protect your account with a strong password</div>
+                        <h3 style="margin-bottom: 1.5rem; font-size: 1.25rem;">{{ _('account_security') }}</h3>
+                        <div class="card" style="background: #f8fafc; border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 1rem; margin-bottom: 2rem;">
+                            <form id="changePasswordForm">
+                                <div class="form-group" style="margin-bottom: 1.5rem;">
+                                    <label class="form-label">Current Password</label>
+                                    <input type="password" name="current_password" class="form-control" required placeholder="••••••••">
                                 </div>
-                                <button class="btn btn-outline btn-sm" onclick="alert('Coming soon: Password Reset')">Change Password</button>
-                            </div>
+                                <div class="grid grid-2" style="gap: 1.5rem; margin-bottom: 1.5rem;">
+                                    <div class="form-group">
+                                        <label class="form-label">New Password</label>
+                                        <input type="password" id="new_password" name="new_password" class="form-control" required placeholder="••••••••">
+                                        <div class="password-strength-meter" style="margin-top: 0.5rem; height: 4px; background: #e2e8f0; border-radius: 2px; overflow: hidden;">
+                                            <div id="strength-bar" style="width: 0%; height: 100%; transition: all 0.3s ease;"></div>
+                                        </div>
+                                        <div id="strength-text" style="font-size: 0.75rem; margin-top: 0.25rem; font-weight: 600; color: var(--text-secondary);">
+                                            {{ _('password_hint') }}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Confirm New Password</label>
+                                        <input type="password" id="confirm_password" name="confirm_password" class="form-control" required placeholder="••••••••">
+                                    </div>
+                                </div>
+                                <div style="display: flex; justify-content: flex-end;">
+                                    <button type="button" id="changePasswordBtn" class="btn btn-primary" onclick="updatePassword()" disabled>Update Password</button>
+                                </div>
+                            </form>
                         </div>
 
                         <h3 style="margin-bottom: 1.5rem; font-size: 1.25rem; color: var(--danger-color);">Danger Zone</h3>
@@ -326,6 +345,89 @@ function confirmDeletion() {
         alert('Your request has been submitted for processing.');
     }
 }
+
+function updatePassword() {
+    const form = document.getElementById('changePasswordForm');
+    const formData = new FormData(form);
+    const btn = document.getElementById('changePasswordBtn');
+    const originalText = btn.innerHTML;
+    
+    btn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Updating...';
+    btn.disabled = true;
+    
+    fetch('/settings/change-password', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showActionModal('Success', data.message, 'success', () => {
+                form.reset();
+                checkNewPasswordStrength('');
+                btn.innerHTML = originalText;
+            });
+        } else {
+            showActionModal('Error', data.error, 'error', () => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showActionModal('Error', 'An unexpected error occurred.', 'error', () => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+    });
+}
+
+const newPassword = document.getElementById('new_password');
+const confirmPassword = document.getElementById('confirm_password');
+const strengthBar = document.getElementById('strength-bar');
+const strengthText = document.getElementById('strength-text');
+const changePasswordBtn = document.getElementById('changePasswordBtn');
+
+function checkNewPasswordStrength(value) {
+    let score = 0;
+    if (value.length >= 8) score++;
+    if (/[A-Z]/.test(value)) score++;
+    if (/[a-z]/.test(value)) score++;
+    if (/[0-9]/.test(value)) score++;
+    if (/[^A-Za-z0-9]/.test(value)) score++;
+
+    let width = (score / 5) * 100;
+    let color = '#ef4444';
+    let label = '{{ _('strength_weak') }}';
+
+    if (score > 2) { color = '#f59e0b'; label = '{{ _('strength_medium') }}'; }
+    if (score > 3) { color = '#10b981'; label = '{{ _('strength_strong') }}'; }
+    if (score === 5) { color = '#059669'; label = '{{ _('strength_very_strong') }}'; }
+
+    strengthBar.style.width = width + '%';
+    strengthBar.style.background = color;
+    strengthText.innerText = value ? '{{ _('password_strength') }}: ' + label : '{{ _('password_hint') }}';
+    strengthText.style.color = value ? color : 'var(--text-secondary)';
+
+    return score === 5;
+}
+
+function validatePasswords() {
+    const isStrong = checkNewPasswordStrength(newPassword.value);
+    const matches = newPassword.value === confirmPassword.value;
+    
+    if (newPassword.value && confirmPassword.value && !matches) {
+        confirmPassword.setCustomValidity('{{ _('passwords_match_error') }}');
+    } else {
+        confirmPassword.setCustomValidity('');
+    }
+    
+    changePasswordBtn.disabled = !(isStrong && matches);
+}
+
+newPassword.addEventListener('input', validatePasswords);
+confirmPassword.addEventListener('input', validatePasswords);
 
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');

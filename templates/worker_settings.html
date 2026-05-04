@@ -121,6 +121,47 @@
                     </div>
                     <button class="btn btn-primary" style="margin-top: 2rem; border-radius: 0.75rem; padding: 0.75rem 2rem;" onclick="updateLocationInfo()" data-auto-refresh="true">Save Location</button>
                 </section>
+                <!-- Security Section -->
+                <section id="security" class="card" style="border-radius: 1.5rem; padding: 2rem;">
+                    <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 2rem; display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 0.75rem; color: var(--danger-color);"><i class='bx bxs-lock-alt'></i></span>
+                        Security Settings
+                    </h3>
+                    
+                    <div style="background: #f8fafc; padding: 1.5rem; border-radius: 1.25rem; border: 1px solid var(--border-color); margin-bottom: 2rem;">
+                        <form id="changePasswordForm">
+                            <div class="form-group" style="margin-bottom: 1.5rem;">
+                                <label class="form-label">Current Password</label>
+                                <input type="password" name="current_password" class="form-control" style="border-radius: 0.75rem;" required placeholder="••••••••">
+                            </div>
+                            <div class="grid grid-2" style="gap: 1.5rem; margin-bottom: 1.5rem;">
+                                <div class="form-group">
+                                    <label class="form-label">New Password</label>
+                                    <input type="password" id="new_password" name="new_password" class="form-control" style="border-radius: 0.75rem;" required placeholder="••••••••">
+                                    <div class="password-strength-meter" style="margin-top: 0.5rem; height: 4px; background: #e2e8f0; border-radius: 2px; overflow: hidden;">
+                                        <div id="strength-bar" style="width: 0%; height: 100%; transition: all 0.3s ease;"></div>
+                                    </div>
+                                    <div id="strength-text" style="font-size: 0.75rem; margin-top: 0.25rem; font-weight: 600; color: var(--text-secondary);">
+                                        {{ _('password_hint') }}
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Confirm New Password</label>
+                                    <input type="password" id="confirm_password" name="confirm_password" class="form-control" style="border-radius: 0.75rem;" required placeholder="••••••••">
+                                </div>
+                            </div>
+                            <div style="display: flex; justify-content: flex-end;">
+                                <button type="button" id="changePasswordBtn" class="btn btn-primary" style="border-radius: 0.75rem; padding: 0.75rem 2rem;" onclick="updatePassword()" disabled>Update Password</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div style="padding: 1.5rem; border: 1px solid #fee2e2; border-radius: 1.25rem; background: #fffcfc;">
+                        <h4 style="color: #991b1b; font-size: 1rem; font-weight: 700; margin-bottom: 1rem;">Delete My Account</h4>
+                        <p style="font-size: 0.875rem; color: #7f1d1d; margin-bottom: 1.5rem;">Permanently remove your profile and all associated data. This action is irreversible.</p>
+                        <button class="btn btn-danger" style="border-radius: 0.75rem;" onclick="deleteAccount()">Delete Account</button>
+                    </div>
+                </section>
             </div>
         </div>
     </main>
@@ -198,6 +239,87 @@ function showSuccessMessage(message) {
         setTimeout(() => alertDiv.remove(), 300);
     }, 3000);
 }
+
+function updatePassword() {
+    const form = document.getElementById('changePasswordForm');
+    const formData = new FormData(form);
+    const btn = document.getElementById('changePasswordBtn');
+    const originalText = btn.innerHTML;
+    
+    btn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Updating...';
+    btn.disabled = true;
+    
+    fetch('/settings/change-password', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showSuccessMessage(data.message);
+            form.reset();
+            checkNewPasswordStrength('');
+            btn.innerHTML = originalText;
+            btn.disabled = true;
+        } else {
+            alert('Error: ' + data.error);
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An unexpected error occurred.');
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
+}
+
+const newPassword = document.getElementById('new_password');
+const confirmPassword = document.getElementById('confirm_password');
+const strengthBar = document.getElementById('strength-bar');
+const strengthText = document.getElementById('strength-text');
+const changePasswordBtn = document.getElementById('changePasswordBtn');
+
+function checkNewPasswordStrength(value) {
+    let score = 0;
+    if (value.length >= 8) score++;
+    if (/[A-Z]/.test(value)) score++;
+    if (/[a-z]/.test(value)) score++;
+    if (/[0-9]/.test(value)) score++;
+    if (/[^A-Za-z0-9]/.test(value)) score++;
+
+    let width = (score / 5) * 100;
+    let color = '#ef4444';
+    let label = '{{ _('strength_weak') }}';
+
+    if (score > 2) { color = '#f59e0b'; label = '{{ _('strength_medium') }}'; }
+    if (score > 3) { color = '#10b981'; label = '{{ _('strength_strong') }}'; }
+    if (score === 5) { color = '#059669'; label = '{{ _('strength_very_strong') }}'; }
+
+    strengthBar.style.width = width + '%';
+    strengthBar.style.background = color;
+    strengthText.innerText = value ? '{{ _('password_strength') }}: ' + label : '{{ _('password_hint') }}';
+    strengthText.style.color = value ? color : 'var(--text-secondary)';
+
+    return score === 5;
+}
+
+function validatePasswords() {
+    const isStrong = checkNewPasswordStrength(newPassword.value);
+    const matches = newPassword.value === confirmPassword.value;
+    
+    if (newPassword.value && confirmPassword.value && !matches) {
+        confirmPassword.setCustomValidity('{{ _('passwords_match_error') }}');
+    } else {
+        confirmPassword.setCustomValidity('');
+    }
+    
+    changePasswordBtn.disabled = !(isStrong && matches);
+}
+
+newPassword.addEventListener('input', validatePasswords);
+confirmPassword.addEventListener('input', validatePasswords);
 
 function deleteAccount() {
     if (confirm('CRITICAL: Are you sure you want to delete your account? This action cannot be reversed.')) {

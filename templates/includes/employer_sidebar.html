@@ -27,6 +27,11 @@
                 </a>
             </li>
             <li>
+                <a href="{{ url_for('employer_hired_workers') }}" class="sidebar-item {% if request.endpoint == 'employer_hired_workers' %}active{% endif %}">
+                    <i class='bx bx-group'></i> <span>{{ _('hired_workers') }}</span>
+                </a>
+            </li>
+            <li>
                 <a href="{{ url_for('messages') }}" class="sidebar-item {% if request.endpoint == 'messages' %}active{% endif %}">
                     <i class='bx bx-message-square-detail'></i> <span>{{ _('messages') }}</span>
                 </a>

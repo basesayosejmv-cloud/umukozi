@@ -225,6 +225,29 @@ def allowed_file(filename, allowed_extensions):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in allowed_extensions
 
+def check_password_strength(password):
+    """
+    Validate password strength.
+    Requires:
+    - Min length 8
+    - At least one uppercase letter
+    - At least one lowercase letter
+    - At least one number
+    - At least one special character
+    """
+    import re
+    if len(password) < 8:
+        return False, "Password must be at least 8 characters long."
+    if not re.search(r"[A-Z]", password):
+        return False, "Password must contain at least one uppercase letter."
+    if not re.search(r"[a-z]", password):
+        return False, "Password must contain at least one lowercase letter."
+    if not re.search(r"\d", password):
+        return False, "Password must contain at least one number."
+    if not re.search(r"[ !@#$%^&*(),.?\":{}|<>]", password):
+        return False, "Password must contain at least one special character."
+    return True, "Strong password."
+
 def get_connection_price(employer_id):
     """Determine connection price based on employer's payment history"""
     # Check if employer has any verified payments before
@@ -302,7 +325,13 @@ def register():
         
         # Check if user already exists
         if User.query.filter_by(email=email).first():
-            flash('Email already registered')
+            flash('Email already registered', 'error')
+            return redirect(url_for('register'))
+        
+        # Check password strength
+        is_strong, msg = check_password_strength(password)
+        if not is_strong:
+            flash(f'❌ {msg}', 'error')
             return redirect(url_for('register'))
         
         # Create new user
@@ -1246,6 +1275,50 @@ def admin_unblock_user(user_id):
     flash(f'User {user.full_name} has been unblocked.', 'success')
     return redirect(url_for('admin_users'))
 
+@app.route('/admin/user/<int:user_id>/reset-password', methods=['POST'])
+@login_required
+def admin_reset_user_password(user_id):
+    if current_user.user_type != 'admin':
+        return redirect(url_for('dashboard'))
+    
+    user = User.query.get_or_404(user_id)
+    if user.user_type == 'admin' and user.id != current_user.id:
+        flash('Cannot reset other admin passwords.', 'error')
+        return redirect(url_for('admin_users'))
+    
+    new_password = request.form.get('new_password', '').strip()
+    confirm_password = request.form.get('confirm_password', '').strip()
+    
+    if not new_password:
+        flash('Password cannot be empty.', 'error')
+        return redirect(url_for('admin_users'))
+    
+    # Check password strength
+    is_strong, msg = check_password_strength(new_password)
+    if not is_strong:
+        flash(f'❌ {msg}', 'error')
+        return redirect(url_for('admin_users'))
+    
+    if new_password != confirm_password:
+        flash('Passwords do not match.', 'error')
+        return redirect(url_for('admin_users'))
+    
+    try:
+        # Reset password
+        user.password = generate_password_hash(new_password)
+        db.session.commit()
+        
+        flash(f'Password for {user.full_name} has been reset successfully.', 'success')
+        
+        # Log the action
+        print(f"Admin {current_user.full_name} reset password for user {user.full_name} (ID: {user.id})")
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error resetting password: {str(e)}', 'error')
+    
+    return redirect(url_for('admin_users'))
+
 @app.route('/admin/user/<int:user_id>/delete', methods=['POST'])
 @login_required
 def admin_delete_user(user_id):
@@ -1658,17 +1731,179 @@ def worker_settings():
     return render_template('worker_settings.html', worker=worker)
 
 # Employer Dashboard Routes
-@app.route('/employer/my-jobs')
+@app.route('/employer/activity')
 @login_required
-def employer_my_jobs():
+def employer_activity():
     if current_user.user_type != 'employer':
         return redirect(url_for('dashboard'))
+    
     employer = Employer.query.filter_by(user_id=current_user.id).first()
     
-    # Get employer's jobs
-    jobs = Job.query.filter_by(employer_id=employer.id).order_by(Job.created_at.desc()).all()
+    # Get employer's activities (this would be implemented with a proper activity log)
+    activities = []  # Placeholder for activities
     
-    return render_template('employer_my_jobs.html', employer=employer, jobs=jobs)
+    return render_template('employer_activity.html', employer=employer, activities=activities)
+
+@app.route('/employer/hired-workers')
+@login_required
+def employer_hired_workers():
+    if current_user.user_type != 'employer':
+        return redirect(url_for('dashboard'))
+    
+    employer = Employer.query.filter_by(user_id=current_user.id).first()
+    
+    # Get all employment records for this employer
+    employments = Employment.query.filter_by(employer_id=employer.id).order_by(Employment.created_at.desc()).all()
+    
+    # Calculate statistics
+    total_workers = len(employments)
+    active_workers = len([e for e in employments if e.is_active])
+    contacted_workers = len([e for e in employments if e.status == 'contacted'])
+    interviewing_workers = len([e for e in employments if e.status == 'interviewing'])
+    hired_workers = len([e for e in employments if e.status == 'hired'])
+    
+    return render_template('employer_hired_workers.html', 
+                         employer=employer, 
+                         employments=employments,
+                         total_workers=total_workers,
+                         active_workers=active_workers,
+                         contacted_workers=contacted_workers,
+                         interviewing_workers=interviewing_workers,
+                         hired_workers=hired_workers)
+
+@app.route('/employer/employment/<int:employment_id>/details')
+@login_required
+def employment_details(employment_id):
+    if current_user.user_type != 'employer':
+        return jsonify({'success': False, 'error': 'Access denied'}), 403
+    
+    try:
+        employer = Employer.query.filter_by(user_id=current_user.id).first()
+        employment = Employment.query.get_or_404(employment_id)
+        
+        # Verify this employment belongs to the employer
+        if employment.employer_id != employer.id:
+            return jsonify({'success': False, 'error': 'Access denied'}), 403
+        
+        return jsonify({
+            'success': True,
+            'id': employment.id,
+            'status': employment.status,
+            'job_title': employment.job_title,
+            'salary': employment.salary,
+            'start_date': employment.start_date.isoformat() if employment.start_date else None,
+            'end_date': employment.end_date.isoformat() if employment.end_date else None,
+            'duration_days': employment.duration_days,
+            'employer_notes': employment.employer_notes,
+            'contacted_at': employment.contacted_at.isoformat(),
+            'interviewed_at': employment.interviewed_at.isoformat() if employment.interviewed_at else None,
+            'hired_at': employment.hired_at.isoformat() if employment.hired_at else None,
+            'worker': {
+                'id': employment.worker.id,
+                'name': employment.worker.user.full_name,
+                'phone': employment.worker.user.phone,
+                'email': employment.worker.user.email,
+                'profile_picture': employment.worker.profile_picture,
+                'district': employment.worker.district,
+                'skills': employment.worker.skills
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/employer/employment/<int:employment_id>/update', methods=['POST'])
+@login_required
+def update_employment(employment_id):
+    if current_user.user_type != 'employer':
+        return jsonify({'success': False, 'error': 'Access denied'}), 403
+    
+    try:
+        employer = Employer.query.filter_by(user_id=current_user.id).first()
+        employment = Employment.query.get_or_404(employment_id)
+        
+        # Verify this employment belongs to the employer
+        if employment.employer_id != employer.id:
+            return jsonify({'success': False, 'error': 'Access denied'}), 403
+        
+        # Update employment details
+        old_status = employment.status
+        employment.status = request.form.get('status')
+        employment.job_title = request.form.get('job_title')
+        employment.salary = float(request.form.get('salary')) if request.form.get('salary') else None
+        employment.employer_notes = request.form.get('employer_notes')
+        
+        # Handle start date
+        if request.form.get('start_date'):
+            employment.start_date = datetime.strptime(request.form.get('start_date'), '%Y-%m-%d').date()
+        
+        # Update status timestamps
+        now = datetime.utcnow()
+        if old_status != employment.status:
+            if employment.status == 'interviewing' and not employment.interviewed_at:
+                employment.interviewed_at = now
+            elif employment.status == 'hired' and not employment.hired_at:
+                employment.hired_at = now
+            elif employment.status == 'terminated' and not employment.terminated_at:
+                employment.terminated_at = now
+                employment.termination_reason = request.form.get('termination_reason', '')
+        
+        employment.updated_at = now
+        
+        # Update worker availability based on status
+        if employment.status in ['hired', 'active']:
+            employment.worker.availability_status = 'busy'
+        elif employment.status in ['completed', 'terminated']:
+            employment.worker.availability_status = 'available'
+        
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Employment status updated successfully'})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/employer/worker/<int:worker_id>/hire', methods=['POST'])
+@login_required
+def hire_worker(worker_id):
+    if current_user.user_type != 'employer':
+        return jsonify({'success': False, 'error': 'Access denied'}), 403
+    
+    try:
+        employer = Employer.query.filter_by(user_id=current_user.id).first()
+        worker = Worker.query.get_or_404(worker_id)
+        
+        # Check if employment already exists
+        existing_employment = Employment.query.filter_by(
+            employer_id=employer.id, 
+            worker_id=worker.id
+        ).first()
+        
+        if existing_employment:
+            return jsonify({'success': False, 'error': 'Worker already in your employment list'}), 400
+        
+        # Create new employment record
+        employment = Employment(
+            employer_id=employer.id,
+            worker_id=worker.id,
+            status='contacted',
+            job_title=request.form.get('job_title'),
+            salary=float(request.form.get('salary')) if request.form.get('salary') else None,
+            employer_notes=request.form.get('notes')
+        )
+        
+        db.session.add(employment)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True, 
+            'message': f'{worker.user.full_name} has been added to your hired workers list'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/employer/find-workers')
 @login_required
@@ -2826,7 +3061,47 @@ def logout():
     
     return redirect(url_for('index'))
 
+@app.route('/settings/change-password', methods=['POST'])
+@login_required
+def change_password():
+    """Route for users to change their own password"""
+    current_password = request.form.get('current_password', '')
+    new_password = request.form.get('new_password', '')
+    confirm_password = request.form.get('confirm_password', '')
+    
+    if not current_password or not new_password or not confirm_password:
+        return jsonify({'success': False, 'error': 'All fields are required.'}), 400
+        
+    if not check_password_hash(current_user.password, current_password):
+        return jsonify({'success': False, 'error': 'Current password is incorrect.'}), 400
+        
+    if new_password != confirm_password:
+        return jsonify({'success': False, 'error': 'New passwords do not match.'}), 400
+        
+    # Check password strength
+    is_strong, msg = check_password_strength(new_password)
+    if not is_strong:
+        return jsonify({'success': False, 'error': msg}), 400
+        
+    # Update password
+    current_user.password = generate_password_hash(new_password)
+    db.session.commit()
+    
+    # Send notification
+    notif = Notification(
+        user_id=current_user.id,
+        message="Your password was successfully changed. If you didn't do this, please contact support immediately."
+    )
+    db.session.add(notif)
+    db.session.commit()
+    
+    return jsonify({
+        'success': True, 
+        'message': 'Password updated successfully!'
+    })
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(debug=True)
+

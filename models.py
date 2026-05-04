@@ -333,22 +333,75 @@ class WorkerContactAccess(db.Model):
     phone_visible = db.Column(db.Boolean, default=False)
     email_visible = db.Column(db.Boolean, default=False)
     whatsapp_accessible = db.Column(db.Boolean, default=False)
-    
+
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     granted_at = db.Column(db.DateTime)
     expires_at = db.Column(db.DateTime, nullable=True)
 
+    # Relationships
+    payment = db.relationship('Payment', backref='contact_access')
+    employer = db.relationship('Employer', backref='contact_access_records')
+    worker = db.relationship('Worker', backref='contact_access_records')
+
+    def __repr__(self):
+        return f'<WorkerContactAccess {self.id}: Employer {self.employer_id} -> Worker {self.worker_id}>'
+
+# Employment Relationship Tracking
+class Employment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    employer_id = db.Column(db.Integer, db.ForeignKey('employer.id'), nullable=False)
+    worker_id = db.Column(db.Integer, db.ForeignKey('worker.id'), nullable=False)
+
+    # Employment Details
+    status = db.Column(db.String(20), default='contacted')  # contacted, interviewing, hired, active, completed, terminated
+    job_title = db.Column(db.String(100))
+    salary = db.Column(db.Float)
+    start_date = db.Column(db.Date)
+    end_date = db.Column(db.Date, nullable=True)
+
+    # Status Tracking
+    contacted_at = db.Column(db.DateTime, default=datetime.utcnow)
+    interviewed_at = db.Column(db.DateTime, nullable=True)
+    hired_at = db.Column(db.DateTime, nullable=True)
+    terminated_at = db.Column(db.DateTime, nullable=True)
+    termination_reason = db.Column(db.Text, nullable=True)
+
+    # Notes
+    employer_notes = db.Column(db.Text, nullable=True)
+
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    employer = db.relationship('Employer', backref='employment_records')
+    worker = db.relationship('Worker', backref='employment_records')
+
+    def __repr__(self):
+        return f'<Employment {self.id}: Employer {self.employer_id} -> Worker {self.worker_id} ({self.status})>'
+
+    @property
+    def is_active(self):
+        return self.status in ['hired', 'active']
+
+    @property
+    def duration_days(self):
+        if self.start_date:
+            end = self.end_date or datetime.utcnow().date()
+            return (end - self.start_date).days
+        return 0
+
 class EmailConfig(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    
+
     # SMTP Configuration
     smtp_server = db.Column(db.String(200), nullable=False)
     smtp_port = db.Column(db.Integer, nullable=False, default=587)
     smtp_encryption = db.Column(db.String(10), nullable=False, default='tls')  # 'tls', 'ssl', 'none'
     smtp_username = db.Column(db.String(200), nullable=False)
     smtp_password = db.Column(db.String(200), nullable=False)
-    
+
     # Email Settings
     from_name = db.Column(db.String(100), nullable=False, default='Umukozi')
     reply_to = db.Column(db.String(200))
