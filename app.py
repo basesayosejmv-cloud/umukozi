@@ -499,7 +499,9 @@ def submit_payment(worker_id):
         if not employer:
             return jsonify({'success': False, 'error': 'Employer profile not found'}), 404
             
-        worker = Worker.query.get_or_404(worker_id)
+        worker = Worker.query.get(worker_id)
+        if not worker:
+            return jsonify({'success': False, 'error': 'Worker not found'}), 404
         
         # Check if payment already exists
         existing_payment = Payment.query.filter_by(
@@ -516,7 +518,12 @@ def submit_payment(worker_id):
             os.makedirs(upload_folder, exist_ok=True)
         
         # Determine pricing based on employer's payment history
-        amount, pricing_tier = get_connection_price(employer.id)
+        try:
+            amount, pricing_tier = get_connection_price(employer.id)
+        except Exception as e:
+            import logging
+            logging.error(f"Error getting connection price: {str(e)}")
+            amount, pricing_tier = 10000.00, "first_time"  # Default pricing
         
         # Create new payment record
         payment_method = request.form.get('payment_method', 'momo')
@@ -549,7 +556,8 @@ def submit_payment(worker_id):
                     payment.screenshot_path = filename
                     db.session.commit()
                 except Exception as e:
-                    print(f"Error saving screenshot: {e}")
+                    import logging
+                    logging.error(f"Error saving screenshot: {str(e)}")
                     # Continue without screenshot - payment is still valid
         
         # Send notification to admin
@@ -576,8 +584,9 @@ def submit_payment(worker_id):
         
     except Exception as e:
         db.session.rollback()
-        print(f"Payment submission error: {e}")
-        return jsonify({'success': False, 'error': f'Server error: {str(e)}'}), 500
+        import logging
+        logging.error(f"Payment submission error: {str(e)}")
+        return jsonify({'success': False, 'error': 'Payment submission failed. Please try again.'}), 500
 
 # Admin Index Route - Redirects to dashboard
 @app.route('/admin')

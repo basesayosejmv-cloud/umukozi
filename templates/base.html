@@ -513,8 +513,13 @@
                 })
                 .then(response => {
                     if (!response.ok) {
-                        return response.json().then(err => {
-                            throw new Error(err.error || `HTTP ${response.status}`);
+                        // Try to parse error as JSON, fallback to text
+                        return response.json().catch(() => {
+                            return response.text().then(text => {
+                                throw new Error(text || `HTTP ${response.status}`);
+                            });
+                        }).then(err => {
+                            throw new Error(err.error || err.message || `HTTP ${response.status}`);
                         });
                     }
                     return response.json();
