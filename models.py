@@ -76,7 +76,7 @@ class Worker(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
-    user = db.relationship('User', backref='worker_profile')
+    user = db.relationship('User')
     applications = db.relationship('Application', backref='worker_applications')
     reviews_received = db.relationship('Review', foreign_keys='Review.worker_id', backref='worker_reviews')
 
@@ -110,7 +110,7 @@ class Employer(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
-    user = db.relationship('User', backref='employer_profile')
+    user = db.relationship('User')
     jobs = db.relationship('Job', backref='employer_jobs')
     reviews_given = db.relationship('Review', foreign_keys='Review.employer_id', backref='employer_reviews')
 
