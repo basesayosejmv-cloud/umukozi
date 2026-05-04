@@ -182,43 +182,59 @@ def require_complete_profile(f):
 
 def check_payment_status(employer_id, worker_id):
     """Check if employer has paid for access to worker contact"""
-    # Check if there's a verified payment for this employer-worker pair
-    payment = Payment.query.filter_by(
-        employer_id=employer_id, 
-        worker_id=worker_id, 
-        status='verified'
-    ).first()
-    
-    if payment:
-        # Check if access has been granted
-        access = WorkerContactAccess.query.filter_by(
-            employer_id=employer_id,
-            worker_id=worker_id,
-            payment_id=payment.id,
-            access_granted=True
+    try:
+        # Check if there's a verified payment for this employer-worker pair
+        payment = Payment.query.filter_by(
+            employer_id=employer_id, 
+            worker_id=worker_id, 
+            status='verified'
         ).first()
-        return access is not None
-    
-    return False
+        
+        if payment:
+            # Check if access has been granted
+            access = WorkerContactAccess.query.filter_by(
+                employer_id=employer_id,
+                worker_id=worker_id,
+                payment_id=payment.id,
+                access_granted=True
+            ).first()
+            return access is not None
+        
+        return False
+    except Exception as e:
+        # Log error and return False (no access) as safe default
+        import logging
+        logging.error(f"Error in check_payment_status: {str(e)}")
+        return False
 
 def get_worker_contact_info(employer_id, worker_id):
     """Get worker contact info based on payment status"""
-    if check_payment_status(employer_id, worker_id):
-        # Employer has paid, return actual contact info
-        worker = Worker.query.get(worker_id)
-        if worker and worker.user:
-            return {
-                'phone': worker.user.phone,
-                'email': worker.user.email,
-                'has_access': True
-            }
-    
-    # Employer hasn't paid, return hidden contact info
-    return {
-        'phone': 'Payment required to view',
-        'email': 'Payment required to view',
-        'has_access': False
-    }
+    try:
+        if check_payment_status(employer_id, worker_id):
+            # Employer has paid, return actual contact info
+            worker = Worker.query.get(worker_id)
+            if worker and worker.user:
+                return {
+                    'phone': worker.user.phone or 'Not provided',
+                    'email': worker.user.email or 'Not provided',
+                    'has_access': True
+                }
+        
+        # Employer hasn't paid, return hidden contact info
+        return {
+            'phone': 'Payment required to view',
+            'email': 'Payment required to view',
+            'has_access': False
+        }
+    except Exception as e:
+        # Log error and return safe default values
+        import logging
+        logging.error(f"Error in get_worker_contact_info: {str(e)}")
+        return {
+            'phone': 'Contact info unavailable',
+            'email': 'Contact info unavailable',
+            'has_access': False
+        }
 
 def allowed_file(filename, allowed_extensions):
     """Check if file has allowed extension"""
@@ -1911,25 +1927,46 @@ def hire_worker(worker_id):
 @app.route('/employer/find-workers')
 @login_required
 def employer_find_workers():
-    if current_user.user_type != 'employer':
+    try:
+        if current_user.user_type != 'employer':
+            return redirect(url_for('dashboard'))
+        
+        employer = Employer.query.filter_by(user_id=current_user.id).first()
+        if not employer:
+            flash('Employer profile not found. Please complete your profile.', 'error')
+            return redirect(url_for('dashboard'))
+        
+        # Get all workers for now (will add filters later)
+        workers = Worker.query.all()
+        
+        # Check payment status for each worker and hide contact info if not paid
+        workers_with_contact_status = []
+        for worker in workers:
+            try:
+                contact_info = get_worker_contact_info(employer.id, worker.id)
+                workers_with_contact_status.append({
+                    'worker': worker,
+                    'has_access': contact_info['has_access'],
+                    'phone': contact_info['phone'],
+                    'email': contact_info['email']
+                })
+            except Exception as e:
+                # If contact info fails for a specific worker, continue with default values
+                workers_with_contact_status.append({
+                    'worker': worker,
+                    'has_access': False,
+                    'phone': 'Contact info unavailable',
+                    'email': 'Contact info unavailable'
+                })
+        
+        return render_template('employer_find_workers.html', employer=employer, workers_with_contact_status=workers_with_contact_status)
+    
+    except Exception as e:
+        # Log the error and show a user-friendly message
+        import logging
+        logging.error(f"Error in employer_find_workers: {str(e)}")
+        flash('An error occurred while loading workers. Please try again.', 'error')
         return redirect(url_for('dashboard'))
-    employer = Employer.query.filter_by(user_id=current_user.id).first()
-    
-    # Get all workers for now (will add filters later)
-    workers = Worker.query.all()
-    
-    # Check payment status for each worker and hide contact info if not paid
-    workers_with_contact_status = []
-    for worker in workers:
-        contact_info = get_worker_contact_info(employer.id, worker.id)
-        workers_with_contact_status.append({
-            'worker': worker,
-            'has_access': contact_info['has_access'],
-            'phone': contact_info['phone'],
-            'email': contact_info['email']
-        })
-    
-    return render_template('employer_find_workers.html', employer=employer, workers_with_contact_status=workers_with_contact_status)
 
 @app.route('/employer/applications')
 @login_required
