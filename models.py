@@ -23,8 +23,8 @@ class User(UserMixin, db.Model):
     rejection_reason = db.Column(db.Text, nullable=True)  # Reason for rejection
     
     # Relationships
-    worker = db.relationship('Worker', backref='user', uselist=False)
-    employer = db.relationship('Employer', backref='user', uselist=False)
+    worker = db.relationship('Worker', backref=db.backref('user', uselist=False), uselist=False)
+    employer = db.relationship('Employer', backref=db.backref('user', uselist=False), uselist=False)
     messages_sent = db.relationship('Message', foreign_keys='Message.sender_id', backref='sender')
     messages_received = db.relationship('Message', foreign_keys='Message.receiver_id', backref='receiver')
 
@@ -76,7 +76,6 @@ class Worker(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
-    user = db.relationship('User')
     applications = db.relationship('Application', backref='worker_applications')
     reviews_received = db.relationship('Review', foreign_keys='Review.worker_id', backref='worker_reviews')
 
@@ -110,7 +109,6 @@ class Employer(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
-    user = db.relationship('User')
     jobs = db.relationship('Job', backref='employer_jobs')
     reviews_given = db.relationship('Review', foreign_keys='Review.employer_id', backref='employer_reviews')
 
@@ -424,4 +422,4 @@ class EmailConfig(db.Model):
     # Relationships
     creator = db.relationship('User', backref='email_configs_created')
     def __repr__(self):
-        return f'<WorkerContactAccess {self.id}: {self.employer_id} -> {self.worker_id}>'
+        return f'<EmailConfig {self.id}: {self.smtp_server}>'
