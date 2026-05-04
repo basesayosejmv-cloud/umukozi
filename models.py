@@ -34,6 +34,7 @@ class Worker(db.Model):
     
     # Personal Information
     date_of_birth = db.Column(db.Date)
+    age = db.Column(db.Integer)  # Calculated age for easy access
     national_id = db.Column(db.String(20))
     profile_picture = db.Column(db.String(200))
     bio = db.Column(db.Text)

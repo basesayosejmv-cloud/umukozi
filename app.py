@@ -139,12 +139,16 @@ def handle_exception(e):
 def calculate_profile_completion(worker):
     """Calculate worker profile completion percentage"""
     completion = 0
-    total_fields = 9  # Total required fields for 100% completion
+    total_fields = 13  # Total required fields for 100% completion
     
-    # Check each required field (10% each)
+    # Check each required field (approximately 7.7% each)
     if worker.profile_picture:
         completion += 1
     if worker.id_photo:
+        completion += 1
+    if worker.age is not None and worker.age >= 18:
+        completion += 1
+    if worker.province and worker.district and worker.sector and worker.cell and worker.village:
         completion += 1
     if worker.experience_years is not None:
         completion += 1
@@ -1588,6 +1592,33 @@ def worker_complete_profile():
         db.session.commit()
     
     if request.method == 'POST':
+        # Validate required fields
+        age = request.form.get('age')
+        province = request.form.get('province')
+        district = request.form.get('district')
+        sector = request.form.get('sector')
+        cell = request.form.get('cell')
+        village = request.form.get('village')
+        
+        # Validate age
+        if not age or not age.isdigit():
+            flash('❌ Please provide a valid age.', 'error')
+            return redirect(url_for('worker_complete_profile'))
+        
+        age_int = int(age)
+        if age_int < 18:
+            flash('❌ You must be at least 18 years old to register as a worker.', 'error')
+            return redirect(url_for('worker_complete_profile'))
+        
+        if age_int > 100:
+            flash('❌ Please provide a valid age.', 'error')
+            return redirect(url_for('worker_complete_profile'))
+        
+        # Validate location fields
+        if not all([province, district, sector, cell, village]):
+            flash('❌ Please provide your complete location (province, district, sector, cell, and village).', 'error')
+            return redirect(url_for('worker_complete_profile'))
+        
         # Handle file uploads
         profile_picture = request.files.get('profile_picture')
         id_photo = request.files.get('id_photo')
@@ -1610,6 +1641,13 @@ def worker_complete_profile():
             worker.id_photo = id_filename
         
         # Update text fields
+        worker.age = int(request.form.get('age')) if request.form.get('age') else None
+        worker.date_of_birth = datetime.strptime(request.form.get('date_of_birth'), '%Y-%m-%d').date() if request.form.get('date_of_birth') else None
+        worker.province = request.form.get('province')
+        worker.district = request.form.get('district')
+        worker.sector = request.form.get('sector')
+        worker.cell = request.form.get('cell')
+        worker.village = request.form.get('village')
         worker.national_id_number = request.form.get('national_id_number')
         worker.experience_years = int(request.form.get('experience_years')) if request.form.get('experience_years') else None
         worker.experience_details = request.form.get('experience_details')
