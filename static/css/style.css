@@ -619,6 +619,20 @@ body {
         gap: 1rem;
     }
     
+    /* Features section - disable grid on mobile */
+    #features .grid-2 {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    /* How it works section - disable grid on mobile */
+    #how-it-works .grid-3 {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
     .container {
         padding: 0 0.5rem;
     }
