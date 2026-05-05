@@ -46,7 +46,29 @@ def run_migrations():
                     conn.commit()
                 print(f"   ✅ Added worker.{col_name}")
         
-        # 2. Update Payment table
+        # 2. Update Notification table
+        notification_columns = [col['name'] for col in inspector.get_columns('notification')]
+        missing_notif_cols = [
+            ('notification_type', 'VARCHAR(50)'),
+            ('action_url', 'VARCHAR(500)'),
+            ('action_text', 'VARCHAR(100)'),
+            ('related_user_id', 'INTEGER'),
+            ('related_job_id', 'INTEGER')
+        ]
+        
+        for col_name, col_type in missing_notif_cols:
+            if col_name not in notification_columns:
+                print(f"   Adding column notification.{col_name}...")
+                with db.engine.connect() as conn:
+                    if col_name.endswith('_id'):
+                        ref_table = col_name.split('_')[1] # user or job
+                        conn.execute(text(f"ALTER TABLE notification ADD COLUMN {col_name} {col_type} REFERENCES \"{ref_table}\"(id)"))
+                    else:
+                        conn.execute(text(f"ALTER TABLE notification ADD COLUMN {col_name} {col_type}"))
+                    conn.commit()
+                print(f"   ✅ Added notification.{col_name}")
+
+        # 3. Update Payment table
         payment_columns = [col['name'] for col in inspector.get_columns('payment')]
         if 'verified_by' not in payment_columns:
             print("   Adding column payment.verified_by...")

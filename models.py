@@ -215,9 +215,19 @@ class Notification(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     message = db.Column(db.Text, nullable=False)
     is_read = db.Column(db.Boolean, default=False)
+    notification_type = db.Column(db.String(50))
+    action_url = db.Column(db.String(500))
+    action_text = db.Column(db.String(100))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    user = db.relationship('User', backref='notifications')
+    # Related entities
+    related_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    related_job_id = db.Column(db.Integer, db.ForeignKey('job.id'), nullable=True)
+    
+    # Relationships
+    user = db.relationship('User', foreign_keys=[user_id], backref='notifications')
+    related_user = db.relationship('User', foreign_keys=[related_user_id], backref='received_related_notifications')
+    related_job = db.relationship('Job', backref='notifications')
 
 # Admin Message System
 class AdminMessage(db.Model):
