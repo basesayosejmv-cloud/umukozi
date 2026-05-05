@@ -68,7 +68,27 @@ def run_migrations():
                     conn.commit()
                 print(f"   ✅ Added notification.{col_name}")
 
-        # 3. Update Payment table
+        # 3. Update WorkerContactAccess table
+        wca_columns = [col['name'] for col in inspector.get_columns('worker_contact_access')]
+        missing_wca_cols = [
+            ('created_at', 'TIMESTAMP'),
+            ('granted_at', 'TIMESTAMP'),
+            ('expires_at', 'TIMESTAMP'),
+            ('access_granted', 'BOOLEAN'),
+            ('phone_visible', 'BOOLEAN'),
+            ('email_visible', 'BOOLEAN'),
+            ('whatsapp_accessible', 'BOOLEAN')
+        ]
+        
+        for col_name, col_type in missing_wca_cols:
+            if col_name not in wca_columns:
+                print(f"   Adding column worker_contact_access.{col_name}...")
+                with db.engine.connect() as conn:
+                    conn.execute(text(f"ALTER TABLE worker_contact_access ADD COLUMN {col_name} {col_type}"))
+                    conn.commit()
+                print(f"   ✅ Added worker_contact_access.{col_name}")
+
+        # 4. Update Payment table
         payment_columns = [col['name'] for col in inspector.get_columns('payment')]
         if 'verified_by' not in payment_columns:
             print("   Adding column payment.verified_by...")
