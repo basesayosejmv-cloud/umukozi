@@ -298,7 +298,11 @@ def load_user(user_id):
 def index():
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
-    return render_template('index.html')
+    
+    # Get recent jobs for homepage display
+    recent_jobs = Job.query.filter_by(status='open').order_by(Job.created_at.desc()).limit(6).all()
+    
+    return render_template('index.html', recent_jobs=recent_jobs)
 
 @app.route('/manifest.json')
 def manifest():
@@ -413,7 +417,11 @@ def dashboard():
             # Check if profile is complete
             if not check_profile_completion(worker):
                 return redirect(url_for('worker_complete_profile'))
-            return render_template('worker_dashboard.html', worker=worker)
+            
+            # Get job recommendations - fetch recent open jobs
+            recommended_jobs = Job.query.filter_by(status='open').order_by(Job.created_at.desc()).limit(4).all()
+            
+            return render_template('worker_dashboard.html', worker=worker, recommended_jobs=recommended_jobs)
         except Exception as e:
             logging.error(f"Error in worker dashboard: {str(e)}")
             logging.error(f"Traceback: {traceback.format_exc()}")
@@ -425,6 +433,12 @@ def dashboard():
             employer = Employer(user_id=current_user.id)
             db.session.add(employer)
             db.session.commit()
+            
+        # Check if employer has verified payments
+        has_verified_payments = Payment.query.filter_by(
+            employer_id=employer.id,
+            status='verified'
+        ).count() > 0
             
         # Show verified and available workers first, then others
         workers = Worker.query.filter(
@@ -439,7 +453,7 @@ def dashboard():
             ).limit(8 - len(workers)).all()
             workers.extend(additional_workers)
         
-        return render_template('employer_dashboard.html', employer=employer, workers=workers)
+        return render_template('employer_dashboard.html', employer=employer, workers=workers, has_verified_payments=has_verified_payments)
     elif current_user.user_type == 'admin':
         return redirect(url_for('admin_dashboard'))
     else:
@@ -452,11 +466,18 @@ def worker_profile(worker_id):
     
     # Get contact info if user is employer and has access
     contact_info = None
+    has_verified_payments = False
     if current_user.user_type == 'employer':
         employer = Employer.query.filter_by(user_id=current_user.id).first()
-        contact_info = get_worker_contact_info(employer.id, worker.id)
+        if employer:
+            contact_info = get_worker_contact_info(employer.id, worker.id)
+            # Check if employer has verified payments
+            has_verified_payments = Payment.query.filter_by(
+                employer_id=employer.id,
+                status='verified'
+            ).count() > 0
     
-    return render_template('worker_profile.html', worker=worker, contact_info=contact_info)
+    return render_template('worker_profile.html', worker=worker, contact_info=contact_info, has_verified_payments=has_verified_payments)
 
 @app.route('/employer/worker-contact/<int:worker_id>')
 @login_required
@@ -2030,6 +2051,12 @@ def employer_find_workers():
             flash('Employer profile not found. Please complete your profile.', 'error')
             return redirect(url_for('dashboard'))
         
+        # Check if employer has verified payments
+        has_verified_payments = Payment.query.filter_by(
+            employer_id=employer.id,
+            status='verified'
+        ).count() > 0
+        
         # Get all workers for now (will add filters later)
         workers = Worker.query.all()
         
@@ -2053,7 +2080,7 @@ def employer_find_workers():
                     'email': 'Contact info unavailable'
                 })
         
-        return render_template('employer_find_workers.html', employer=employer, workers_with_contact_status=workers_with_contact_status)
+        return render_template('employer_find_workers.html', employer=employer, workers_with_contact_status=workers_with_contact_status, has_verified_payments=has_verified_payments)
     
     except Exception as e:
         # Log the error and show a user-friendly message
@@ -2073,6 +2100,12 @@ def employer_applications():
         if not employer:
             flash('Employer profile not found. Please complete your profile.', 'error')
             return redirect(url_for('dashboard'))
+        
+        # Check if employer has verified payments
+        has_verified_payments = Payment.query.filter_by(
+            employer_id=employer.id,
+            status='verified'
+        ).count() > 0
         
         # Get all applications for employer's jobs
         applications = []
@@ -2123,7 +2156,7 @@ def employer_applications():
                     'email': 'Contact info unavailable'
                 })
         
-        return render_template('employer_applications.html', employer=employer, applications_with_contact_status=applications_with_contact_status)
+        return render_template('employer_applications.html', employer=employer, applications_with_contact_status=applications_with_contact_status, has_verified_payments=has_verified_payments)
     
     except Exception as e:
         import logging

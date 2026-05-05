@@ -118,19 +118,21 @@
                             <button onclick="openWhatsApp('{{ app_data.phone }}')" class="btn btn-sm" style="background-color: #25D366; color: white; display: flex; align-items: center; justify-content: center; gap: 0.25rem; border: none; cursor: pointer; padding: 0.35rem 0.75rem; border-radius: 0.375rem;">
                                 <i class='bx bxl-whatsapp' style="font-size: 1.1rem;"></i> WhatsApp
                             </button>
-                            <button onclick="makeCall('{{ app_data.phone }}')" class="btn btn-primary btn-sm" style="display: flex; align-items: center; justify-content: center; gap: 0.25rem; border: none; cursor: pointer; padding: 0.35rem 0.75rem; border-radius: 0.375rem;">
+                            <button onclick="makeCall('{{ application.worker.user.phone }}')" class="btn btn-primary btn-sm" style="display: flex; align-items: center; justify-content: center; gap: 0.25rem; border: none; cursor: pointer; padding: 0.35rem 0.75rem; border-radius: 0.375rem;">
                                 <i class='bx bxs-phone' style="font-size: 1.1rem;"></i> Call
                             </button>
                             <a href="{{ url_for('messages', user_id=application.worker.user.id) }}" class="btn btn-outline btn-sm" style="display: flex; align-items: center; justify-content: center; gap: 0.25rem; padding: 0.35rem 0.75rem; border-radius: 0.375rem; border-color: var(--primary-color); color: var(--primary-color);">
                                 <i class='bx bx-message-rounded-dots' style="font-size: 1.1rem;"></i> Message
                             </a>
                             {% else %}
-                            <button onclick="showPlatformPaymentModal({{ application.worker.id }}, '{{ application.worker.user.full_name|replace('\'', '\\\'') }}')" class="btn btn-sm" style="background-color: #6c757d; color: white; display: flex; align-items: center; justify-content: center; gap: 0.25rem; border: none; cursor: pointer; padding: 0.35rem 0.75rem; border-radius: 0.375rem;">
+                            {% if not has_verified_payments %}
+                            <button data-worker-id="{{ application.worker.id }}" data-worker-name="{{ application.worker.user.full_name|replace('"', '&quot;')|replace("'", '&#39;') }}" onclick="showPlatformPaymentModal(this.dataset.workerId, this.dataset.workerName)" class="btn btn-sm" style="background-color: #6c757d; color: white; display: flex; align-items: center; justify-content: center; gap: 0.25rem; border: none; cursor: pointer; padding: 0.35rem 0.75rem; border-radius: 0.375rem;">
                                 <i class='bx bxl-whatsapp' style="font-size: 1.1rem;"></i> WhatsApp
                             </button>
-                            <button onclick="showPlatformPaymentModal({{ application.worker.id }}, '{{ application.worker.user.full_name|replace('\'', '\\\'') }}')" class="btn btn-primary btn-sm" style="display: flex; align-items: center; justify-content: center; gap: 0.25rem; border: none; cursor: pointer; padding: 0.35rem 0.75rem; border-radius: 0.375rem; background-color: #6c757d;">
+                            <button data-worker-id="{{ application.worker.id }}" data-worker-name="{{ application.worker.user.full_name|replace('"', '&quot;')|replace("'", '&#39;') }}" onclick="showPlatformPaymentModal(this.dataset.workerId, this.dataset.workerName)" class="btn btn-primary btn-sm" style="display: flex; align-items: center; justify-content: center; gap: 0.25rem; border: none; cursor: pointer; padding: 0.35rem 0.75rem; border-radius: 0.375rem; background-color: #6c757d;">
                                 <i class='bx bxs-phone' style="font-size: 1.1rem;"></i> Call
                             </button>
+                            {% endif %}
                             {% endif %}
                             {% if application.status == 'pending' %}
                             <button class="btn btn-success btn-sm" onclick="acceptApplication({{ application.id }})">

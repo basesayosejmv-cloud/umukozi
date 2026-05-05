@@ -58,9 +58,11 @@
                                     <i class='bx bx-message-rounded-dots'></i> Message
                                 </a>
                             {% else %}
+                                {% if not has_verified_payments %}
                                 <button class="btn btn-primary payment-modal-btn" data-worker-id="{{ worker.id }}" data-worker-name="{{ worker.user.full_name|replace('\'', '\\\'') }}">
                                     <i class='bx bx-credit-card'></i> Get Contact Info
                                 </button>
+                                {% endif %}
                             {% endif %}
                         </div>
                     {% endif %}

@@ -143,9 +143,11 @@
                                 </a>
                             </div>
                         {% else %}
+                            {% if not has_verified_payments %}
                             <button onclick="showPlatformPaymentModal({{ worker.id }}, '{{ worker.user.full_name|replace('\'', '\\\'') }}')" class="btn btn-primary btn-sm" style="padding: 0.4rem; border-radius: 0.5rem; background: var(--text-primary); border: none; font-size: 0.7rem;">
                                 <i class='bx bxs-lock-alt'></i> Unlock
                             </button>
+                            {% endif %}
                         {% endif %}
                     </div>
                 </div>
@@ -180,29 +182,28 @@
 <script>
 window.workersDataPayload = [
     {% for worker_data in workers_with_contact_status %}
-    {% set worker = worker_data.worker %}
     {
-        "id": {{ worker.id }},
-        "name": {{ worker.user.full_name | tojson | safe }},
+        "id": {{ worker_data.worker.id | tojson | safe }},
+        "name": {{ worker_data.worker.user.full_name | tojson | safe }},
         "phone": {{ worker_data.phone | tojson | safe }},
-        "hasAccess": {{ 'true' if worker_data.has_access else 'false' }},
-        "profile_picture": {{ (worker.profile_picture or '') | tojson | safe }},
-        "id_photo": {{ (worker.id_photo or '') | tojson | safe }},
-        "national_id_number": {{ (worker.national_id_number or '') | tojson | safe }},
-        "bio": {{ (worker.bio or 'No bio available.') | tojson | safe }},
-        "skills": {{ (worker.skills or '') | tojson | safe }},
-        "experience_years": {{ worker.experience_years or 0 }},
-        "experience_details": {{ (worker.experience_details or '') | tojson | safe }},
-        "hourly_rate": {{ worker.hourly_rate or 'null' }},
-        "district": {{ (worker.district or '') | tojson | safe }},
-        "province": {{ (worker.province or '') | tojson | safe }},
-        "worker_phone": {{ worker.user.phone | tojson | safe }},
-        "is_verified": {{ 'true' if worker.is_verified else 'false' }},
-        "availability_status": {{ (worker.availability_status or 'available') | tojson | safe }},
+        "hasAccess": {{ worker_data.has_access | tojson | safe }},
+        "profile_picture": {{ (worker_data.worker.profile_picture or '') | tojson | safe }},
+        "id_photo": {{ (worker_data.worker.id_photo or '') | tojson | safe }},
+        "national_id_number": {{ (worker_data.worker.national_id_number or '') | tojson | safe }},
+        "bio": {{ (worker_data.worker.bio or 'No bio available.') | tojson | safe }},
+        "skills": {{ (worker_data.worker.skills or '') | tojson | safe }},
+        "experience_years": {{ worker_data.worker.experience_years or 0 }},
+        "experience_details": {{ (worker_data.worker.experience_details or '') | tojson | safe }},
+        "hourly_rate": {{ worker_data.worker.hourly_rate or 'null' | tojson | safe }},
+        "district": {{ (worker_data.worker.district or '') | tojson | safe }},
+        "province": {{ (worker_data.worker.province or '') | tojson | safe }},
+        "worker_phone": {{ worker_data.worker.user.phone | tojson | safe }},
+        "is_verified": {{ worker_data.worker.is_verified | tojson | safe }},
+        "availability_status": {{ (worker_data.worker.availability_status or 'available') | tojson | safe }},
         "reviews": [
-            {% for review in worker.received_reviews %}
+            {% for review in worker_data.worker.received_reviews %}
             {
-                "rating": {{ review.rating }},
+                "rating": {{ review.rating | tojson | safe }},
                 "comment": {{ review.comment | tojson | safe }}
             }{% if not loop.last %},{% endif %}
             {% endfor %}

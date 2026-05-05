@@ -54,6 +54,7 @@
     <!-- Main Content -->
     <main class="main-content">
         <!-- Floating Payment Reminder Banner -->
+        {% if not has_verified_payments %}
         <div id="paymentReminderBanner" class="floating-payment-banner" style="display: none;"
             position: fixed;
             top: 20px;
@@ -121,6 +122,7 @@
                 <span style="font-size: 0.75rem; opacity: 0.8;">{{ _('click_to_pay') }}</span>
             </div>
         </div>
+        {% endif %}
 
         <!-- Welcome Header -->
         <div class="card" style="margin-bottom: 2rem;">
