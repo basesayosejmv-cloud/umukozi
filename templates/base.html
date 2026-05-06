@@ -44,7 +44,10 @@
                 <button class="mobile-sidebar-toggle" onclick="toggleSidebar()" style="background: none; border: none; font-size: 1.75rem; cursor: pointer; color: var(--text-primary); display: none; align-items: center; justify-content: center; padding: 0.25rem;">
                     <i class='bx bx-menu-alt-left'></i>
                 </button>
-                <div class="nav-auth-actions" style="display: flex; align-items: center; gap: 1rem; margin-left: auto;">
+                <a href="{{ url_for('index') }}" class="logo logo-animated" style="margin-right: auto;">
+                    <span class="letter-u" style="--i:1; --c:#2163E8;">U</span><span style="--i:2; --c:#2163E8;">M</span><span class="letter-u" style="--i:3; --c:#F59E0B;">U</span><span style="--i:4; --c:#F59E0B;">K</span><span class="letter-o" style="--i:5; --c:#0FB981;">O</span><span style="--i:6; --c:#0FB981;">Z</span><span style="--i:7; --c:#0FB981;">I</span>
+                </a>
+                <div class="nav-auth-actions" style="display: flex; align-items: center; gap: 1rem;">
                     <button id="pwa-install-btn" onclick="installApp()" style="display: none; background: linear-gradient(135deg, #4F46E5, #7C3AED); color: white; border: none; padding: 6px 12px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px;">
                         <i class='bx bxs-download'></i> Install
                     </button>
@@ -68,7 +71,7 @@
                             <div class="notification-list" id="notificationList">
                                 {% if notifs %}
                                     {% for notif in notifs %}
-                                    <div class="notification-item {{ 'notification-item-new' if not notif.is_read else 'notification-item-read' }}" onclick="markAsRead({{ notif.id }})">
+                                    <div class="notification-item {{ 'notification-item-new' if not notif.is_read else 'notification-item-read' }}" data-notif-id="{{ notif.id }}">
                                         <div class="notif-icon-circle" style="background: rgba(37, 99, 235, 0.1); color: var(--primary-color);">
                                             <i class='bx bxs-bell'></i>
                                         </div>
@@ -135,7 +138,7 @@
                             <a href="#" class="profile-menu-item">
                                 <i class='bx bxs-help-circle' style="margin-right: 0.8rem; font-size: 1.25rem;"></i> Help & Support
                             </a>
-                            <a href="javascript:void(0)" onclick="confirmLogout(event, '{{ url_for('logout') }}')" class="profile-menu-item logout">
+                            <a href="javascript:void(0)" data-logout-url="{{ url_for('logout') }}" class="profile-menu-item logout">
                                 <i class='bx bx-log-out' style="margin-right: 0.8rem; font-size: 1.25rem;"></i> Logout
                             </a>
                         </div>
@@ -161,7 +164,7 @@
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-            <div class="container" style="margin-top: 1rem;">
+            <div class="container" style="margin-top: 5rem;">
                 {% for category, message in messages %}
                     {% set alert_class = 'alert-info' %}
                     {% set icon = 'bx-info-circle' %}
@@ -256,7 +259,7 @@
                 .then(data => {
                     if (data.success) {
                         // Refresh UI if needed or just update item style
-                        const item = document.querySelector(`[onclick="markAsRead(${notifId})"]`);
+                        const item = document.querySelector(`[data-notif-id="${notifId}"]`);
                         if (item) {
                             item.classList.remove('notification-item-new');
                             item.classList.add('notification-item-read');
@@ -589,6 +592,19 @@
             const notifDropdown = document.getElementById('notificationDropdown');
             if (notifDropdown && !notifDropdown.contains(event.target)) {
                 notifDropdown.classList.remove('active');
+            }
+            
+            // Handle notification item clicks
+            const notifItem = event.target.closest('.notification-item');
+            if (notifItem && notifItem.dataset.notifId) {
+                markAsRead(notifItem.dataset.notifId);
+            }
+            
+            // Handle logout link clicks
+            const logoutLink = event.target.closest('.profile-menu-item.logout');
+            if (logoutLink && logoutLink.dataset.logoutUrl) {
+                event.preventDefault();
+                confirmLogout(event, logoutLink.dataset.logoutUrl);
             }
         });
 

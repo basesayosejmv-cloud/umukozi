@@ -9,7 +9,7 @@
     <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;">
         <img src="{{ url_for('static', filename='images/hero_bg.png') }}" alt="Professional Household Worker" style="width: 100%; height: 100%; object-fit: cover; object-position: 65% center; transition: transform 0.5s ease; filter: brightness(1.05) contrast(1.1);" />
         <!-- Gradient Overlay for better text readability - faded earlier so the background is more visible -->
-        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.6) 35%, rgba(0, 0, 0, 0) 55%); pointer-events: none;"></div>
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, rgba(15, 23, 42, 0.98) 0%, rgba(15, 23, 42, 0.85) 35%, rgba(0, 0, 0, 0.4) 55%); pointer-events: none;"></div>
     </div>
 
     <div class="container" style="position: relative; z-index: 10; display: flex; align-items: center; justify-content: space-between; gap: 2rem;">
@@ -19,15 +19,15 @@
                 Find <span style="color: var(--secondary-color); position: relative; display: inline-block;">Trusted</span><br/>Household Staff
             </h1>
             
-            <p style="font-size: 1.25rem; color: rgba(248, 250, 252, 0.9); margin-bottom: 2.5rem; line-height: 1.6; max-width: 540px;">
+            <p style="font-size: 1.25rem; color: white; margin-bottom: 2.5rem; line-height: 1.6; max-width: 540px;">
                 The most reliable way to hire verified nannies, chefs, cleaners, and caregivers. Professional service starts with the right people.
             </p>
             
             <div class="hero-buttons" style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                <a href="{{ url_for('register') }}" class="btn" style="background: var(--secondary-color); color: white; font-size: 1.125rem; padding: 1rem 2rem; border-radius: 0.75rem; font-weight: 600; box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4); display: flex; align-items: center; gap: 0.5rem; transition: transform 0.3s, box-shadow 0.3s;">
+                <a href="{{ url_for('register') }}" class="btn" style="background: var(--secondary-color); color: white; font-size: 1rem; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 600; box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4); display: flex; align-items: center; gap: 0.5rem; transition: transform 0.3s, box-shadow 0.3s;">
                     Hire Staff <i class='bx bx-right-arrow-alt'></i>
                 </a>
-                <a href="{{ url_for('register') }}" class="btn" style="background: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255, 255, 255, 0.3); backdrop-filter: blur(10px); font-size: 1.125rem; padding: 1rem 2rem; border-radius: 0.75rem; font-weight: 600; transition: background 0.3s;">
+                <a href="{{ url_for('register') }}" class="btn" style="background: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255, 255, 255, 0.3); backdrop-filter: blur(10px); font-size: 1rem; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 600; transition: background 0.3s;">
                     Find a Job
                 </a>
             </div>

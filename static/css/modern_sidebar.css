@@ -1,6 +1,6 @@
 /* Modern Sidebar UI/UX */
 .modern-sidebar {
-    width: 260px !important;
+    width: 200px !important;
     background: rgba(255, 255, 255, 0.95) !important;
     backdrop-filter: blur(10px) !important;
     border-right: 1px solid rgba(229, 231, 235, 0.8) !important;
@@ -149,8 +149,8 @@
 }
 
 .dashboard-layout > .main-content {
-    margin-left: 260px !important;
-    width: calc(100% - 260px);
+    margin-left: 200px !important;
+    width: calc(100% - 200px);
     transition: all 0.3s ease;
 }
 

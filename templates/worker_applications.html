@@ -55,72 +55,70 @@
         </div>
 
         <!-- Applications List -->
-        <div style="background: var(--white); border-radius: 1.5rem; border: 1px solid var(--border-color); overflow: hidden;">
-            <div style="padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: #f8fafc;">
-                <h3 style="font-size: 1.125rem; font-weight: 700;">{{ _('submission_history') }}</h3>
-                <div style="display: flex; gap: 0.5rem; align-items: center;">
-                    <span style="font-size: 0.8125rem; color: var(--text-secondary);">{{ _('sort_by') }}</span>
-                    <select style="background: none; border: none; font-size: 0.8125rem; font-weight: 600; color: var(--primary-color); outline: none;">
+        <div class="applications-container">
+            <div class="applications-header">
+                <h3>{{ _('submission_history') }}</h3>
+                <div class="applications-sort">
+                    <span>{{ _('sort_by') }}</span>
+                    <select>
                         <option>{{ _('recently_applied') }}</option>
                         <option>{{ _('status_updates') }}</option>
                     </select>
                 </div>
             </div>
             
-            <div class="border-list" style="padding: 1rem;">
+            <div class="applications-grid">
                 {% if applications %}
                     {% for application in applications %}
-                        <div style="padding: 2rem; transition: all 0.2s;" onmouseover="this.style.background='#fbfcfe'" onmouseout="this.style.background='transparent'">
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1.5rem; margin-bottom: 1rem;">
-                                <div style="display: flex; gap: 1.25rem;">
-                                    <div style="width: 56px; height: 56px; background: #f1f5f9; border-radius: 1rem; display: flex; align-items: center; justify-content: center; font-size: 1.75rem;">
+                        <div class="application-card">
+                            <div class="application-card-header">
+                                <div class="application-job-info">
+                                    <div class="application-job-icon">
                                         {% if 'house' in application.job.title|lower %}🏠{% elif 'child' in application.job.title|lower %}👶{% else %}💼{% endif %}
                                     </div>
-                                    <div>
-                                        <h4 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.25rem;">{{ application.job.title }}</h4>
-                                        <p style="color: var(--text-secondary); font-size: 0.875rem;">{{ application.job.employer.user.full_name }} • {{ application.job.district }}</p>
+                                    <div class="application-job-details">
+                                        <h4>{{ application.job.title }}</h4>
+                                        <p>{{ application.job.employer.user.full_name }} • {{ application.job.district }}</p>
                                     </div>
                                 </div>
-                                <div style="text-align: right;">
-                                    <span class="badge badge-{{ 'success' if application.status == 'accepted' else 'warning' if application.status == 'pending' else 'danger' if application.status == 'rejected' else 'secondary' }}" style="padding: 0.5rem 1.25rem; border-radius: 9999px; font-weight: 700; letter-spacing: 0.02em;">
+                                <div class="application-status">
+                                    <span class="badge badge-{{ 'success' if application.status == 'accepted' else 'warning' if application.status == 'pending' else 'danger' if application.status == 'rejected' else 'secondary' }}">
                                         {{ _(application.status)|upper }}
                                     </span>
-                                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">{{ _('applied_on') }} {{ application.applied_at.strftime('%b d, %Y') }}</p>
+                                    <p>{{ _('applied_on') }} {{ application.applied_at.strftime('%b d, %Y') }}</p>
                                 </div>
                             </div>
                             
-                            <div style="margin-bottom: 1.5rem;">
-                                <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5; padding: 1rem; background: #f8fafc; border-radius: 0.75rem;">
-                                    "{{ application.cover_letter or _('no_cover_letter') }}"
-                                </p>
+                            <div class="application-cover-letter">
+                                <p>"{{ application.cover_letter or _('no_cover_letter') }}"</p>
                             </div>
                             
-                            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 1.5rem;">
-                                <div style="display: flex; gap: 2rem;">
-                                    <div style="display: flex; flex-direction: column;">
-                                        <span style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-secondary); font-weight: 700;">{{ _('proposed_salary') }}</span>
-                                        <span style="font-size: 0.875rem; font-weight: 600;">{{ application.job.salary_amount or 'Negotiable' }} RWF</span>
+                            <div class="application-card-footer">
+                                <div class="application-details">
+                                    <div class="application-detail-item">
+                                        <span>{{ _('proposed_salary') }}</span>
+                                        <span>{{ application.job.salary_amount or 'Negotiable' }} RWF</span>
                                     </div>
-                                    <div style="display: flex; flex-direction: column;">
-                                        <span style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-secondary); font-weight: 700;">{{ _('job_type') }}</span>
-                                        <span style="font-size: 0.875rem; font-weight: 600;">{{ application.job.job_type.replace('_', ' ').title() }}</span>
+                                    <div class="application-detail-item">
+                                        <span>{{ _('job_type') }}</span>
+                                        <span>{{ application.job.job_type.replace('_', ' ').title() }}</span>
                                     </div>
                                 </div>
-                                <div style="display: flex; gap: 0.75rem;">
-                                    <button class="btn btn-outline btn-sm" style="border-radius: 0.5rem;" onclick="viewApplication('{{ application.id }}')">{{ _('details') }}</button>
+                                <div class="application-actions">
+                                    <button class="btn btn-outline btn-sm" onclick="viewApplication('{{ application.id }}')">{{ _('details') }}</button>
                                     {% if application.status == 'pending' %}
-                                        <button class="btn btn-outline btn-sm" style="border-radius: 0.5rem; color: var(--danger-color); border-color: var(--danger-color);" onclick="withdrawApplication('{{ application.id }}')">{{ _('withdraw') }}</button>
+                                        <button class="btn btn-outline btn-sm btn-danger" onclick="withdrawApplication('{{ application.id }}')">{{ _('withdraw') }}</button>
                                     {% endif %}
                                 </div>
                             </div>
                         </div>
                     {% endfor %}
                 {% else %}
-                    <div style="text-align: center; padding: 5rem 2rem;">
-                        <div style="font-size: 4rem; margin-bottom: 1.5rem; opacity: 0.1;">💼</div>
-                        <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">{{ _('no_apps_yet') }}</h3>
-                        <p style="color: var(--text-secondary); max-width: 350px; margin: 0 auto 2rem;">{{ _('no_apps_desc') }}</p>
-                        <a href="{{ url_for('worker_find_jobs') }}" class="btn btn-primary" style="padding: 0.75rem 2rem; border-radius: 0.75rem;">{{ _('browse_jobs') }}</a>
+                    <div class="no-applications">
+                        <div class="no-applications-icon">💼</div>
+                        <h3>{{ _('no_apps_yet') }}</h3>
+                        <p>{{ _('no_apps_desc') }}</p>
+                        <a href="{{ url_for('worker_find_jobs') }}" class="btn btn-primary">{{ _('browse_jobs') }}</a>
                     </div>
                 {% endif %}
             </div>

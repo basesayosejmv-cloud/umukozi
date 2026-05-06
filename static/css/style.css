@@ -1012,6 +1012,1262 @@ body {
     }
 }
 
+/* Mobile Responsive Improvements for Job Applications Page */
+@media (max-width: 768px) {
+    /* Application Stats Grid - 4 columns to 2 columns */
+    .grid.grid-4 {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    /* Application Cards */
+    .main-content .card > div[style*="display: flex"]:first-child {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start !important;
+    }
+    
+    /* Application Card Header */
+    .main-content .card > div[style*="display: flex"]:first-child > div:last-child {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .main-content .card > div[style*="display: flex"]:first-child > div:last-child .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    /* Application Card Content */
+    .main-content .card > div[style*="border: 1px solid"] {
+        padding: 1rem !important;
+    }
+    
+    .main-content .card > div[style*="border: 1px solid"] > div[style*="display: flex"]:first-child {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .main-content .card > div[style*="border: 1px solid"] > div[style*="display: flex"]:first-child > div:first-child {
+        width: 100%;
+    }
+    
+    /* Application Info Grid */
+    .main-content .card > div[style*="border: 1px solid"] > div:first-child > div[style*="display: flex"][style*="gap: 1rem"] {
+        flex-direction: column;
+        gap: 0.5rem !important;
+    }
+    
+    .main-content .card > div[style*="border: 1px solid"] > div:first-child > div[style*="display: flex"][style*="gap: 1rem"] > div {
+        width: 100%;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .main-content .card > div[style*="border: 1px solid"] > div:first-child > div[style*="display: flex"][style*="gap: 1rem"] > div:last-child {
+        border-bottom: none;
+    }
+    
+    /* Action Buttons Section */
+    .main-content .card > div[style*="border: 1px solid"] > div[style*="display: flex"][style*="justify-content: space-between"][style*="padding-top: 1rem"] {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start !important;
+    }
+    
+    .main-content .card > div[style*="border: 1px solid"] > div[style*="display: flex"][style*="justify-content: space-between"][style*="padding-top: 1rem"] > div:first-child {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .main-content .card > div[style*="border: 1px solid"] > div[style*="display: flex"][style*="justify-content: space-between"][style*="padding-top: 1rem"] > div:first-child > div {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .main-content .card > div[style*="border: 1px solid"] > div[style*="display: flex"][style*="justify-content: space-between"][style*="padding-top: 1rem"] > div:first-child > div > .btn {
+        width: 100%;
+        justify-content: center;
+        padding: 0.75rem 1rem !important;
+        min-height: 44px; /* Better touch target */
+    }
+    
+    .main-content .card > div[style*="border: 1px solid"] > div[style*="display: flex"][style*="justify-content: space-between"][style*="padding-top: 1rem"] > div:last-child {
+        text-align: center;
+        width: 100%;
+    }
+    
+    /* Filter Dropdown */
+    .main-content .card > div[style*="display: flex"][style*="justify-content: space-between"] > div:last-child {
+        width: 100%;
+        margin-top: 1rem;
+    }
+    
+    .main-content .card > div[style*="display: flex"][style*="justify-content: space-between"] > div:last-child .form-control {
+        width: 100% !important;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Even more compact layout for small phones */
+    .grid.grid-4 {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .main-content .card > div[style*="border: 1px solid"] {
+        padding: 0.75rem !important;
+    }
+    
+    /* Smaller text on very small screens */
+    .main-content .card h4 {
+        font-size: 1rem;
+    }
+    
+    .main-content .card > div[style*="border: 1px solid"] > div:first-child > div[style*="display: flex"][style*="gap: 1rem"] > div {
+        font-size: 0.8rem;
+    }
+    
+    /* Better button spacing on small screens */
+    .main-content .card > div[style*="border: 1px solid"] > div[style*="display: flex"][style*="justify-content: space-between"][style*="padding-top: 1rem"] > div:first-child > div > .btn {
+        padding: 0.625rem 0.75rem !important;
+        font-size: 0.875rem;
+    }
+}
+
+/* Applications Page Semantic Classes */
+.applications-header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.applications-header-text h1 {
+    margin-bottom: 0.5rem;
+}
+
+.applications-header-text p {
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.applications-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.applications-filter {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.application-card {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    background: var(--white);
+    transition: box-shadow 0.3s ease;
+}
+
+.application-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.application-card-header {
+    margin-bottom: 1rem;
+}
+
+.application-title-section {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.application-title-section h4 {
+    margin: 0;
+    font-size: 1.125rem;
+}
+
+.application-card-body {
+    margin-bottom: 1rem;
+}
+
+.application-applicant-info p {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+}
+
+.application-applicant-info .email-hidden {
+    font-style: italic;
+    opacity: 0.7;
+}
+
+.application-applicant-info .cover-letter {
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+}
+
+.application-details {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.application-details div {
+    min-width: fit-content;
+}
+
+.application-card-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    margin-top: 1rem;
+    gap: 1rem;
+}
+
+.application-action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.application-primary-actions,
+.application-contact-actions,
+.application-status-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.application-timestamp {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+/* Button Variants */
+.btn-whatsapp {
+    background-color: #25D366 !important;
+    color: white !important;
+    border: none !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+}
+
+.btn-call {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    border: none !important;
+    cursor: pointer;
+    padding: 0.35rem 0.75rem;
+    border-radius: 0.375rem;
+}
+
+.btn-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 0.375rem;
+    border-color: var(--primary-color) !important;
+    color: var(--primary-color) !important;
+}
+
+.btn-disabled {
+    background-color: #6c757d !important;
+    color: white !important;
+    border: none !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    cursor: pointer;
+    padding: 0.35rem 0.75rem;
+    border-radius: 0.375rem;
+}
+
+/* Mobile Responsive for Applications Page */
+@media (max-width: 768px) {
+    .applications-header-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .applications-header-action {
+        width: 100%;
+    }
+    
+    .applications-header-action .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .applications-list-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .applications-filter {
+        width: 100%;
+    }
+    
+    .applications-filter .form-control {
+        width: 100%;
+    }
+    
+    .application-card {
+        padding: 1rem;
+    }
+    
+    .application-title-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .application-details {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .application-details div {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .application-details div:last-child {
+        border-bottom: none;
+    }
+    
+    .application-card-actions {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .application-action-buttons {
+        width: 100%;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .application-primary-actions,
+    .application-contact-actions,
+    .application-status-actions {
+        width: 100%;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .application-action-buttons .btn {
+        width: 100%;
+        justify-content: center;
+        padding: 0.75rem 1rem;
+        min-height: 44px;
+    }
+    
+    .application-timestamp {
+        text-align: center;
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .application-card {
+        padding: 0.75rem;
+    }
+    
+    .application-title-section h4 {
+        font-size: 1rem;
+    }
+    
+    .application-details {
+        font-size: 0.8rem;
+    }
+    
+    .application-action-buttons .btn {
+        padding: 0.625rem 0.75rem;
+        font-size: 0.875rem;
+    }
+}
+
+/* Worker Job Details Page Mobile Responsiveness */
+@media (max-width: 768px) {
+    /* Main grid layout - switch from 3 columns to single column */
+    .main-content .grid.grid-3 {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .main-content .grid.grid-3 > div:first-child {
+        grid-column: span 1;
+    }
+    
+    /* Job header section */
+    .main-content .card > div[style*="display: flex"][style*="justify-content: space-between"] {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start !important;
+    }
+    
+    .main-content .card > div[style*="display: flex"][style*="justify-content: space-between"] > div:first-child {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start !important;
+    }
+    
+    .main-content .card > div[style*="display: flex"][style*="justify-content: space-between"] > div:first-child > div:first-child {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: flex-start !important;
+    }
+    
+    .main-content .card > div[style*="display: flex"][style*="justify-content: space-between"] > div:first-child > div:first-child > div:first-child {
+        align-self: center;
+    }
+    
+    .main-content .card > div[style*="display: flex"][style*="justify-content: space-between"] > div:first-child > div:first-child > div:last-child {
+        text-align: center;
+    }
+    
+    .main-content .card > div[style*="display: flex"][style*="justify-content: space-between"] > div:first-child > div:last-child {
+        align-self: flex-start;
+    }
+    
+    /* Job title and meta info */
+    .main-content .card h1 {
+        font-size: 1.5rem;
+        text-align: center;
+    }
+    
+    .main-content .card > div[style*="display: flex"][style*="justify-content: space-between"] > div:first-child > div:last-child > div[style*="display: flex"] {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .main-content .card > div[style*="display: flex"][style*="justify-content: space-between"] > div:first-child > div:last-child > div[style*="display: flex"] > span {
+        width: 100%;
+    }
+    
+    /* Schedule grid */
+    .main-content .grid.grid-2 {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    /* Skills tags */
+    .main-content .card > div[style*="display: flex"][style*="flex-wrap: wrap"] {
+        justify-content: center;
+    }
+    
+    /* Sidebar action card */
+    .main-content .card[style*="position: sticky"] {
+        position: static;
+        margin-bottom: 1rem;
+    }
+    
+    /* Salary display */
+    .main-content .card[style*="position: sticky"] > div[style*="margin-bottom: 2rem"] > div[style*="font-size: 1.5rem"] {
+        font-size: 1.25rem;
+        text-align: center;
+        word-break: break-word;
+    }
+    
+    .main-content .card[style*="position: sticky"] > div[style*="margin-bottom: 2rem"] > span[style*="font-size: 0.75rem"] {
+        text-align: center;
+        display: block;
+    }
+    
+    /* Application status */
+    .main-content .card[style*="position: sticky"] > div[style*="background: #f0fdf4"] {
+        text-align: center;
+    }
+    
+    .main-content .card[style*="position: sticky"] > div[style*="background: #f0fdf4"] > span {
+        justify-content: center;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    /* Buttons */
+    .main-content .card[style*="position: sticky"] .btn {
+        width: 100%;
+        padding: 1rem;
+        min-height: 48px;
+        font-size: 1rem;
+        border-radius: 0.75rem;
+    }
+    
+    /* Job details list */
+    .main-content .card[style*="position: sticky"] > div[style*="display: flex"][style*="flex-direction: column"] > div[style*="display: flex"][style*="justify-content: space-between"] {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .main-content .card[style*="position: sticky"] > div[style*="display: flex"][style*="flex-direction: column"] > div[style*="display: flex"][style*="justify-content: space-between"]:last-child {
+        border-bottom: none;
+    }
+    
+    .main-content .card[style*="position: sticky"] > div[style*="display: flex"][style*="flex-direction: column"] > div[style*="display: flex"][style*="justify-content: space-between"] > span:last-child {
+        text-align: right;
+        word-break: break-word;
+    }
+    
+    /* Card padding adjustments */
+    .main-content .card {
+        padding: 1.5rem !important;
+    }
+    
+    .main-content .card[style*="position: sticky"] {
+        padding: 1.5rem !important;
+    }
+    
+    /* Section spacing */
+    .main-content .card section {
+        margin-bottom: 2rem !important;
+    }
+    
+    .main-content .card .divider {
+        margin: 1.5rem 0 !important;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Even smaller adjustments for phones */
+    .main-content .card {
+        padding: 1rem !important;
+    }
+    
+    .main-content .card[style*="position: sticky"] {
+        padding: 1rem !important;
+    }
+    
+    .main-content .card h1 {
+        font-size: 1.25rem;
+    }
+    
+    .main-content .card[style*="position: sticky"] > div[style*="margin-bottom: 2rem"] > div[style*="font-size: 1.5rem"] {
+        font-size: 1.125rem;
+    }
+    
+    /* Job icon size */
+    .main-content .card > div[style*="display: flex"][style*="justify-content: space-between"] > div:first-child > div:first-child > div:first-child {
+        width: 48px;
+        height: 48px;
+        font-size: 1.5rem;
+    }
+    
+    /* Skills tags */
+    .main-content .card > div[style*="display: flex"][style*="flex-wrap: wrap"] > span {
+        font-size: 0.75rem;
+        padding: 0.375rem 0.75rem;
+    }
+    
+    /* Smaller text for very small screens */
+    .main-content .card section h3 {
+        font-size: 1rem;
+    }
+    
+    .main-content .card section p {
+        font-size: 0.875rem;
+    }
+    
+    /* Button adjustments */
+    .main-content .card[style*="position: sticky"] .btn {
+        padding: 0.875rem;
+        font-size: 0.875rem;
+        min-height: 44px;
+    }
+    
+    /* Job details list font size */
+    .main-content .card[style*="position: sticky"] > div[style*="display: flex"][style*="flex-direction: column"] > div[style*="display: flex"][style*="justify-content: space-between"] {
+        font-size: 0.8rem;
+    }
+}
+
+/* Workers Grid Layout */
+.workers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Worker Cards Enhancements */
+.workers-grid .worker-card {
+    padding: 1.5rem;
+    border-radius: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    height: 100%;
+    border: 1px solid var(--border-color);
+    position: relative;
+    overflow: hidden;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.workers-grid .worker-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+    border-color: var(--primary-color);
+}
+
+/* Worker Avatar Styles */
+.workers-grid .worker-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin-bottom: 0.5rem;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: white;
+    border: 3px solid #f8fafc;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+}
+
+.workers-grid .worker-avatar.has-profile-picture {
+    background: none;
+    border: 3px solid #f8fafc;
+}
+
+.workers-grid .worker-avatar.default-avatar {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+}
+
+/* Verification Badge */
+.workers-grid .verification-badge {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    background: #dcfce7;
+    color: #166534;
+    padding: 0.15rem 0.4rem;
+    border-radius: 2rem;
+    font-size: 0.6rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    z-index: 1;
+}
+
+/* Worker Info Section */
+.workers-grid .worker-name {
+    margin: 0 0 0.2rem 0;
+    font-size: 0.95rem;
+    font-weight: 800;
+}
+
+.workers-grid .worker-status-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.workers-grid .worker-rating {
+    color: var(--accent-color);
+    font-size: 0.85rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.1rem;
+}
+
+.workers-grid .worker-info-row {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    width: 100%;
+    margin-bottom: 0.5rem;
+    padding: 0.35rem 0.5rem;
+    background: #f8fafc;
+    border-radius: 0.6rem;
+    font-size: 0.68rem;
+}
+
+.workers-grid .worker-info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.workers-grid .worker-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    justify-content: center;
+    margin-bottom: 0.65rem;
+    min-height: 1.4rem;
+}
+
+.workers-grid .skill-tag {
+    background: rgba(37, 99, 235, 0.05);
+    color: black;
+    padding: 0.1rem 0.4rem;
+    border-radius: 2rem;
+    font-size: 0.6rem;
+    font-weight: 700;
+    border: 1px solid rgba(37, 99, 235, 0.1);
+}
+
+/* Worker Actions */
+.workers-grid .worker-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.35rem;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 0.6rem;
+    margin-top: auto;
+}
+
+.workers-grid .action-buttons {
+    display: flex;
+    gap: 0.2rem;
+}
+
+.workers-grid .action-buttons .btn {
+    flex: 1;
+    padding: 0.4rem;
+    border-radius: 0.5rem;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Mobile Responsive for Workers Grid */
+@media (max-width: 768px) {
+    .workers-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1rem;
+    }
+    
+    .workers-grid .worker-card {
+        padding: 1.25rem;
+    }
+    
+    .workers-grid .worker-avatar {
+        width: 50px;
+        height: 50px;
+        font-size: 1.25rem;
+    }
+    
+    .workers-grid .worker-name {
+        font-size: 0.9rem;
+    }
+    
+    .workers-grid .worker-info-row {
+        font-size: 0.65rem;
+        padding: 0.3rem 0.4rem;
+    }
+    
+    .workers-grid .skill-tag {
+        font-size: 0.55rem;
+        padding: 0.08rem 0.35rem;
+    }
+    
+    .workers-grid .worker-actions .btn {
+        padding: 0.5rem;
+        font-size: 0.7rem;
+        min-height: 40px;
+    }
+}
+
+@media (max-width: 480px) {
+    .workers-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .workers-grid .worker-card {
+        padding: 1rem;
+        border-radius: 1rem;
+    }
+    
+    .workers-grid .worker-avatar {
+        width: 45px;
+        height: 45px;
+        font-size: 1.125rem;
+    }
+    
+    .workers-grid .worker-name {
+        font-size: 0.85rem;
+    }
+    
+    .workers-grid .worker-info-row {
+        flex-direction: column;
+        gap: 0.3rem;
+        font-size: 0.6rem;
+        padding: 0.4rem;
+    }
+    
+    .workers-grid .skill-tag {
+        font-size: 0.5rem;
+        padding: 0.06rem 0.3rem;
+    }
+    
+    .workers-grid .worker-actions {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
+    .workers-grid .worker-actions .btn {
+        padding: 0.6rem;
+        font-size: 0.65rem;
+        min-height: 44px;
+    }
+    
+    .workers-grid .action-buttons {
+        gap: 0.25rem;
+    }
+}
+
+/* Tablet Specific Adjustments */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .workers-grid {
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1.25rem;
+    }
+}
+
+/* Large Desktop Optimizations */
+@media (min-width: 1200px) {
+    .workers-grid {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+    
+    .workers-grid .worker-card {
+        padding: 1.75rem;
+    }
+    
+    .workers-grid .worker-avatar {
+        width: 70px;
+        height: 70px;
+        font-size: 1.75rem;
+    }
+}
+
+/* Job Application Cards Grid Layout */
+.applications-container {
+    background: var(--white);
+    border-radius: 1.5rem;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+.applications-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8fafc;
+}
+
+.applications-header h3 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.applications-sort {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.applications-sort span {
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+}
+
+.applications-sort select {
+    background: none;
+    border: none;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    outline: none;
+}
+
+.applications-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+    padding: 1.5rem;
+}
+
+.application-card {
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.application-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-color);
+}
+
+.application-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    gap: 1rem;
+}
+
+.application-job-info {
+    display: flex;
+    gap: 1rem;
+    flex: 1;
+}
+
+.application-job-icon {
+    width: 48px;
+    height: 48px;
+    background: #f1f5f9;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.application-job-details h4 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0 0 0.25rem 0;
+}
+
+.application-job-details p {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    margin: 0;
+}
+
+.application-status {
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.application-status .badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 9999px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    font-size: 0.7rem;
+    display: inline-block;
+    margin-bottom: 0.5rem;
+}
+
+.application-status p {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.application-cover-letter {
+    margin-bottom: 1.5rem;
+    flex: 1;
+}
+
+.application-cover-letter p {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    padding: 0.75rem;
+    background: #f8fafc;
+    border-radius: 0.5rem;
+    margin: 0;
+    font-style: italic;
+}
+
+.application-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 1rem;
+    gap: 1rem;
+}
+
+.application-details {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.application-detail-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.application-detail-item span:first-child {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.application-detail-item span:last-child {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.application-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.application-actions .btn {
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    padding: 0.4rem 0.75rem;
+    white-space: nowrap;
+}
+
+.application-actions .btn-danger {
+    color: var(--danger-color);
+    border-color: var(--danger-color);
+}
+
+.application-actions .btn-danger:hover {
+    background: var(--danger-color);
+    color: white;
+}
+
+.no-applications {
+    text-align: center;
+    padding: 4rem 2rem;
+    grid-column: 1 / -1;
+}
+
+.no-applications-icon {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    opacity: 0.1;
+}
+
+.no-applications h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.no-applications p {
+    color: var(--text-secondary);
+    max-width: 350px;
+    margin: 0 auto 2rem;
+}
+
+.no-applications .btn {
+    padding: 0.75rem 2rem;
+    border-radius: 0.75rem;
+}
+
+/* Mobile Responsive for Application Cards */
+@media (max-width: 768px) {
+    .applications-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .applications-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        padding: 1rem;
+    }
+    
+    .application-card {
+        padding: 1.25rem;
+    }
+    
+    .application-card-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .application-status {
+        text-align: left;
+        align-self: flex-start;
+    }
+    
+    .application-job-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.25rem;
+    }
+    
+    .application-job-details h4 {
+        font-size: 0.9rem;
+    }
+    
+    .application-job-details p {
+        font-size: 0.75rem;
+    }
+    
+    .application-card-footer {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .application-details {
+        gap: 1rem;
+    }
+    
+    .application-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    
+    .application-actions .btn {
+        flex: 1;
+        justify-content: center;
+        min-height: 40px;
+    }
+}
+
+@media (max-width: 480px) {
+    .applications-grid {
+        padding: 0.75rem;
+    }
+    
+    .application-card {
+        padding: 1rem;
+        border-radius: 0.75rem;
+    }
+    
+    .application-job-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 1.125rem;
+    }
+    
+    .application-job-details h4 {
+        font-size: 0.85rem;
+    }
+    
+    .application-job-details p {
+        font-size: 0.7rem;
+    }
+    
+    .application-cover-letter p {
+        font-size: 0.75rem;
+        padding: 0.5rem;
+    }
+    
+    .application-detail-item span:first-child {
+        font-size: 0.6rem;
+    }
+    
+    .application-detail-item span:last-child {
+        font-size: 0.75rem;
+    }
+    
+    .application-actions .btn {
+        font-size: 0.7rem;
+        padding: 0.5rem;
+        min-height: 44px;
+    }
+}
+
+/* Tablet Specific Adjustments */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .applications-grid {
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.25rem;
+    }
+}
+
+/* Large Desktop Optimizations */
+@media (min-width: 1200px) {
+    .applications-grid {
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+        gap: 2rem;
+        padding: 2rem;
+    }
+    
+    .application-card {
+        padding: 1.75rem;
+    }
+    
+    .application-job-icon {
+        width: 56px;
+        height: 56px;
+        font-size: 1.75rem;
+    }
+    
+    .application-job-details h4 {
+        font-size: 1.125rem;
+    }
+    
+    .application-job-details p {
+        font-size: 0.875rem;
+    }
+    
+    .application-cover-letter p {
+        font-size: 0.875rem;
+        padding: 1rem;
+    }
+}
+
 /* Profile Dropdown */
 .profile-dropdown {
     position: relative;
