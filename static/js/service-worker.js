@@ -2,7 +2,6 @@ const CACHE_NAME = 'umukozi-v2';
 const urlsToCache = [
   '/',
   '/static/css/style.css',
-  '/static/images/logo.png',
   '/static/images/icon.png',
   'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap',
   'https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css'
