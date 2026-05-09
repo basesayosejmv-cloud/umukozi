@@ -331,6 +331,27 @@ textarea.form-control {
     opacity: 1;
 }
 
+/* WhatsApp Sidebar Item Styles */
+.sidebar-item.whatsapp-link {
+    color: #25d366;
+    border-left: 3px solid #25d366;
+    background: rgba(37, 211, 102, 0.05);
+}
+
+.sidebar-item.whatsapp-link:hover {
+    background: rgba(37, 211, 102, 0.1);
+    color: #128c7e;
+    border-left-color: #128c7e;
+}
+
+.sidebar-item.whatsapp-link i {
+    color: #25d366;
+}
+
+.sidebar-item.whatsapp-link:hover i {
+    color: #128c7e;
+}
+
 @keyframes slideInRight {
     from { transform: translateX(100%); opacity: 0; }
     to { transform: translateX(0); opacity: 1; }
@@ -836,6 +857,17 @@ const strengthBar = document.getElementById('strength-bar');
 const strengthText = document.getElementById('strength-text');
 const changePasswordBtn = document.getElementById('changePasswordBtn');
 
+// Translation strings
+const translations = {
+    strength_weak: 'Weak',
+    strength_medium: 'Medium',
+    strength_strong: 'Strong',
+    strength_very_strong: 'Very Strong',
+    password_strength: 'Password Strength',
+    password_hint: 'Use 8+ characters with mixed case, numbers & symbols',
+    passwords_match_error: 'Passwords do not match'
+};
+
 function checkNewPasswordStrength(value) {
     let score = 0;
     if (value.length >= 8) score++;
@@ -846,15 +878,15 @@ function checkNewPasswordStrength(value) {
 
     let width = (score / 5) * 100;
     let color = '#ef4444';
-    let label = '{{ _('strength_weak') }}';
+    let label = translations.strength_weak;
 
-    if (score > 2) { color = '#f59e0b'; label = '{{ _('strength_medium') }}'; }
-    if (score > 3) { color = '#10b981'; label = '{{ _('strength_strong') }}'; }
-    if (score === 5) { color = '#059669'; label = '{{ _('strength_very_strong') }}'; }
+    if (score > 2) { color = '#f59e0b'; label = translations.strength_medium; }
+    if (score > 3) { color = '#10b981'; label = translations.strength_strong; }
+    if (score === 5) { color = '#059669'; label = translations.strength_very_strong; }
 
     strengthBar.style.width = width + '%';
     strengthBar.style.background = color;
-    strengthText.innerText = value ? '{{ _('password_strength') }}: ' + label : '{{ _('password_hint') }}';
+    strengthText.innerText = value ? translations.password_strength + ': ' + label : translations.password_hint;
     strengthText.style.color = value ? color : 'var(--text-secondary)';
 
     return score === 5;
@@ -865,7 +897,7 @@ function validatePasswords() {
     const matches = newPassword.value === confirmPassword.value;
     
     if (newPassword.value && confirmPassword.value && !matches) {
-        confirmPassword.setCustomValidity('{{ _('passwords_match_error') }}');
+        confirmPassword.setCustomValidity(translations.passwords_match_error);
     } else {
         confirmPassword.setCustomValidity('');
     }

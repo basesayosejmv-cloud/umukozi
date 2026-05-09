@@ -147,10 +147,10 @@
                             
                             {% if application.status == 'pending' %}
                             <div class="application-status-actions">
-                                <button class="btn btn-success btn-sm" onclick="acceptApplication({{ application.id }})">
+                                <button class="btn btn-success btn-sm" onclick="acceptApplication('{{ application.id }}')">
                                     Accept
                                 </button>
-                                <button class="btn btn-danger btn-sm" onclick="rejectApplication({{ application.id }})">
+                                <button class="btn btn-danger btn-sm" onclick="rejectApplication('{{ application.id }}')">
                                     Reject
                                 </button>
                             </div>
