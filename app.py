@@ -28,6 +28,15 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-here')
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+# Database connection pool settings for production
+if os.getenv('FLASK_ENV') == 'production':
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_pre_ping': True,
+        'pool_recycle': 300,
+        'pool_size': 10,
+        'max_overflow': 20
+    }
+
 # Additional production configurations
 app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER', 'static/uploads')
 app.config['MAX_CONTENT_LENGTH'] = int(os.getenv('MAX_CONTENT_LENGTH', 16777216))  # 16MB
@@ -47,6 +56,19 @@ db.init_app(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+
+# Global error handler
+@app.errorhandler(500)
+def internal_server_error(e):
+    app.logger.error(f"Internal Server Error: {str(e)}")
+    app.logger.error(f"Traceback: {traceback.format_exc()}")
+    return render_template('500.html'), 500
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    app.logger.error(f"Unhandled Exception: {str(e)}")
+    app.logger.error(f"Traceback: {traceback.format_exc()}")
+    return render_template('500.html'), 500
 
 # Notification Context Processor
 @app.context_processor
@@ -71,7 +93,8 @@ def inject_globals():
             notifs = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.created_at.desc()).limit(5).all()
             unread_count = Notification.query.filter_by(user_id=current_user.id, is_read=False).count()
         except Exception as e:
-            logging.error(f"Error in notification context processor: {str(e)}")
+            app.logger.error(f"Error in notification context processor: {str(e)}")
+            app.logger.error(f"Notification context processor traceback: {traceback.format_exc()}")
             # Return empty notifications on error to prevent 500 errors
             notifs = []
             unread_count = 0
