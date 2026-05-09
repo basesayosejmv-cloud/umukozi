@@ -199,18 +199,29 @@ def calculate_profile_completion(worker):
 
 def check_profile_completion(worker):
     """Check if worker profile is complete enough for full access (70%+)"""
-    return calculate_profile_completion(worker) >= 70
+    if not worker:
+        return False
+    try:
+        return calculate_profile_completion(worker) >= 70
+    except Exception as e:
+        app.logger.error(f"Error checking profile completion: {e}")
+        return False
 
 def require_complete_profile(f):
     """Decorator to require worker profile with 70%+ completion"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if current_user.user_type == 'worker':
-            worker = Worker.query.filter_by(user_id=current_user.id).first()
-            if not check_profile_completion(worker):
-                completion = calculate_profile_completion(worker)
-                flash(f'⚠️ Your profile is {completion}% complete. Please complete it to at least 70% to access this feature.', 'warning')
-                return redirect(url_for('worker_complete_profile'))
+            try:
+                worker = Worker.query.filter_by(user_id=current_user.id).first()
+                if not check_profile_completion(worker):
+                    completion = calculate_profile_completion(worker) if worker else 0
+                    flash(f'⚠️ Your profile is {completion}% complete. Please complete it to at least 70% to access this feature.', 'warning')
+                    return redirect(url_for('worker_complete_profile'))
+            except Exception as e:
+                app.logger.error(f"Error in require_complete_profile decorator: {e}")
+                flash('An error occurred while checking your profile. Please try again.', 'error')
+                return redirect(url_for('index'))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -1762,7 +1773,7 @@ def worker_complete_profile():
         logging.error(f"Error in worker_complete_profile: {str(e)}")
         logging.error(f"Traceback: {traceback.format_exc()}")
         flash('An error occurred while loading your profile. Please try again.', 'error')
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('index'))
 
 # Worker Dashboard Routes
 @app.route('/worker/find-jobs')
