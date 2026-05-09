@@ -7,12 +7,12 @@
     <meta name="description" content="{% block description %}Find trusted household workers and connect with employers in Rwanda. Safe, reliable, and easy to use platform.{% endblock %}">
     
     <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#4F46E5">
+    <meta name="theme-color" content="#10b981">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Umukozi">
     <meta name="application-name" content="Umukozi">
-    <meta name="msapplication-TileColor" content="#4F46E5">
+    <meta name="msapplication-TileColor" content="#10b981">
     <meta name="msapplication-config" content="{{ url_for('static', filename='browserconfig.xml') }}">
     
     <!-- PWA Manifest -->
@@ -33,7 +33,7 @@
             <div class="nav">
                 {% if not current_user.is_authenticated %}
                 <a href="{{ url_for('index') }}" class="logo logo-animated">
-                    <span class="letter-u" style="--i:1; --c:#2163E8;">U</span><span style="--i:2; --c:#2163E8;">M</span><span class="letter-u" style="--i:3; --c:#F59E0B;">U</span><span style="--i:4; --c:#F59E0B;">K</span><span class="letter-o" style="--i:5; --c:#0FB981;">O</span><span style="--i:6; --c:#0FB981;">Z</span><span style="--i:7; --c:#0FB981;">I</span>
+                    <span class="letter-u" style="--i:1; --c:#10b981;">U</span><span style="--i:2; --c:#10b981;">M</span><span class="letter-u" style="--i:3; --c:#F59E0B;">U</span><span style="--i:4; --c:#F59E0B;">K</span><span class="letter-o" style="--i:5; --c:#0FB981;">O</span><span style="--i:6; --c:#0FB981;">Z</span><span style="--i:7; --c:#0FB981;">I</span>
                 </a>
                 <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
                     <i class='bx bx-menu'></i>
@@ -45,10 +45,10 @@
                     <i class='bx bx-menu-alt-left'></i>
                 </button>
                 <a href="{{ url_for('index') }}" class="logo logo-animated" style="margin-right: auto;">
-                    <span class="letter-u" style="--i:1; --c:#2163E8;">U</span><span style="--i:2; --c:#2163E8;">M</span><span class="letter-u" style="--i:3; --c:#F59E0B;">U</span><span style="--i:4; --c:#F59E0B;">K</span><span class="letter-o" style="--i:5; --c:#0FB981;">O</span><span style="--i:6; --c:#0FB981;">Z</span><span style="--i:7; --c:#0FB981;">I</span>
+                    <span class="letter-u" style="--i:1; --c:#10b981;">U</span><span style="--i:2; --c:#10b981;">M</span><span class="letter-u" style="--i:3; --c:#F59E0B;">U</span><span style="--i:4; --c:#F59E0B;">K</span><span class="letter-o" style="--i:5; --c:#0FB981;">O</span><span style="--i:6; --c:#0FB981;">Z</span><span style="--i:7; --c:#0FB981;">I</span>
                 </a>
                 <div class="nav-auth-actions" style="display: flex; align-items: center; gap: 1rem;">
-                    <button id="pwa-install-btn" onclick="installApp()" style="display: none; background: linear-gradient(135deg, #4F46E5, #7C3AED); color: white; border: none; padding: 6px 12px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px;">
+                    <button id="pwa-install-btn" onclick="installApp()" style="display: none; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 6px 12px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px;">
                         <i class='bx bxs-download'></i> Install
                     </button>
                     
@@ -147,7 +147,7 @@
                 {% else %}
                 <ul class="nav-links" id="navLinks">
                     <li>
-                        <button id="pwa-install-btn" onclick="installApp()" style="display: none; background: linear-gradient(135deg, #4F46E5, #7C3AED); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px;">
+                        <button id="pwa-install-btn" onclick="installApp()" style="display: none; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px;">
                             <i class='bx bxs-download'></i> Install App
                         </button>
                     </li>
@@ -164,7 +164,7 @@
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-            <div class="container" style="margin-top: 5rem;">
+            <div class="flash-messages-container" style="position: fixed; top: 100px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 90%; max-width: 600px;">
                 {% for category, message in messages %}
                     {% set alert_class = 'alert-info' %}
                     {% set icon = 'bx-info-circle' %}
@@ -180,7 +180,7 @@
                         {% set icon = 'bx-error' %}
                     {% endif %}
                     
-                    <div class="alert {{ alert_class }}" style="display: flex; align-items: center; justify-content: space-between; position: relative;">
+                    <div class="alert {{ alert_class }} flash-message" style="display: flex; align-items: center; justify-content: space-between; position: relative; margin-bottom: 1rem; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); border-radius: 12px; backdrop-filter: blur(10px); animation: slideInDown 0.3s ease-out;">
                         <div style="display: flex; align-items: center; gap: 0.75rem;">
                             <i class='bx {{ icon }}' style="font-size: 1.25rem;"></i>
                             <span>{{ message }}</span>
@@ -668,11 +668,11 @@
                 bottom: 20px;
                 left: 50%;
                 transform: translateX(-50%);
-                background: linear-gradient(135deg, #4F46E5, #7C3AED);
+                background: linear-gradient(135deg, #10b981, #059669);
                 color: white;
                 padding: 16px 24px;
                 border-radius: 12px;
-                box-shadow: 0 10px 25px rgba(79, 70, 229, 0.3);
+                box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
                 z-index: 10000;
                 display: flex;
                 align-items: center;
@@ -688,7 +688,7 @@
                     <div style='font-weight: 600; margin-bottom: 4px;'>Install Umukozi App</div>
                     <div style='font-size: 14px; opacity: 0.9;'>Get the full experience on your device</div>
                 </div>
-                <button onclick="installApp()" style='background: white; color: #4F46E5; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px;'>Install</button>
+                <button onclick="installApp()" style='background: white; color: #10b981; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px;'>Install</button>
                 <button onclick="dismissInstallBanner()" style='background: transparent; color: white; border: 1px solid rgba(255,255,255,0.3); padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 18px; line-height: 1;'>&times;</button>
             `;
             
@@ -764,17 +764,15 @@
             });
         }
 
-        // Auto-dismiss alerts after 4 seconds
+        // Auto-dismiss flash messages after 4 seconds
         document.addEventListener('DOMContentLoaded', function() {
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(function(alert) {
+            const flashMessages = document.querySelectorAll('.flash-message');
+            flashMessages.forEach(function(message) {
                 setTimeout(function() {
-                    alert.style.opacity = '0';
-                    alert.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-                    alert.style.transform = 'translateY(-10px)';
+                    message.classList.add('removing');
                     setTimeout(function() {
-                        alert.remove();
-                    }, 600);
+                        message.remove();
+                    }, 300);
                 }, 4000); // 4 seconds
             });
             

@@ -1,6 +1,6 @@
 /* Modern Sidebar UI/UX */
 .modern-sidebar {
-    width: 200px !important;
+    width: 280px !important;
     background: rgba(255, 255, 255, 0.95) !important;
     backdrop-filter: blur(10px) !important;
     border-right: 1px solid rgba(229, 231, 235, 0.8) !important;
@@ -22,7 +22,7 @@
     letter-spacing: 3px;
     font-weight: 800;
     font-size: 0.85rem;
-    color: var(--primary-color, #2563eb);
+    color: var(--primary-color, #10b981);
     display: flex;
     align-items: center;
 }
@@ -81,13 +81,13 @@
 }
 
 .modern-sidebar .sidebar-item:hover i {
-    color: var(--primary-color, #2563eb);
+    color: var(--primary-color, #10b981);
 }
 
 .modern-sidebar .sidebar-item.active {
-    background: linear-gradient(135deg, var(--primary-color, #2563eb), #3b82f6) !important;
+    background: linear-gradient(135deg, var(--primary-color, #10b981), var(--primary-dark, #059669)) !important;
     color: #ffffff !important;
-    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3) !important;
+    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3) !important;
 }
 
 .modern-sidebar .sidebar-item.active i {
@@ -149,8 +149,8 @@
 }
 
 .dashboard-layout > .main-content {
-    margin-left: 200px !important;
-    width: calc(100% - 200px);
+    margin-left: 280px !important;
+    width: calc(100% - 280px);
     transition: all 0.3s ease;
 }
 

@@ -49,7 +49,7 @@
                         <div id="strength-text" style="font-size: 0.75rem; margin-top: 0.25rem; font-weight: 600; color: var(--text-secondary);">
                             {{ _('password_hint') }}
                         </div>
-                        <ul id="password-requirements" style="list-style: none; padding: 0; margin: 0.5rem 0 0; font-size: 0.7rem; color: var(--text-secondary); display: grid; grid-template-columns: 1fr 1fr; gap: 0.25rem;">
+                        <ul id="password-requirements" style="list-style: none; padding: 0; margin: 0.5rem 0 0; font-size: 0.7rem; color: var(--text-secondary); display: none; grid-template-columns: 1fr 1fr; gap: 0.25rem;">
                             <li id="req-length"><i class='bx bx-circle'></i> {{ _('password_min_length') }}</li>
                             <li id="req-upper"><i class='bx bx-circle'></i> {{ _('password_uppercase') }}</li>
                             <li id="req-lower"><i class='bx bx-circle'></i> {{ _('password_lowercase') }}</li>
@@ -141,6 +141,18 @@ function checkStrength(value) {
 
     return score === 5;
 }
+
+// Show/hide password requirements based on focus and input
+password.addEventListener('focus', () => {
+    document.getElementById('password-requirements').style.display = 'grid';
+});
+
+password.addEventListener('blur', () => {
+    // Keep requirements visible if password has content
+    if (password.value.length === 0) {
+        document.getElementById('password-requirements').style.display = 'none';
+    }
+});
 
 password.addEventListener('input', () => {
     const isStrong = checkStrength(password.value);

@@ -393,6 +393,7 @@ def register():
         # Add welcome notification
         welcome_notif = Notification(
             user_id=new_user.id,
+            title="Welcome to Umukozi!",
             message=f"Welcome to Umukozi, {full_name}! Complete your profile to start finding jobs." if user_type == 'worker' else f"Welcome to Umukozi, {full_name}! Post your first job to find workers."
         )
         db.session.add(welcome_notif)
@@ -1737,6 +1738,19 @@ def worker_find_jobs():
     # Get real jobs from database
     jobs = Job.query.filter_by(status='open').order_by(Job.created_at.desc()).all()
     
+    # Calculate days ago and check if expired for each job
+    from datetime import datetime
+    now = datetime.utcnow()
+    for job in jobs:
+        days_ago = (now - job.created_at).days
+        job.days_ago = days_ago
+        
+        # Check if job is expired
+        if job.deadline and job.deadline < now.date():
+            job.is_expired = True
+        else:
+            job.is_expired = False
+    
     return render_template('worker_find_jobs.html', worker=worker, jobs=jobs)
 
 @app.route('/worker/job/<int:job_id>')
@@ -1762,6 +1776,11 @@ def worker_apply_job(job_id):
         return redirect(url_for('dashboard'))
     worker = Worker.query.filter_by(user_id=current_user.id).first()
     job = Job.query.get_or_404(job_id)
+    
+    # Check if job deadline has passed
+    if job.deadline and job.deadline < datetime.utcnow().date():
+        flash('❌ This job has expired and is no longer accepting applications.', 'error')
+        return redirect(url_for('worker_find_jobs'))
     
     # Check if worker already applied
     existing_app = Application.query.filter_by(job_id=job_id, worker_id=worker.id).first()

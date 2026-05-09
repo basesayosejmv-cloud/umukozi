@@ -136,6 +136,7 @@ TRANSLATIONS = {
         'all_jobs': 'All Jobs',
         'close': 'Close',
         'urgent': 'Urgent',
+        'expired': 'Expired',
         'posted_on': 'Posted on',
         'edit': 'Edit',
         'last_updated': 'Last updated',

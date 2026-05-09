@@ -105,9 +105,16 @@
                                     <p style="color: var(--text-secondary); font-size: 0.75rem;">{{ job.employer.company_name or 'Private Household' }}</p>
                                 </div>
                             </div>
-                            {% if job.is_urgent %}
-                            <span class="badge" style="background: #fef2f2; color: #ef4444; font-size: 0.6rem; text-transform: uppercase; font-weight: 700; border: 1px solid #fee2e2;">{{ _('urgent') }}</span>
-                            {% endif %}
+                            <div style="display: flex; gap: 0.5rem; flex-direction: column; align-items: flex-end;">
+                                {% if job.is_expired %}
+                                <span class="badge" style="background: #fee2e2; color: #dc2626; font-size: 0.6rem; text-transform: uppercase; font-weight: 700; border: 1px solid #fecaca;">EXPIRED</span>
+                                {% elif job.days_ago <= 3 %}
+                                <span class="badge new-badge-animation" style="background: #dcfce7; color: #166534; font-size: 0.6rem; text-transform: uppercase; font-weight: 700; border: 1px solid #bbf7d0;">NEW</span>
+                                {% endif %}
+                                {% if job.is_urgent and not job.is_expired %}
+                                <span class="badge" style="background: #fef2f2; color: #ef4444; font-size: 0.6rem; text-transform: uppercase; font-weight: 700; border: 1px solid #fee2e2;">{{ _('urgent') }}</span>
+                                {% endif %}
+                            </div>
                         </div>
                         
                         <p style="color: var(--text-secondary); font-size: 0.8rem; line-height: 1.5; margin-bottom: 1rem; flex-grow: 1;">
@@ -123,13 +130,23 @@
                                 <span style="font-size: 0.6rem; text-transform: uppercase; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.05em;">{{ _('location') }}</span>
                                 <span style="font-size: 0.875rem; font-weight: 700; color: var(--text-primary);">{{ job.district }}</span>
                             </div>
+                            {% if job.deadline %}
+                            <div style="display: flex; flex-direction: column;">
+                                <span style="font-size: 0.6rem; text-transform: uppercase; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.05em;">Deadline</span>
+                                <span style="font-size: 0.875rem; font-weight: 700; color: #ef4444;">{{ job.deadline.strftime('%d %b %Y') }}</span>
+                            </div>
+                            {% endif %}
                         </div>
                         
                         <div style="display: flex; gap: 0.75rem;">
                             <a href="{{ url_for('worker_job_details', job_id=job.id) }}" class="btn btn-outline" style="flex: 1; border-radius: 0.75rem; text-decoration: none; text-align: center; display: flex; align-items: center; justify-content: center;">{{ _('details') }}</a>
+                            {% if job.is_expired %}
+                            <button type="button" class="btn" style="flex: 2; border-radius: 0.75rem; border: none; font-weight: 600; cursor: not-allowed; background: #e5e7eb; color: #9ca3af;" disabled>{{ _('expired') }}</button>
+                            {% else %}
                             <form action="{{ url_for('worker_apply_job', job_id=job.id) }}" method="POST" style="flex: 2;">
                                 <button type="submit" class="btn btn-primary" style="width: 100%; border-radius: 0.75rem; border: none; font-weight: 600; cursor: pointer;">{{ _('apply_now') }}</button>
                             </form>
+                            {% endif %}
                         </div>
                     </div>
                     {% endfor %}

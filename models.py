@@ -145,6 +145,7 @@ class Job(db.Model):
     working_days = db.Column(db.String(100))
     start_date = db.Column(db.Date)
     end_date = db.Column(db.Date)  # for temporary jobs
+    deadline = db.Column(db.Date)  # application deadline
     
     # Status
     status = db.Column(db.String(20), default='open')  # 'open', 'closed', 'filled'
@@ -213,6 +214,7 @@ class Message(db.Model):
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    title = db.Column(db.String(255), nullable=False)
     message = db.Column(db.Text, nullable=False)
     is_read = db.Column(db.Boolean, default=False)
     notification_type = db.Column(db.String(50))
