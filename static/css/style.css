@@ -2817,4 +2817,47 @@ body {
     animation: slideOutUp 0.3s ease-out;
 }
 
+/* Rounded Cycle Animation for Logo */
+.logo-rounded-animation {
+    position: relative;
+    display: inline-block;
+}
+
+.logo-rounded-animation::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    right: -8px;
+    bottom: -8px;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #10b981, #2563eb, #f59e0b, #10b981);
+    background-size: 300% 300%;
+    animation: roundedCycleRotate 3s linear infinite;
+    z-index: -1;
+}
+
+.logo-rounded-animation img {
+    border-radius: 50%;
+    padding: 4px;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes roundedCycleRotate {
+    0% {
+        background-position: 0% 50%;
+        transform: rotate(0deg);
+    }
+    50% {
+        background-position: 100% 50%;
+        transform: rotate(180deg);
+    }
+    100% {
+        background-position: 0% 50%;
+        transform: rotate(360deg);
+    }
+}
+
 
