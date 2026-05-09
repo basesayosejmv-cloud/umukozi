@@ -88,7 +88,16 @@ def run_migrations():
                     conn.commit()
                 print(f"   ✅ Added worker_contact_access.{col_name}")
 
-        # 4. Update Payment table
+        # 4. Update Job table
+        job_columns = [col['name'] for col in inspector.get_columns('job')]
+        if 'deadline' not in job_columns:
+            print("   Adding column job.deadline...")
+            with db.engine.connect() as conn:
+                conn.execute(text("ALTER TABLE job ADD COLUMN deadline DATE"))
+                conn.commit()
+            print("   ✅ Added job.deadline")
+
+        # 5. Update Payment table
         payment_columns = [col['name'] for col in inspector.get_columns('payment')]
         if 'verified_by' not in payment_columns:
             print("   Adding column payment.verified_by...")

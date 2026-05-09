@@ -299,8 +299,13 @@ def index():
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
     
-    # Get recent jobs for homepage display
-    recent_jobs = Job.query.filter_by(status='open').order_by(Job.created_at.desc()).limit(6).all()
+    try:
+        # Get recent jobs for homepage display
+        recent_jobs = Job.query.filter_by(status='open').order_by(Job.created_at.desc()).limit(6).all()
+    except Exception as e:
+        # Handle database schema errors gracefully
+        app.logger.error(f"Error fetching recent jobs: {e}")
+        recent_jobs = []
     
     return render_template('index.html', recent_jobs=recent_jobs)
 
