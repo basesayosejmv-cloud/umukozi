@@ -1473,6 +1473,9 @@ def admin_delete_user(user_id):
     # Use no_autoflush to prevent premature flushing during deletion
     with db.session.no_autoflush:
         try:
+            # Delete messages first to prevent foreign key constraint violations
+            Message.query.filter((Message.sender_id == user_id) | (Message.receiver_id == user_id)).delete()
+            
             # Delete reviews related to this user (as worker or employer)
             if user.worker:
                 # Delete payment records for this worker
@@ -1503,9 +1506,6 @@ def admin_delete_user(user_id):
                     Application.query.filter_by(job_id=job.id).delete()
                     db.session.delete(job)
                 db.session.delete(user.employer)
-            
-            # Delete messages
-            Message.query.filter((Message.sender_id == user_id) | (Message.receiver_id == user_id)).delete()
             
             # Delete notifications
             Notification.query.filter_by(user_id=user_id).delete()
@@ -3066,6 +3066,8 @@ def admin_worker_action(worker_id, action):
     elif action == 'unsuspend':
         user.is_blocked = False
     elif action == 'delete':
+        # Delete messages first to prevent foreign key constraint violations
+        Message.query.filter((Message.sender_id == user.id) | (Message.receiver_id == user.id)).delete()
         # Delete related records before deleting user
         Payment.query.filter_by(worker_id=worker.id).delete()
         WorkerContactAccess.query.filter_by(worker_id=worker.id).delete()
@@ -3125,6 +3127,8 @@ def admin_employer_action(employer_id, action):
     elif action == 'unsuspend':
         user.is_blocked = False
     elif action == 'delete':
+        # Delete messages first to prevent foreign key constraint violations
+        Message.query.filter((Message.sender_id == user.id) | (Message.receiver_id == user.id)).delete()
         # Delete related records before deleting user
         Payment.query.filter_by(employer_id=employer.id).delete()
         WorkerContactAccess.query.filter_by(employer_id=employer.id).delete()
