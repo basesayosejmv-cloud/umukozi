@@ -10,7 +10,7 @@
     {% include 'includes/worker_sidebar.html' %}
 
     <!-- Main Content -->
-    <main class="main-content">
+    <main class="main-content profile-page">
         <header style="margin-bottom: 2.5rem; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1.5rem;">
             <div>
                 <h1 style="font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; letter-spacing: -0.02em;">Professional Profile</h1>
@@ -24,7 +24,7 @@
             </div>
         </header>
 
-        <form method="POST" enctype="multipart/form-data" class="dashboard-grid" style="grid-template-columns: 1fr 340px; align-items: start; gap: 2.5rem;">
+        <form method="POST" enctype="multipart/form-data" class="dashboard-grid profile-page-grid" style="align-items: start;">
             <!-- Main Form Section -->
             <div style="display: flex; flex-direction: column; gap: 2rem;">
                 <!-- Profile Media -->
@@ -184,21 +184,43 @@
                     <a href="{{ url_for('dashboard') }}" class="btn btn-outline" style="padding: 1rem 2rem; border-radius: 1rem;">Cancel</a>
                 </div>
             </div>
-
-            <!-- Right Sidebar Panel -->
-            <div style="display: flex; flex-direction: column; gap: 2rem;">
-                <!-- Content removed as requested -->
-            </div>
         </form>
     </main>
 </div>
 
 <style>
+.profile-page {
+    padding: 1rem 1rem 1.5rem;
+}
+.profile-page .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    width: 100%;
+}
+.profile-page .dashboard-grid > div {
+    width: 100%;
+    min-width: 0;
+}
+.profile-page .grid.grid-2 {
+    gap: 1rem;
+}
+.profile-page .card {
+    width: 100%;
+    box-sizing: border-box;
+}
 .image-upload-wrapper:hover #idPreview {
     border-color: var(--primary-color) !important;
 }
 .image-upload-wrapper:hover .hover-upload {
     opacity: 1 !important;
+}
+@media (max-width: 768px) {
+    .profile-page {
+        padding: 0.75rem 0.75rem 1rem;
+    }
+    .profile-page .dashboard-grid {
+        gap: 0.75rem;
+    }
 }
 </style>
 
