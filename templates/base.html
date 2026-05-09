@@ -33,7 +33,7 @@
             <div class="nav">
                 {% if not current_user.is_authenticated %}
                 <a href="{{ url_for('index') }}" class="logo logo-animated logo-rounded-animation">
-                    <img src="{{ url_for('static', filename='images/modfyed logo (2).png') }}" alt="Umukozi Logo" style="height: 60px; width: auto; object-fit: contain;">
+                    <img src="{{ url_for('static', filename='images/modfyed logo (2).png') }}" alt="Umukozi Logo" style="height: 45px; width: auto; object-fit: contain;">
                 </a>
                 <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
                     <i class='bx bx-menu'></i>
@@ -45,7 +45,7 @@
                     <i class='bx bx-menu-alt-left'></i>
                 </button>
                 <a href="{{ url_for('index') }}" class="logo logo-animated" style="margin-right: auto;">
-                    <img src="{{ url_for('static', filename='images/modfyed logo (2).png') }}" alt="Umukozi Logo" style="height: 60px; width: auto; object-fit: contain;">
+                    <img src="{{ url_for('static', filename='images/modfyed logo (2).png') }}" alt="Umukozi Logo" style="height: 45px; width: auto; object-fit: contain;">
                 </a>
                 <div class="nav-auth-actions" style="display: flex; align-items: center; gap: 1rem;">
                     <button id="pwa-install-btn" onclick="installApp()" style="display: none; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 6px 12px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px;">

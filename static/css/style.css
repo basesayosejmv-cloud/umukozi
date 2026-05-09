@@ -2826,11 +2826,11 @@ body {
 .logo-rounded-animation::before {
     content: '';
     position: absolute;
-    top: -8px;
-    left: -8px;
-    right: -8px;
-    bottom: -8px;
-    border: 2px solid transparent;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    border: 1.5px solid transparent;
     border-radius: 50%;
     background: linear-gradient(45deg, #10b981, #2563eb, #f59e0b, #10b981);
     background-size: 300% 300%;
@@ -2857,6 +2857,41 @@ body {
     100% {
         background-position: 0% 50%;
         transform: rotate(360deg);
+    }
+}
+
+/* Homepage Headline Animation */
+.headline-animated {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: headlineFadeInUp 1s ease-out forwards;
+}
+
+.headline-animated span {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: highlightFadeIn 1s ease-out 0.3s forwards;
+}
+
+@keyframes headlineFadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes highlightFadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
