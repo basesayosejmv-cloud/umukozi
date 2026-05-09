@@ -676,6 +676,79 @@ def submit_payment(worker_id):
         logging.error(f"Payment submission error: {str(e)}")
         return jsonify({'success': False, 'error': 'Payment submission failed. Please try again.'}), 500
 
+# Simple Payment Form Route
+@app.route('/payment/form')
+@login_required
+def payment_form():
+    """Simple payment form for testing"""
+    return render_template('payment_form.html')
+
+@app.route('/payment/short')
+def short_payment_form():
+    """Short payment form"""
+    return render_template('short_payment_form.html')
+
+@app.route('/payment/submit', methods=['POST'])
+@login_required
+def payment_submit():
+    """Handle payment form submission"""
+    try:
+        if current_user.user_type != 'employer':
+            flash('Only employers can submit payments', 'error')
+            return redirect(url_for('payment_form'))
+        
+        # Get form data
+        payment_method = request.form.get('payment_method')
+        phone_number = request.form.get('phone_number')
+        transaction_id = request.form.get('transaction_id')
+        
+        # Validate required fields
+        if not all([payment_method, phone_number, transaction_id]):
+            flash('Please fill in all required fields', 'error')
+            return redirect(url_for('payment_form'))
+        
+        # Handle file upload
+        screenshot = request.files.get('screenshot')
+        if not screenshot or screenshot.filename == '':
+            flash('Please upload a payment screenshot', 'error')
+            return redirect(url_for('payment_form'))
+        
+        # Save screenshot
+        if screenshot and allowed_file(screenshot.filename):
+            filename = secure_filename(f"payment_{current_user.id}_{int(time.time())}.{screenshot.filename.rsplit('.', 1)[1].lower()}")
+            screenshot_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            screenshot.save(screenshot_path)
+        else:
+            flash('Invalid file format', 'error')
+            return redirect(url_for('payment_form'))
+        
+        # Create payment record (for demo purposes)
+        employer = Employer.query.filter_by(user_id=current_user.id).first()
+        if employer:
+            payment = Payment(
+                employer_id=employer.id,
+                worker_id=1,  # Default worker for demo
+                amount=10000.0,
+                payment_method=payment_method,
+                transaction_id=transaction_id,
+                phone_number=phone_number,
+                screenshot_path=filename,
+                status='pending'
+            )
+            db.session.add(payment)
+            db.session.commit()
+            
+            flash('Payment submitted successfully! Waiting for verification.', 'success')
+            return redirect(url_for('employer_dashboard'))
+        else:
+            flash('Employer profile not found', 'error')
+            return redirect(url_for('payment_form'))
+            
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error submitting payment: {str(e)}', 'error')
+        return redirect(url_for('payment_form'))
+
 # Admin Index Route - Redirects to dashboard
 @app.route('/admin')
 @login_required
