@@ -325,28 +325,38 @@ def service_worker():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-        user = User.query.filter_by(email=email).first()
-        
-        if user and check_password_hash(user.password, password):
-            # Check if user is blocked
-            if user.is_blocked:
-                flash('❌ Your account has been blocked. Please contact support.', 'error')
+        try:
+            email = request.form.get('email')
+            password = request.form.get('password')
+            
+            # Validate input
+            if not email or not password:
+                flash('❌ Please enter both email and password.', 'error')
                 return render_template('login.html')
             
-            # Check if user is approved (except admin users)
-            if user.user_type != 'admin' and not user.is_approved:
-                flash('⏳ Your account is pending approval. Please wait for admin verification.', 'warning')
-                return render_template('login.html')
+            user = User.query.filter_by(email=email).first()
             
-            login_user(user)
-            # Personalized welcome message
-            user_type = "Worker" if user.user_type == 'worker' else "Employer" if user.user_type == 'employer' else "Administrator"
-            flash(f'🎉 Welcome back, {user.full_name}! You are logged in as a {user_type}.', 'success')
-            return redirect(url_for('dashboard'))
-        else:
-            flash('❌ Invalid email or password. Please try again.', 'error')
+            if user and check_password_hash(user.password, password):
+                # Check if user is blocked
+                if user.is_blocked:
+                    flash('❌ Your account has been blocked. Please contact support.', 'error')
+                    return render_template('login.html')
+                
+                # Check if user is approved (except admin users)
+                if user.user_type != 'admin' and not user.is_approved:
+                    flash('⏳ Your account is pending approval. Please wait for admin verification.', 'warning')
+                    return render_template('login.html')
+                
+                login_user(user)
+                # Personalized welcome message
+                user_type = "Worker" if user.user_type == 'worker' else "Employer" if user.user_type == 'employer' else "Administrator"
+                flash(f'🎉 Welcome back, {user.full_name}! You are logged in as a {user_type}.', 'success')
+                return redirect(url_for('dashboard'))
+            else:
+                flash('❌ Invalid email or password. Please try again.', 'error')
+        except Exception as e:
+            app.logger.error(f"Login error: {e}")
+            flash('❌ An error occurred during login. Please try again.', 'error')
     
     return render_template('login.html')
 

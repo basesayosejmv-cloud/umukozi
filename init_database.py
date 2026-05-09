@@ -25,6 +25,30 @@ def run_migrations():
     try:
         inspector = db.inspect(db.engine)
         
+        # 0. Update User table first
+        user_columns = [col['name'] for col in inspector.get_columns('user')]
+        missing_user_cols = [
+            ('is_active', 'BOOLEAN'),
+            ('is_approved', 'BOOLEAN'),
+            ('is_blocked', 'BOOLEAN'),
+            ('approved_at', 'TIMESTAMP'),
+            ('approved_by', 'INTEGER'),
+            ('blocked_at', 'TIMESTAMP'),
+            ('blocked_by', 'INTEGER'),
+            ('rejection_reason', 'TEXT')
+        ]
+        
+        for col_name, col_type in missing_user_cols:
+            if col_name not in user_columns:
+                print(f"   Adding column user.{col_name}...")
+                with db.engine.connect() as conn:
+                    if col_name.endswith('_by'):
+                        conn.execute(text(f"ALTER TABLE \"user\" ADD COLUMN {col_name} {col_type} REFERENCES \"user\"(id)"))
+                    else:
+                        conn.execute(text(f"ALTER TABLE \"user\" ADD COLUMN {col_name} {col_type}"))
+                    conn.commit()
+                print(f"   ✅ Added user.{col_name}")
+        
         # 1. Update Worker table
         worker_columns = [col['name'] for col in inspector.get_columns('worker')]
         missing_worker_cols = [
