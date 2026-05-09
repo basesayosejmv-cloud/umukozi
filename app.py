@@ -1478,10 +1478,10 @@ def admin_delete_user(user_id):
             
             # Delete reviews related to this user (as worker or employer)
             if user.worker:
+                # Delete worker contact access records first (they reference payment)
+                WorkerContactAccess.query.filter_by(worker_id=user.worker.id).delete()
                 # Delete payment records for this worker
                 Payment.query.filter_by(worker_id=user.worker.id).delete()
-                # Delete worker contact access records
-                WorkerContactAccess.query.filter_by(worker_id=user.worker.id).delete()
                 # Delete employment records
                 Employment.query.filter_by(worker_id=user.worker.id).delete()
                 # Delete reviews where this user is the worker
@@ -1490,10 +1490,10 @@ def admin_delete_user(user_id):
                 Application.query.filter_by(worker_id=user.worker.id).delete()
                 db.session.delete(user.worker)
             elif user.employer:
+                # Delete worker contact access records first (they reference payment)
+                WorkerContactAccess.query.filter_by(employer_id=user.employer.id).delete()
                 # Delete payment records for this employer
                 Payment.query.filter_by(employer_id=user.employer.id).delete()
-                # Delete worker contact access records for this employer
-                WorkerContactAccess.query.filter_by(employer_id=user.employer.id).delete()
                 # Delete employment records for this employer
                 Employment.query.filter_by(employer_id=user.employer.id).delete()
                 # Delete reviews where this user is the employer
@@ -3069,8 +3069,8 @@ def admin_worker_action(worker_id, action):
         # Delete messages first to prevent foreign key constraint violations
         Message.query.filter((Message.sender_id == user.id) | (Message.receiver_id == user.id)).delete()
         # Delete related records before deleting user
-        Payment.query.filter_by(worker_id=worker.id).delete()
         WorkerContactAccess.query.filter_by(worker_id=worker.id).delete()
+        Payment.query.filter_by(worker_id=worker.id).delete()
         Employment.query.filter_by(worker_id=worker.id).delete()
         Review.query.filter_by(worker_id=worker.id).delete()
         Application.query.filter_by(worker_id=worker.id).delete()
@@ -3130,8 +3130,8 @@ def admin_employer_action(employer_id, action):
         # Delete messages first to prevent foreign key constraint violations
         Message.query.filter((Message.sender_id == user.id) | (Message.receiver_id == user.id)).delete()
         # Delete related records before deleting user
-        Payment.query.filter_by(employer_id=employer.id).delete()
         WorkerContactAccess.query.filter_by(employer_id=employer.id).delete()
+        Payment.query.filter_by(employer_id=employer.id).delete()
         Employment.query.filter_by(employer_id=employer.id).delete()
         Review.query.filter_by(employer_id=employer.id).delete()
         # Delete employer jobs and applications
