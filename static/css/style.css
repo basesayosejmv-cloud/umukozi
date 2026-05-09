@@ -2897,4 +2897,25 @@ body {
     }
 }
 
+/* WhatsApp Icon Styles */
+.whatsapp-link {
+    color: #25d366;
+    border-left: 3px solid #25d366;
+    background: rgba(37, 211, 102, 0.05);
+}
+
+.whatsapp-link:hover {
+    background: rgba(37, 211, 102, 0.1);
+    color: #128c7e;
+    border-left-color: #128c7e;
+}
+
+.whatsapp-link i {
+    color: #25d366;
+}
+
+.whatsapp-link:hover i {
+    color: #128c7e;
+}
+
 
