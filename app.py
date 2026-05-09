@@ -1475,12 +1475,24 @@ def admin_delete_user(user_id):
         try:
             # Delete reviews related to this user (as worker or employer)
             if user.worker:
+                # Delete payment records for this worker
+                Payment.query.filter_by(worker_id=user.worker.id).delete()
+                # Delete worker contact access records
+                WorkerContactAccess.query.filter_by(worker_id=user.worker.id).delete()
+                # Delete employment records
+                Employment.query.filter_by(worker_id=user.worker.id).delete()
                 # Delete reviews where this user is the worker
                 Review.query.filter_by(worker_id=user.worker.id).delete()
                 # Delete worker applications
                 Application.query.filter_by(worker_id=user.worker.id).delete()
                 db.session.delete(user.worker)
             elif user.employer:
+                # Delete payment records for this employer
+                Payment.query.filter_by(employer_id=user.employer.id).delete()
+                # Delete worker contact access records for this employer
+                WorkerContactAccess.query.filter_by(employer_id=user.employer.id).delete()
+                # Delete employment records for this employer
+                Employment.query.filter_by(employer_id=user.employer.id).delete()
                 # Delete reviews where this user is the employer
                 Review.query.filter_by(employer_id=user.employer.id).delete()
                 # Delete employer jobs and applications
@@ -3054,6 +3066,13 @@ def admin_worker_action(worker_id, action):
     elif action == 'unsuspend':
         user.is_blocked = False
     elif action == 'delete':
+        # Delete related records before deleting user
+        Payment.query.filter_by(worker_id=worker.id).delete()
+        WorkerContactAccess.query.filter_by(worker_id=worker.id).delete()
+        Employment.query.filter_by(worker_id=worker.id).delete()
+        Review.query.filter_by(worker_id=worker.id).delete()
+        Application.query.filter_by(worker_id=worker.id).delete()
+        db.session.delete(worker)
         db.session.delete(user)
         db.session.commit()
         flash('Worker deleted successfully.', 'success')
@@ -3106,6 +3125,18 @@ def admin_employer_action(employer_id, action):
     elif action == 'unsuspend':
         user.is_blocked = False
     elif action == 'delete':
+        # Delete related records before deleting user
+        Payment.query.filter_by(employer_id=employer.id).delete()
+        WorkerContactAccess.query.filter_by(employer_id=employer.id).delete()
+        Employment.query.filter_by(employer_id=employer.id).delete()
+        Review.query.filter_by(employer_id=employer.id).delete()
+        # Delete employer jobs and applications
+        jobs = Job.query.filter_by(employer_id=employer.id).all()
+        for job in jobs:
+            Review.query.filter_by(application_id=job.id).delete()
+            Application.query.filter_by(job_id=job.id).delete()
+            db.session.delete(job)
+        db.session.delete(employer)
         db.session.delete(user)
         db.session.commit()
         flash('Employer deleted successfully.', 'success')
