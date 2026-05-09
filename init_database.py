@@ -73,6 +73,7 @@ def run_migrations():
         # 2. Update Notification table
         notification_columns = [col['name'] for col in inspector.get_columns('notification')]
         missing_notif_cols = [
+            ('title', 'VARCHAR(255)'),
             ('notification_type', 'VARCHAR(50)'),
             ('action_url', 'VARCHAR(500)'),
             ('action_text', 'VARCHAR(100)'),
