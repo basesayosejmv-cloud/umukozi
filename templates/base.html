@@ -33,7 +33,7 @@
             <div class="nav">
                 {% if not current_user.is_authenticated %}
                 <a href="{{ url_for('index') }}" class="logo logo-animated">
-                    <span class="letter-u" style="--i:1; --c:#10b981;">U</span><span style="--i:2; --c:#10b981;">M</span><span class="letter-u" style="--i:3; --c:#F59E0B;">U</span><span style="--i:4; --c:#F59E0B;">K</span><span class="letter-o" style="--i:5; --c:#0FB981;">O</span><span style="--i:6; --c:#0FB981;">Z</span><span style="--i:7; --c:#0FB981;">I</span>
+                    <img src="{{ url_for('static', filename='images/modfyed logo (2).png') }}" alt="Umukozi Logo" style="height: 40px; width: auto; object-fit: contain;">
                 </a>
                 <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
                     <i class='bx bx-menu'></i>
@@ -45,7 +45,7 @@
                     <i class='bx bx-menu-alt-left'></i>
                 </button>
                 <a href="{{ url_for('index') }}" class="logo logo-animated" style="margin-right: auto;">
-                    <span class="letter-u" style="--i:1; --c:#10b981;">U</span><span style="--i:2; --c:#10b981;">M</span><span class="letter-u" style="--i:3; --c:#F59E0B;">U</span><span style="--i:4; --c:#F59E0B;">K</span><span class="letter-o" style="--i:5; --c:#0FB981;">O</span><span style="--i:6; --c:#0FB981;">Z</span><span style="--i:7; --c:#0FB981;">I</span>
+                    <img src="{{ url_for('static', filename='images/modfyed logo (2).png') }}" alt="Umukozi Logo" style="height: 40px; width: auto; object-fit: contain;">
                 </a>
                 <div class="nav-auth-actions" style="display: flex; align-items: center; gap: 1rem;">
                     <button id="pwa-install-btn" onclick="installApp()" style="display: none; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 6px 12px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px;">
