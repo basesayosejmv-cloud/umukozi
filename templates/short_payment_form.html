@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payment Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .amount-display {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .amount-display .amount {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+        input[type="text"], input[type="tel"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        .payment-methods {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .payment-methods label {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 0;
+        }
+        .payment-methods input[type="radio"] {
+            display: none;
+        }
+        .payment-methods input[type="radio"]:checked + label {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+        .file-upload {
+            border: 2px dashed #ddd;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .submit-btn:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <div class="amount-display">
+            <div>Total Amount</div>
+            <div class="amount">10,000</div>
+            <div>RWF</div>
+        </div>
+
+        <form method="POST" action="/payment/submit" enctype="multipart/form-data">
+            <div class="form-group">
+                <label>Payment Method *</label>
+                <div class="payment-methods">
+                    <input type="radio" name="payment_method" value="momo" id="momo" required>
+                    <label for="momo">📱 MoMo</label>
+                    
+                    <input type="radio" name="payment_method" value="airtel" id="airtel" required>
+                    <label for="airtel">📱 Airtel</label>
+                    
+                    <input type="radio" name="payment_method" value="bank" id="bank" required>
+                    <label for="bank">🏦 Bank</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone Number *</label>
+                <input type="tel" id="phone" name="phone_number" placeholder="0788123456" required>
+            </div>
+
+            <div class="form-group">
+                <label for="transaction">Transaction ID *</label>
+                <input type="text" id="transaction" name="transaction_id" placeholder="Enter transaction ID" required>
+            </div>
+
+            <div class="form-group">
+                <label>Payment Screenshot *</label>
+                <div class="file-upload">
+                    <input type="file" name="screenshot" accept="image/*" required>
+                    <div>📷 Upload screenshot</div>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">Submit Payment</button>
+        </form>
+    </div>
+</body>
+</html>
