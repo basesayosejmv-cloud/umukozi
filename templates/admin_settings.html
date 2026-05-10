@@ -55,6 +55,9 @@
                 <a href="#maintenance" class="btn btn-outline" style="border: none;">
                     <i class='bx bxs-wrench' style="margin-right: 0.5rem;"></i> Maintenance
                 </a>
+                <a href="#system-controls" class="btn btn-outline" style="border: none;">
+                    <i class='bx bxs-shield' style="margin-right: 0.5rem;"></i> System Controls
+                </a>
             </nav>
         </div>
 
@@ -372,6 +375,106 @@
         </section>
 
         <!-- Save Settings Button -->
+        <!-- System Controls -->
+        <section id="system-controls" class="card">
+            <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 2rem; display: flex; align-items: center; gap: 0.75rem;">
+                <span style="background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 0.75rem; color: #ef4444;">
+                    <i class='bx bxs-shield'></i>
+                </span>
+                System Controls
+                <span style="background: #fef2f2; color: #ef4444; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; margin-left: auto;">
+                    ⚠️ Critical Settings
+                </span>
+            </h3>
+            
+            <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 0.75rem; padding: 1rem; margin-bottom: 2rem;">
+                <p style="margin: 0; color: #991b1b; font-size: 0.875rem; font-weight: 600;">
+                    <i class='bx bx-error' style="margin-right: 0.5rem;"></i>
+                    These controls affect core platform functionality. Changes will take effect immediately for all users.
+                </p>
+            </div>
+
+            <div class="settings-grid">
+                <div style="grid-column: span 2;">
+                    <div style="border: 1px solid var(--border-color); border-radius: 0.75rem; padding: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <div>
+                                <h4 style="margin: 0; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
+                                    <i class='bx bx-user-plus' style="color: var(--primary-color);"></i>
+                                    User Registration
+                                </h4>
+                                <p style="margin: 0.5rem 0 0 0; color: var(--text-secondary); font-size: 0.875rem;">
+                                    Allow new users to register on the platform
+                                </p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="allow_registration" {{ 'checked' if settings.allow_registration else '' }}>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">
+                            When disabled, new user registration will be blocked. Existing users can still log in.
+                        </div>
+                    </div>
+                </div>
+
+                <div style="grid-column: span 2;">
+                    <div style="border: 1px solid var(--border-color); border-radius: 0.75rem; padding: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <div>
+                                <h4 style="margin: 0; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
+                                    <i class='bx bx-briefcase' style="color: var(--success-color);"></i>
+                                    Job Posting
+                                </h4>
+                                <p style="margin: 0.5rem 0 0 0; color: var(--text-secondary); font-size: 0.875rem;">
+                                    Allow employers to post new jobs
+                                </p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="allow_job_posting" {{ 'checked' if settings.allow_job_posting else '' }}>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">
+                            When disabled, employers cannot create new job postings. Existing jobs remain active.
+                        </div>
+                    </div>
+                </div>
+
+                <div style="grid-column: span 2;">
+                    <div style="border: 1px solid var(--border-color); border-radius: 0.75rem; padding: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <div>
+                                <h4 style="margin: 0; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
+                                    <i class='bx bx-send' style="color: var(--warning-color);"></i>
+                                    Job Applications
+                                </h4>
+                                <p style="margin: 0.5rem 0 0 0; color: var(--text-secondary); font-size: 0.875rem;">
+                                    Allow workers to apply for jobs
+                                </p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="allow_job_applications" {{ 'checked' if settings.allow_job_applications else '' }}>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">
+                            When disabled, workers cannot submit job applications. Existing applications are preserved.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button class="btn btn-primary" onclick="saveSystemSettings()">
+                    <i class='bx bx-save' style="margin-right: 0.5rem;"></i> Save System Controls
+                </button>
+                <button class="btn btn-outline" onclick="resetSystemSettings()">
+                    <i class='bx bx-reset' style="margin-right: 0.5rem;"></i> Reset to Defaults
+                </button>
+            </div>
+        </section>
+
         <div style="text-align: center; margin-top: 2rem;">
             <button class="btn btn-primary" onclick="saveAllSettings()" style="padding: 0.75rem 2rem; font-size: 1rem;">
                 <i class='bx bx-save' style="margin-right: 0.5rem;"></i> Save All Settings
@@ -473,6 +576,93 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         }
     });
 });
+
+// System Controls Functions
+function saveSystemSettings() {
+    const formData = new FormData();
+    formData.append('allow_registration', document.getElementById('allow_registration').checked);
+    formData.append('allow_job_posting', document.getElementById('allow_job_posting').checked);
+    formData.append('allow_job_applications', document.getElementById('allow_job_applications').checked);
+    
+    fetch('/admin/settings/save', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            showNotification('System controls updated successfully!', 'success');
+        } else {
+            // Show error message
+            showNotification('Error updating system controls: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error updating system controls', 'error');
+    });
+}
+
+function resetSystemSettings() {
+    if (confirm('Are you sure you want to reset all system controls to their default values? This will enable all features.')) {
+        document.getElementById('allow_registration').checked = true;
+        document.getElementById('allow_job_posting').checked = true;
+        document.getElementById('allow_job_applications').checked = true;
+        
+        // Auto-save after reset
+        saveSystemSettings();
+    }
+}
+
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        z-index: 9999;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        max-width: 400px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    `;
+    
+    // Set color based on type
+    if (type === 'success') {
+        notification.style.background = '#10b981';
+        notification.style.color = 'white';
+    } else if (type === 'error') {
+        notification.style.background = '#ef4444';
+        notification.style.color = 'white';
+    } else {
+        notification.style.background = '#3b82f6';
+        notification.style.color = 'white';
+    }
+    
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
+}
 </script>
 
 <style>
@@ -781,6 +971,56 @@ input[type="checkbox"], input[type="radio"] {
 @keyframes spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
+}
+
+/* Toggle Switch Styles */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+    background-color: var(--primary-color);
+}
+
+input:focus + .toggle-slider {
+    box-shadow: 0 0 1px var(--primary-color);
+}
+
+input:checked + .toggle-slider:before {
+    transform: translateX(26px);
 }
 </style>
 {% endblock %}

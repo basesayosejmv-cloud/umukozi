@@ -32,8 +32,8 @@
         <nav class="container">
             <div class="nav">
                 {% if not current_user.is_authenticated %}
-                <a href="{{ url_for('index') }}" class="logo logo-animated logo-rounded-animation">
-                    <img src="{{ url_for('static', filename='images/modfyed logo (2).png') }}" alt="Umukozi Logo" style="height: 32px; width: auto; object-fit: contain;">
+                <a href="{{ url_for('index') }}" class="logo">
+                    <img src="{{ url_for('static', filename='images/modfyed logo (2).png') }}" alt="Umukozi Logo" style="height: 64px; width: auto; object-fit: contain;">
                 </a>
                 <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
                     <i class='bx bx-menu'></i>
@@ -44,8 +44,8 @@
                 <button class="mobile-sidebar-toggle" onclick="toggleSidebar()" style="background: none; border: none; font-size: 1.75rem; cursor: pointer; color: var(--text-primary); display: none; align-items: center; justify-content: center; padding: 0.25rem;">
                     <i class='bx bx-menu-alt-left'></i>
                 </button>
-                <a href="{{ url_for('index') }}" class="logo logo-animated" style="margin-right: auto;">
-                    <img src="{{ url_for('static', filename='images/modfyed logo (2).png') }}" alt="Umukozi Logo" style="height: 32px; width: auto; object-fit: contain;">
+                <a href="{{ url_for('index') }}" class="logo" style="margin-right: auto;">
+                    <img src="{{ url_for('static', filename='images/modfyed logo (2).png') }}" alt="Umukozi Logo" style="height: 64px; width: auto; object-fit: contain;">
                 </a>
                 <div class="nav-auth-actions" style="display: flex; align-items: center; gap: 1rem;">
                     <button id="pwa-install-btn" onclick="installApp()" style="display: none; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 6px 12px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px;">
@@ -384,27 +384,62 @@
             }
         }
 
+        // Global Utility for copying recipient number
+        function copyRecipientNumber(id = 'recipientNumber') {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const number = el.innerText;
+            navigator.clipboard.writeText(number).then(() => {
+                const btn = event.currentTarget;
+                const icon = btn.querySelector('i');
+                const originalIcon = icon.className;
+                const originalBorder = btn.style.borderColor;
+                const originalColor = btn.style.color;
+                
+                icon.className = 'bx bx-check';
+                btn.style.borderColor = '#10b981';
+                btn.style.color = '#10b981';
+                
+                setTimeout(() => {
+                    icon.className = originalIcon;
+                    btn.style.borderColor = originalBorder;
+                    btn.style.color = originalColor;
+                }, 2000);
+            });
+        }
+
         // Global Platform Payment Modal
         function showPlatformPaymentModal(workerId = '', workerName = '') {
             const existingModal = document.getElementById('globalPaymentModal');
-            if (existingModal) {
-                existingModal.remove(); // Remove existing modal to reset dynamic content
-            }
+            if (existingModal) existingModal.remove();
             
-            const workerContext = workerName ? ` to connect with <strong>${workerName}</strong>` : ' to connect with this worker';
-            
-            // Show loading modal first
             const loadingModalHtml = `
             <div id="globalPaymentModal" class="modal-overlay">
-                <div class="modal" style="max-width: 500px;">
-                    <button onclick="closePaymentModal()" style="position: absolute; right: 1rem; top: 1rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary); transition: color 0.2s;" onmouseover="this.style.color='var(--danger-color)'" onmouseout="this.style.color='var(--text-secondary)'">✕</button>
-                    <div style="margin: 0 auto 1rem; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
-                        <img src="/static/images/momo%20icon.png" alt="MTN MoMo" style="max-width: 100%; max-height: 100%; border-radius: 50%; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); object-fit: contain;">
+                <div class="payment-modal-container loading" style="max-width: 450px; padding: 2rem; background: white; border-radius: 2rem; margin: auto; position: relative;">
+                    <button class="payment-close-btn" onclick="closePaymentModal()" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer;">&times;</button>
+                    
+                    <div style="text-align: center; margin-bottom: 2rem;">
+                        <i class="bx bx-loader-alt bx-spin" style="font-size: 2.5rem; color: #3b82f6; margin-bottom: 1rem; display: block;"></i>
+                        <h3 style="font-family: 'Outfit', sans-serif; font-weight: 800; color: #1e293b; margin: 0;">Securing Connection...</h3>
                     </div>
-                    <h3 class="modal-title" style="margin-bottom: 0.5rem; font-size: 1.25rem; text-align: center;">Loading pricing...</h3>
-                    <div style="text-align: center; padding: 2rem;">
-                        <i class="bx bx-loader-alt bx-spin" style="font-size: 2rem; color: var(--primary-color);"></i>
+
+                    <div class="recipient-card" style="background: #f0f7ff; border: 1.5px solid #3b82f6; border-radius: 1rem; padding: 1rem; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div class="recipient-icon" style="width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #3b82f6; font-size: 1.25rem; flex-shrink: 0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                                <i class='bx bx-user-check'></i>
+                            </div>
+                            <div class="recipient-info" style="text-align: left;">
+                                <span style="display: block; font-size: 0.65rem; color: #3b82f6; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Recipient</span>
+                                <strong id="loadingRecipientNumber" style="display: block; font-size: 1rem; color: #1e293b; margin-top: 0.1rem;">0795555112</strong>
+                                <span style="display: block; font-size: 0.7rem; color: #64748b; font-weight: 600;">Emmanuel DUSHIMIRIMANA</span>
+                            </div>
+                        </div>
+                        <button type="button" onclick="copyRecipientNumber('loadingRecipientNumber')" style="background: white; border: 1px solid #e2e8f0; color: #3b82f6; padding: 0.4rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                            <i class='bx bx-copy' style="font-size: 1.1rem;"></i>
+                        </button>
                     </div>
+                    
+                    <p style="font-size: 0.85rem; color: #64748b; line-height: 1.5; margin: 0;">We're initializing your secure payment session. You can already see the recipient details above.</p>
                 </div>
             </div>`;
             
@@ -413,20 +448,17 @@
             modal.style.display = 'flex';
             setTimeout(() => { modal.classList.add('active'); }, 10);
             
-            // Fetch pricing information
             fetch(`/employer/payment/${workerId}/pricing`)
                 .then(response => response.json())
                 .then(pricingData => {
-                    if (pricingData.error) {
-                        throw new Error(pricingData.error);
-                    }
-                    
-                    // Update modal with pricing information
-                    updatePaymentModalWithPricing(workerId, workerName, pricingData);
+                    updatePaymentModalWithPricing(workerId, workerName, pricingData || {
+                        amount: 10000,
+                        pricing_tier: 'first_time',
+                        formatted_amount: 'RWF 10 000'
+                    });
                 })
                 .catch(error => {
                     console.error('Error fetching pricing:', error);
-                    // Show default pricing on error
                     updatePaymentModalWithPricing(workerId, workerName, {
                         amount: 10000,
                         pricing_tier: 'first_time',
@@ -437,133 +469,235 @@
         
         function updatePaymentModalWithPricing(workerId, workerName, pricingData) {
             const existingModal = document.getElementById('globalPaymentModal');
-            if (existingModal) {
-                existingModal.remove(); // Remove existing modal completely
-            }
+            if (existingModal) existingModal.remove();
             
-            const workerContext = workerName ? ` to connect with <strong>${workerName}</strong>` : ' to connect with this worker';
-            const pricingMessage = pricingData.pricing_tier === 'first_time' 
-                ? 'First-time connection fee' 
-                : 'Returning employer discount';
+            // Build modal HTML using string concatenation to avoid template literal issues
+            let modalHtml = '';
+            modalHtml += '<div id="globalPaymentModal" class="modal-overlay">';
+            modalHtml += '<div class="payment-modal-container">';
+            modalHtml += '<button class="payment-close-btn" onclick="closePaymentModal()">&times;</button>';
+            modalHtml += '<div class="payment-layout">';
             
-            const modalHtml = `
-            <div id="globalPaymentModal" class="modal-overlay">
-                <div class="modal" style="max-width: 500px;">
-                    <button onclick="closePaymentModal()" style="position: absolute; right: 1rem; top: 1rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary); transition: color 0.2s;" onmouseover="this.style.color='var(--danger-color)'" onmouseout="this.style.color='var(--text-secondary)'">✕</button>
-                    <div style="margin: 0 auto 1rem; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
-                        <img src="/static/images/momo%20icon.png" alt="MTN MoMo" style="max-width: 100%; max-height: 100%; border-radius: 50%; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); object-fit: contain;">
-                    </div>
-                    <h3 class="modal-title" style="margin-bottom: 0.5rem; font-size: 1.25rem; text-align: center;">${pricingData.formatted_amount} Connection Fee</h3>
-                    <p style="color: var(--success-color); font-size: 0.875rem; text-align: center; margin-bottom: 0.5rem;">
-                        <i class='bx bx-tag'></i> ${pricingMessage}
-                    </p>
-                    <div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 20px;">
-                        <div style="font-size: 1.2rem; margin-bottom: 5px;">Amount to Pay</div>
-                        <div style="font-size: 2em; font-weight: bold;">10,000 RWF</div>
-                    </div>
-                    
-                    <form id="paymentForm" method="POST" action="/employer/payment/${workerId}/submit" enctype="multipart/form-data">
-                        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                            <label style="flex: 1; text-align: center; padding: 10px; border: 2px solid #ddd; border-radius: 5px; cursor: pointer;">
-                                <input type="radio" name="payment_method" value="momo" required style="display: none;">
-                                📱 MoMo
-                            </label>
-                            <label style="flex: 1; text-align: center; padding: 10px; border: 2px solid #ddd; border-radius: 5px; cursor: pointer;">
-                                <input type="radio" name="payment_method" value="airtel" required style="display: none;">
-                                📱 Airtel
-                            </label>
-                        </div>
-                        
-                        <div style="margin-bottom: 15px;">
-                            <input type="tel" name="phone_number" placeholder="Phone Number" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
-                        </div>
-                        
-                        <div style="margin-bottom: 15px;">
-                            <input type="text" name="transaction_id" placeholder="Transaction ID" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
-                        </div>
-                        
-                        <div style="margin-bottom: 15px;">
-                            <input type="file" name="screenshot" accept="image/*" required style="width: 100%; padding: 10px; border: 1px dashed #ddd; border-radius: 5px;">
-                        </div>
-                        
-                        <button type="submit" style="width: 100%; background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 15px; border: none; border-radius: 5px; font-size: 16px; font-weight: 600; cursor: pointer;">
-                            Submit Payment
-                        </button>
-                    </form>
-                </div>
-            </div>`;
+            // Left Sidebar: Summary
+            modalHtml += '<div class="payment-sidebar">';
+            modalHtml += '<div class="payment-brand">';
+            modalHtml += '<img src="/static/images/momo%20icon.png" alt="MoMo">';
+            modalHtml += '<span class="brand-text">MoMo <small>from MTN</small></span>';
+            modalHtml += '</div>';
+            
+            modalHtml += '<div class="payment-summary-box">';
+            modalHtml += '<div class="summary-amount">' + pricingData.formatted_amount + '</div>';
+            modalHtml += '<div class="summary-label">Connection Fee</div>';
+            modalHtml += '<div class="summary-divider"></div>';
+            modalHtml += '<div class="summary-badge">';
+            modalHtml += '<i class="bx bxs-check-shield"></i>';
+            modalHtml += '<span>First-time connection fee</span>';
+            modalHtml += '</div>';
+            modalHtml += '</div>';
+            
+            modalHtml += '<div class="payment-amount-display">';
+            modalHtml += '<div class="amount-label">Amount to pay</div>';
+            modalHtml += '<div class="amount-value">' + pricingData.formatted_amount + '</div>';
+            modalHtml += '</div>';
+            
+            modalHtml += '<div class="payment-trust-indicators">';
+            modalHtml += '<div class="trust-item">';
+            modalHtml += '<div class="trust-icon"><i class="bx bx-lock-alt"></i></div>';
+            modalHtml += '<div class="trust-text">';
+            modalHtml += '<strong>Secure Payment</strong>';
+            modalHtml += '<p>Your payment is protected with end-to-end encryption.</p>';
+            modalHtml += '</div>';
+            modalHtml += '</div>';
+            modalHtml += '<div class="trust-item">';
+            modalHtml += '<div class="trust-icon"><i class="bx bx-zap"></i></div>';
+            modalHtml += '<div class="trust-text">';
+            modalHtml += '<strong>Instant Processing</strong>';
+            modalHtml += '<p>Your payment will be processed instantly and securely.</p>';
+            modalHtml += '</div>';
+            modalHtml += '</div>';
+            modalHtml += '<div class="trust-item">';
+            modalHtml += '<div class="trust-icon"><i class="bx bx-shield-check"></i></div>';
+            modalHtml += '<div class="trust-text">';
+            modalHtml += '<strong>Trusted & Safe</strong>';
+            modalHtml += '<p>Powered by MoMo - Rwanda\'s most trusted mobile money.</p>';
+            modalHtml += '</div>';
+            modalHtml += '</div>';
+            modalHtml += '</div>';
+            
+            modalHtml += '<div class="payment-footer-badges">';
+            modalHtml += '<div class="pci-badge">PCI DSS COMPLIANT</div>';
+            modalHtml += '<div class="verified-badge">Verified by <strong>MoMo</strong> <i class="bx bx-chevron-down"></i></div>';
+            modalHtml += '</div>';
+            modalHtml += '</div>';
+            
+            // Right Side: Form
+            modalHtml += '<div class="payment-main">';
+            modalHtml += '<h2 class="payment-title">Complete Your Payment</h2>';
+            modalHtml += '<p class="payment-subtitle">Pay securely using MoMo or Airtel Money</p>';
+            
+            modalHtml += '<div class="recipient-card" style="background: #f0f7ff; border: 1.5px solid #3b82f6; border-radius: 1rem; padding: 1rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem;">';
+            modalHtml += '<div style="display: flex; align-items: center; gap: 1rem;">';
+            modalHtml += '<div class="recipient-icon" style="width: 44px; height: 44px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #3b82f6; font-size: 1.25rem; flex-shrink: 0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">';
+            modalHtml += '<i class="bx bx-user-check"></i>';
+            modalHtml += '</div>';
+            modalHtml += '<div class="recipient-info">';
+            modalHtml += '<span style="display: block; font-size: 0.7rem; color: #3b82f6; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Payment Recipient</span>';
+            modalHtml += '<strong id="recipientNumber" style="display: block; font-size: 1.1rem; color: #1e293b; margin-top: 0.1rem;">0795555112</strong>';
+            modalHtml += '<span style="display: block; font-size: 0.75rem; color: #64748b; font-weight: 600;">Emmanuel DUSHIMIRIMANA</span>';
+            modalHtml += '</div>';
+            modalHtml += '</div>';
+            modalHtml += '<button type="button" onclick="copyRecipientNumber()" style="background: white; border: 1px solid #e2e8f0; color: #3b82f6; padding: 0.5rem; border-radius: 10px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center;" title="Copy Number">';
+            modalHtml += '<i class="bx bx-copy" style="font-size: 1.25rem;"></i>';
+            modalHtml += '</button>';
+            modalHtml += '</div>';
+
+            modalHtml += '<form id="paymentForm" method="POST" action="/employer/payment/' + workerId + '/submit" enctype="multipart/form-data">';
+            modalHtml += '<div class="form-section">';
+            modalHtml += '<label class="section-label">Choose Payment Method</label>';
+            modalHtml += '<div class="payment-methods-grid">';
+            modalHtml += '<label class="method-card active">';
+            modalHtml += '<input type="radio" name="payment_method" value="momo" checked required>';
+            modalHtml += '<div class="method-check"></div>';
+            modalHtml += '<div class="method-icon-box">';
+            modalHtml += '<img src="/static/images/momo%20icon.png" alt="MoMo">';
+            modalHtml += '</div>';
+            modalHtml += '<span class="method-name">MoMo</span>';
+            modalHtml += '</label>';
+            modalHtml += '<label class="method-card">';
+            modalHtml += '<input type="radio" name="payment_method" value="airtel" required>';
+            modalHtml += '<div class="method-check"></div>';
+            modalHtml += '<div class="method-icon-box">';
+            modalHtml += '<div style="font-weight: 900; color: #ef4444; font-size: 1.1rem; text-transform: lowercase;">airtel</div>';
+            modalHtml += '</div>';
+            modalHtml += '<span class="method-name">Airtel Money</span>';
+            modalHtml += '</label>';
+            modalHtml += '</div>';
+            modalHtml += '</div>';
+            
+            modalHtml += '<div class="form-group has-icon" style="position: relative; margin-bottom: 1rem;">';
+            modalHtml += '<i class="bx bx-phone" style="position: absolute; left: 1rem; top: 1.25rem; font-size: 1.25rem; color: #94a3b8;"></i>';
+            modalHtml += '<input type="tel" name="phone_number" placeholder="MoMo / Airtel Number" required style="width: 100%; padding: 1.15rem 1rem 1.15rem 3rem; border: 1.5px solid #f1f5f9; border-radius: 12px; font-size: 1rem; font-weight: 500; background: #f8fafc;">';
+            modalHtml += '</div>';
+            
+            modalHtml += '<div class="form-group" style="margin-bottom: 1rem;">';
+            modalHtml += '<div class="upload-area" onclick="document.getElementById(\'receipt-upload\').click()" style="border: 2px dashed #e2e8f0; padding: 1rem; border-radius: 1rem; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; background: #fcfcfd;">';
+            modalHtml += '<i class="bx bx-cloud-upload" style="font-size: 1.25rem; color: #3b82f6;"></i>';
+            modalHtml += '<div class="upload-text">';
+            modalHtml += '<strong style="display: block; font-size: 0.8rem;">Upload Receipt</strong>';
+            modalHtml += '</div>';
+            modalHtml += '<input type="file" id="receipt-upload" name="screenshot" accept="image/*,.pdf" style="display: none;">';
+            modalHtml += '</div>';
+            modalHtml += '<div id="file-chosen" style="font-size: 0.75rem; color: #10b981; margin-top: 0.3rem;"></div>';
+            modalHtml += '</div>';
+            
+            modalHtml += '<div class="payment-summary-card" style="background: #f8fafc; border-radius: 1rem; padding: 1rem; margin-bottom: 1.5rem; border: 1px solid #f1f5f9;">';
+            modalHtml += '<div class="summary-row total" style="font-weight: 800; display: flex; justify-content: space-between; font-size: 1rem;">';
+            modalHtml += '<span style="color: #64748b;">Total to pay</span>';
+            modalHtml += '<span style="color: #3b82f6;">' + pricingData.formatted_amount + '</span>';
+            modalHtml += '</div>';
+            modalHtml += '</div>';
+            
+            modalHtml += '<button type="submit" class="payment-submit-btn" style="width: 100%; background: #3b82f6; color: white; padding: 1.15rem; border-radius: 1rem; font-size: 1rem; font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s;">';
+            modalHtml += '<i class="bx bxs-lock-alt"></i>';
+            modalHtml += '<span>Pay ' + pricingData.formatted_amount + ' Securely</span>';
+            modalHtml += '</button>';
+            modalHtml += '</form>';
+            modalHtml += '</div>';
+            modalHtml += '</div>';
+            modalHtml += '</div>';
+            modalHtml += '</div>';
+            
+            // Add styles
+            modalHtml += '<style>';
+            modalHtml += '.payment-modal-container { background: #fff; width: 95%; max-width: 900px; border-radius: 2rem; overflow: hidden; position: relative; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); font-family: "Inter", sans-serif; margin: auto; }\\n';
+            modalHtml += '.payment-layout { display: flex; min-height: 600px; }\\n';
+            modalHtml += '.payment-sidebar { width: 320px; background: linear-gradient(180deg, #062b51 0%, #1a3a5a 100%); color: white; padding: 2.5rem; display: flex; flex-direction: column; }\\n';
+            modalHtml += '.payment-brand { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; margin-bottom: 2rem; }\\n';
+            modalHtml += '.payment-brand img { width: 50px; height: 50px; object-fit: contain; }\\n';
+            modalHtml += '.brand-text { font-family: "Outfit", sans-serif; font-weight: 800; font-size: 1.1rem; text-align: center; }\\n';
+            modalHtml += '.summary-amount { font-family: "Outfit", sans-serif; font-size: 2rem; font-weight: 900; text-align: center; margin-bottom: 0.5rem; }\\n';
+            modalHtml += '.summary-label { font-size: 0.85rem; opacity: 0.8; text-align: center; }\\n';
+            modalHtml += '.payment-trust-indicators { margin-top: auto; display: flex; flex-direction: column; gap: 1.25rem; }\\n';
+            modalHtml += '.trust-item { display: flex; gap: 0.75rem; align-items: flex-start; }\\n';
+            modalHtml += '.trust-icon { font-size: 1.25rem; color: #60a5fa; margin-top: 2px; }\\n';
+            modalHtml += '.trust-text strong { display: block; font-size: 0.85rem; }\\n';
+            modalHtml += '.trust-text p { font-size: 0.7rem; opacity: 0.7; line-height: 1.3; margin: 0; }\\n';
+            modalHtml += '.payment-main { flex: 1; padding: 2.5rem 3rem; position: relative; }\\n';
+            modalHtml += '.payment-close-btn { position: absolute; top: 1.5rem; right: 1.5rem; background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer; z-index: 10; }\\n';
+            modalHtml += '.payment-title { font-family: "Outfit", sans-serif; font-size: 1.75rem; font-weight: 800; color: #0f172a; margin-bottom: 0.25rem; }\\n';
+            modalHtml += '.payment-subtitle { color: #64748b; font-size: 0.9rem; margin-bottom: 1.5rem; }\\n';
+            modalHtml += '.payment-methods-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }\\n';
+            modalHtml += '.method-card { border: 2px solid #f1f5f9; border-radius: 1rem; padding: 1rem; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: all 0.2s; position: relative; }\\n';
+            modalHtml += '.method-card.active { border-color: #3b82f6; background: #f0f7ff; }\\n';
+            modalHtml += '.method-card input { display: none; }\\n';
+            modalHtml += '.method-icon-box { width: 40px; height: 40px; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center; }\\n';
+            modalHtml += '.method-icon-box img { max-width: 100%; max-height: 100%; }\\n';
+            modalHtml += '.method-name { font-weight: 700; font-size: 0.9rem; color: #1e293b; }\\n';
+            modalHtml += '@media (max-width: 850px) { .payment-layout { flex-direction: column; } .payment-sidebar { width: 100%; } .payment-main { padding: 2rem 1.5rem; } }\\n';
+            modalHtml += '</style>';
+            modalHtml += '</div>';
+            modalHtml += '</div>';
             
             document.body.insertAdjacentHTML('beforeend', modalHtml);
             const modal = document.getElementById('globalPaymentModal');
-            
             modal.style.display = 'flex';
-            setTimeout(() => { modal.classList.add('active'); }, 10);
+            setTimeout(function() { modal.classList.add('active'); }, 10);
+            
+            // Handle file upload display
+            const fileInput = document.getElementById('receipt-upload');
+            const fileDisplay = document.getElementById('file-chosen');
+            if (fileInput) {
+                fileInput.addEventListener('change', function() {
+                    fileDisplay.textContent = this.files[0] ? 'Selected: ' + this.files[0].name : '';
+                });
+            }
             
             // Handle payment method selection
-            document.querySelectorAll('input[name="payment_method"]').forEach(radio => {
+            document.querySelectorAll('input[name="payment_method"]').forEach(function(radio) {
                 radio.addEventListener('change', function() {
-                    document.querySelectorAll('label').forEach(label => {
-                        if (label.querySelector('input[type="radio"]')) {
-                            label.style.borderColor = '#ddd';
-                            label.style.background = 'transparent';
-                        }
+                    document.querySelectorAll('.method-card').forEach(function(card) {
+                        card.classList.remove('active');
                     });
                     if (this.checked) {
-                        const label = this.parentElement;
-                        label.style.borderColor = '#667eea';
-                        label.style.background = '#f0f4ff';
+                        this.parentElement.classList.add('active');
                     }
                 });
             });
-
+            
             // Handle form submission
             document.getElementById('paymentForm').addEventListener('submit', function(e) {
                 e.preventDefault();
-                
-                const formData = new FormData(this);
-                const submitBtn = this.querySelector('button[type="submit"]');
-                const originalText = submitBtn.innerHTML;
-                
-                submitBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Processing...';
+                var formData = new FormData(this);
+                var submitBtn = this.querySelector('button[type="submit"]');
+                var originalContent = submitBtn.innerHTML;
+                submitBtn.innerHTML = ' Processing...';
                 submitBtn.disabled = true;
                 
                 fetch(this.action, {
                     method: 'POST',
                     body: formData
                 })
-                .then(response => {
-                    if (!response.ok) {
-                        // Try to parse error as JSON, fallback to text
-                        return response.json().catch(() => {
-                            return response.text().then(text => {
-                                throw new Error(text || `HTTP ${response.status}`);
-                            });
-                        }).then(err => {
-                            throw new Error(err.error || err.message || `HTTP ${response.status}`);
-                        });
-                    }
-                    return response.json();
-                })
-                .then(data => {
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
                     if (data.success) {
-                        alert('Payment submitted successfully! Please wait for admin verification.');
-                        closePaymentModal();
-                        location.reload();
+                        showActionModal('Payment Received', 'Thank you! Your payment has been submitted for verification.', 'success', function() {
+                            location.reload();
+                        });
                     } else {
                         alert('Error: ' + data.error);
                     }
                 })
-                .catch(error => {
-                    alert('Error submitting payment: ' + error.message);
-                    console.error('Payment submission error:', error);
+                .catch(function(error) {
+                    alert('An error occurred. Please try again.');
+                    console.error(error);
                 })
-                .finally(() => {
-                    submitBtn.innerHTML = originalText;
+                .finally(function() {
+                    submitBtn.innerHTML = originalContent;
                     submitBtn.disabled = false;
                 });
             });
         }
-
+        
         function closePaymentModal() {
             const modal = document.getElementById('globalPaymentModal');
             if(modal) {
@@ -699,24 +833,22 @@
                 max-width: 350px;
             `;
             
-            installBanner.innerHTML = `
-                <i class='bx bxs-download' style='font-size: 24px;'></i>
-                <div style='flex: 1;'>
-                    <div style='font-weight: 600; margin-bottom: 4px;'>Install Umukozi App</div>
-                    <div style='font-size: 14px; opacity: 0.9;'>Get the full experience on your device</div>
-                </div>
-                <button onclick="installApp()" style='background: white; color: #10b981; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px;'>Install</button>
-                <button onclick="dismissInstallBanner()" style='background: transparent; color: white; border: 1px solid rgba(255,255,255,0.3); padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 18px; line-height: 1;'>&times;</button>
-            `;
+            installBanner.innerHTML = '';
+            installBanner.innerHTML += '<i class="bx bxs-download" style="font-size: 24px;"></i>';
+            installBanner.innerHTML += '<div style="flex: 1;">';
+            installBanner.innerHTML += '<div style="font-weight: 600; margin-bottom: 4px;">Install Umukozi App</div>';
+            installBanner.innerHTML += '<div style="font-size: 14px; opacity: 0.9;">Get the full experience on your device</div>';
+            installBanner.innerHTML += '</div>';
+            installBanner.innerHTML += '<button onclick=\"installApp()\" style=\"background: white; color: #10b981; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px;\">Install</button>';
+            installBanner.innerHTML += '<button onclick="dismissInstallBanner()" style="background: transparent; color: white; border: 1px solid rgba(255,255,255,0.3); padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 18px; line-height: 1;">&times;</button>';
             
             // Add animation
             const style = document.createElement('style');
-            style.textContent = `
-                @keyframes slideUp {
-                    from { transform: translateX(-50%) translateY(100px); opacity: 0; }
-                    to { transform: translateX(-50%) translateY(0); opacity: 1; }
-                }
-            `;
+            let cssText = '@keyframes slideUp {';
+            cssText += 'from { transform: translateX(-50%) translateY(100px); opacity: 0; }';
+            cssText += 'to { transform: translateX(-50%) translateY(0); opacity: 1; }';
+            cssText += '}';
+            style.textContent = cssText;
             document.head.appendChild(style);
             
             document.body.appendChild(installBanner);
@@ -828,6 +960,17 @@
                         autoRefreshAfterAction(1500);
                     }
                 });
+            });
+
+            // Handle global payment modal triggers
+            document.addEventListener('click', function(e) {
+                const btn = e.target.closest('.payment-modal-btn');
+                if (btn) {
+                    e.preventDefault();
+                    const workerId = btn.getAttribute('data-worker-id') || '';
+                    const workerName = btn.getAttribute('data-worker-name') || '';
+                    showPlatformPaymentModal(workerId, workerName);
+                }
             });
         });
     </script>

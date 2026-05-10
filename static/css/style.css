@@ -129,19 +129,18 @@ body {
 }
 
 .logo-animated span.letter-u {
-    animation: bounceLogo 2s infinite ease-in-out;
+    animation: none;
 }
 
 .logo-animated span.letter-o {
-    animation: wheelRotate 4s infinite linear;
+    animation: none;
     transform-origin: center;
     margin: 0 2px;
 }
 
 /* Other letters subtle wave */
 .logo-animated span:not(.letter-u):not(.letter-o) {
-    animation: waveLogo 3s infinite ease-in-out;
-    animation-delay: calc(0.1s * var(--i));
+    animation: none;
 }
 
 @keyframes bounceLogo {
@@ -2105,6 +2104,7 @@ body {
     overflow: hidden;
     background: white;
     transition: all 0.3s ease;
+    min-height: 450px;
 }
 
 .workers-grid .worker-card:hover {
@@ -2211,13 +2211,14 @@ body {
 }
 
 .workers-grid .skill-tag {
-    background: rgba(37, 99, 235, 0.05);
-    color: black;
-    padding: 0.1rem 0.4rem;
-    border-radius: 2rem;
-    font-size: 0.6rem;
-    font-weight: 700;
-    border: 1px solid rgba(37, 99, 235, 0.1);
+    background: #ffffff;
+    color: #1e293b;
+    padding: 0.3rem 0.8rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 /* Worker Actions */
@@ -2273,8 +2274,8 @@ body {
     }
     
     .workers-grid .skill-tag {
-        font-size: 0.55rem;
-        padding: 0.08rem 0.35rem;
+        font-size: 0.7rem;
+        padding: 0.25rem 0.6rem;
     }
     
     .workers-grid .worker-actions .btn {
@@ -2313,8 +2314,8 @@ body {
     }
     
     .workers-grid .skill-tag {
-        font-size: 0.5rem;
-        padding: 0.06rem 0.3rem;
+        font-size: 0.65rem;
+        padding: 0.2rem 0.5rem;
     }
     
     .workers-grid .worker-actions {
@@ -3740,4 +3741,64 @@ body {
     .hp-cta-text p { margin: 0 auto; }
     .hp-cta-actions { justify-content: center; }
     .hp-cta-btn { min-width: 0; width: 100%; max-width: 280px; }
+}
+
+/* New Worker Indicator Animation */
+.new-worker-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.2rem 0.5rem;
+    border-radius: 9999px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+    animation: pulse-badge 2s infinite;
+    z-index: 10;
+    border: 2px solid white;
+}
+
+@keyframes pulse-badge {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 2px 12px rgba(239, 68, 68, 0.6);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+    }
+}
+
+/* Alternative glowing animation */
+.new-worker-glow {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 12px;
+    height: 12px;
+    background: #ef4444;
+    border-radius: 50%;
+    animation: glow-pulse 1.5s infinite;
+    z-index: 10;
+}
+
+@keyframes glow-pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.8;
+        box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+    }
 }

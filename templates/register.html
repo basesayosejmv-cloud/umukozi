@@ -11,6 +11,22 @@
                 <p class="auth-subtitle">{{ _('create_account_subtitle') }}</p>
             </div>
             
+            <!-- System Notice -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        {% if category == 'warning' and 'disabled' in message.lower() %}
+                        <div class="alert alert-warning" style="margin-bottom: 1.5rem; border-left: 4px solid #f59e0b;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class='bx bx-error' style="font-size: 1.25rem;"></i>
+                                <span>{{ message }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
             <form method="POST">
                 <!-- Account Type Selection -->
                 <div class="form-group">

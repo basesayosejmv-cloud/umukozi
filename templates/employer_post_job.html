@@ -24,6 +24,22 @@
                 </div>
             </div>
 
+            <!-- System Notice -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        {% if category in ['warning', 'error'] and 'disabled' in message.lower() %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else 'warning' }}" style="margin-bottom: 2rem; border-left: 4px solid #{{ 'ef4444' if category == 'error' else 'f59e0b' }};">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class='bx bx-{{ 'error' if category == 'error' else 'error' }}' style="font-size: 1.25rem;"></i>
+                                <span>{{ message }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
             <!-- Job Posting Form -->
             <form method="POST" action="{{ url_for('employer_post_job') }}">
                 <div class="card" style="padding: 2rem;">

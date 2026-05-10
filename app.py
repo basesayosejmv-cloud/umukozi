@@ -3,7 +3,7 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, login_
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import session
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import logging
 import traceback
@@ -48,7 +48,7 @@ if os.getenv('FLASK_ENV') == 'production':
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 # Import models and db
-from models import db, User, Worker, Employer, Job, Application, Review, Message, Notification, Payment, WorkerContactAccess, EmailConfig, Employment
+from models import db, User, Worker, Employer, Job, Application, Review, Message, Notification, Payment, WorkerContactAccess, EmailConfig, Employment, SystemSettings
 from translations import TRANSLATIONS
 
 # Initialize extensions
@@ -396,6 +396,16 @@ def login():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    # Check if registration is allowed
+    settings = SystemSettings.get_current_settings()
+    if not settings.allow_registration:
+        if request.method == 'POST':
+            flash('User registration is currently disabled by the administrator.', 'error')
+            return redirect(url_for('register'))
+        else:
+            flash('User registration is currently disabled by the administrator.', 'warning')
+            return redirect(url_for('login'))
+    
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
@@ -489,21 +499,63 @@ def dashboard():
             employer_id=employer.id,
             status='verified'
         ).count() > 0
+        
+        # Calculate statistics for static cards
+        employer_jobs = Job.query.filter_by(employer_id=employer.id).all()
+        total_jobs_posted = len(employer_jobs)
+        positions_filled = len([job for job in employer_jobs if job.status == 'filled'])
+        
+        # Calculate average rating from completed jobs
+        completed_jobs = [job for job in employer_jobs if job.status == 'filled']
+        average_rating = 0.0
+        if completed_jobs:
+            # Get reviews for completed jobs
+            reviews = []
+            for job in completed_jobs:
+                job_reviews = Review.query.filter_by(job_id=job.id).all()
+                reviews.extend(job_reviews)
+            if reviews:
+                average_rating = sum(review.rating for review in reviews) / len(reviews)
+        
+        # Add statistics to employer object for template access
+        employer.total_jobs_posted = total_jobs_posted
+        employer.positions_filled = positions_filled
+        employer.average_rating = average_rating
+        employer.jobs = employer_jobs
             
-        # Show verified and available workers first, then others
+        # Show available workers (prioritize verified but include all available)
         workers = Worker.query.filter(
-            Worker.is_verified == True,
             Worker.availability_status == 'available'
         ).limit(8).all()
         
-        # If not enough verified available workers, add more workers
+        # If not enough available workers, add more workers regardless of availability
         if len(workers) < 8:
             additional_workers = Worker.query.filter(
                 Worker.id.notin_([w.id for w in workers])
             ).limit(8 - len(workers)).all()
             workers.extend(additional_workers)
         
-        return render_template('employer_dashboard.html', employer=employer, workers=workers, has_verified_payments=has_verified_payments)
+        # Check payment status for each worker and hide contact info if not paid
+        workers_with_contact_status = []
+        for worker in workers:
+            try:
+                contact_info = get_worker_contact_info(employer.id, worker.id)
+                workers_with_contact_status.append({
+                    'worker': worker,
+                    'has_access': contact_info['has_access'],
+                    'phone': contact_info['phone'],
+                    'email': contact_info['email']
+                })
+            except Exception as e:
+                # If contact info fails for a specific worker, continue with default values
+                workers_with_contact_status.append({
+                    'worker': worker,
+                    'has_access': False,
+                    'phone': 'Contact info unavailable',
+                    'email': 'Contact info unavailable'
+                })
+        
+        return render_template('employer_dashboard.html', employer=employer, workers_with_contact_status=workers_with_contact_status, has_verified_payments=has_verified_payments)
     elif current_user.user_type == 'admin':
         return redirect(url_for('admin_dashboard'))
     else:
@@ -1391,7 +1443,43 @@ def admin_reports():
 def admin_settings():
     if current_user.user_type != 'admin':
         return redirect(url_for('dashboard'))
-    return render_template('admin_settings.html')
+    
+    # Get current system settings
+    settings = SystemSettings.get_current_settings()
+    return render_template('admin_settings.html', settings=settings)
+
+@app.route('/admin/settings/save', methods=['POST'])
+@login_required
+def admin_save_settings():
+    if current_user.user_type != 'admin':
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+    
+    try:
+        # Get current settings
+        settings = SystemSettings.get_current_settings()
+        
+        # Update settings from form data
+        settings.allow_registration = request.form.get('allow_registration') == 'true'
+        settings.allow_job_posting = request.form.get('allow_job_posting') == 'true'
+        settings.allow_job_applications = request.form.get('allow_job_applications') == 'true'
+        settings.updated_by = current_user.id
+        settings.updated_at = datetime.utcnow()
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Settings updated successfully!',
+            'settings': {
+                'allow_registration': settings.allow_registration,
+                'allow_job_posting': settings.allow_job_posting,
+                'allow_job_applications': settings.allow_job_applications
+            }
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/admin/logs')
 @login_required
@@ -1884,6 +1972,10 @@ def worker_find_jobs():
             job.is_expired = True
         else:
             job.is_expired = False
+            
+        # Check if job is new (within 24 hours)
+        time_diff = now - job.created_at
+        job.is_new = time_diff.total_seconds() < 24 * 60 * 60  # 24 hours in seconds
     
     return render_template('worker_find_jobs.html', worker=worker, jobs=jobs)
 
@@ -1900,6 +1992,11 @@ def worker_job_details(job_id):
     has_applied = Application.query.filter_by(job_id=job_id, worker_id=worker.id).first() is not None or \
                   Application.query.filter_by(job_id=job_id, worker_id=worker.id, status='pending').first() is not None
     
+    # Check if job is new (within 24 hours)
+    from datetime import datetime
+    time_diff = datetime.utcnow() - job.created_at
+    job.is_new = time_diff.total_seconds() < 24 * 60 * 60  # 24 hours in seconds
+    
     return render_template('worker_job_details.html', worker=worker, job=job, has_applied=has_applied)
 
 @app.route('/worker/apply/<int:job_id>', methods=['POST', 'GET'])
@@ -1910,6 +2007,12 @@ def worker_apply_job(job_id):
         return redirect(url_for('dashboard'))
     worker = Worker.query.filter_by(user_id=current_user.id).first()
     job = Job.query.get_or_404(job_id)
+    
+    # Check if job applications are allowed
+    settings = SystemSettings.get_current_settings()
+    if not settings.allow_job_applications:
+        flash('Job applications are currently disabled by the administrator.', 'error')
+        return redirect(url_for('worker_find_jobs'))
     
     # Check if job deadline has passed
     if job.deadline and job.deadline < datetime.utcnow().date():
@@ -2218,11 +2321,19 @@ def employer_find_workers():
         for worker in workers:
             try:
                 contact_info = get_worker_contact_info(employer.id, worker.id)
+                
+                # Check if worker is new (registered within last 24 hours)
+                is_new_worker = False
+                if worker.created_at:
+                    time_diff = datetime.utcnow() - worker.created_at
+                    is_new_worker = time_diff.total_seconds() < 24 * 60 * 60  # 24 hours in seconds
+                
                 workers_with_contact_status.append({
                     'worker': worker,
                     'has_access': contact_info['has_access'],
                     'phone': contact_info['phone'],
-                    'email': contact_info['email']
+                    'email': contact_info['email'],
+                    'is_new': is_new_worker
                 })
             except Exception as e:
                 # If contact info fails for a specific worker, continue with default values
@@ -2230,7 +2341,8 @@ def employer_find_workers():
                     'worker': worker,
                     'has_access': False,
                     'phone': 'Contact info unavailable',
-                    'email': 'Contact info unavailable'
+                    'email': 'Contact info unavailable',
+                    'is_new': False
                 })
         
         return render_template('employer_find_workers.html', employer=employer, workers_with_contact_status=workers_with_contact_status, has_verified_payments=has_verified_payments)
@@ -2982,6 +3094,16 @@ def employer_post_job():
         return redirect(url_for('dashboard'))
     employer = Employer.query.filter_by(user_id=current_user.id).first()
     
+    # Check if job posting is allowed
+    settings = SystemSettings.get_current_settings()
+    if not settings.allow_job_posting:
+        if request.method == 'POST':
+            flash('Job posting is currently disabled by the administrator.', 'error')
+            return redirect(url_for('employer_post_job'))
+        else:
+            flash('Job posting is currently disabled by the administrator.', 'warning')
+            return redirect(url_for('employer_dashboard'))
+    
     if request.method == 'POST':
         # Get form data
         title = request.form.get('title')
@@ -3066,6 +3188,12 @@ def employer_my_jobs():
     
     # Get all jobs for this employer
     jobs = Job.query.filter_by(employer_id=employer.id).order_by(Job.created_at.desc()).all()
+    
+    # Check if jobs are new (within 24 hours)
+    from datetime import datetime
+    for job in jobs:
+        time_diff = datetime.utcnow() - job.created_at
+        job.is_new = time_diff.total_seconds() < 24 * 60 * 60  # 24 hours in seconds
     
     return render_template('employer_my_jobs.html', employer=employer, jobs=jobs)
 
@@ -3495,6 +3623,14 @@ def change_password():
         'success': True, 
         'message': 'Password updated successfully!'
     })
+
+# Route to serve uploaded files
+@app.route('/static/uploads/<filename>')
+def serve_uploaded_file(filename):
+    """Serve uploaded files from the uploads directory."""
+    from flask import send_from_directory
+    upload_folder = app.config.get('UPLOAD_FOLDER', 'static/uploads')
+    return send_from_directory(upload_folder, filename)
 
 if __name__ == '__main__':
     with app.app_context():

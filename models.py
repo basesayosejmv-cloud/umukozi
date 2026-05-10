@@ -435,3 +435,39 @@ class EmailConfig(db.Model):
     creator = db.relationship('User', backref='email_configs_created')
     def __repr__(self):
         return f'<EmailConfig {self.id}: {self.smtp_server}>'
+
+class SystemSettings(db.Model):
+    """System-wide settings controlled by admin"""
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Feature toggles
+    allow_registration = db.Column(db.Boolean, default=True)
+    allow_job_posting = db.Column(db.Boolean, default=True)
+    allow_job_applications = db.Column(db.Boolean, default=True)
+    
+    # Metadata
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    
+    # Relationships
+    updater = db.relationship('User', backref='system_settings_updated')
+    
+    def __repr__(self):
+        return f'<SystemSettings {self.id}: reg={self.allow_registration}, jobs={self.allow_job_posting}, apps={self.allow_job_applications}>'
+    
+    @staticmethod
+    def get_current_settings():
+        """Get current active system settings"""
+        settings = SystemSettings.query.filter_by(is_active=True).first()
+        if not settings:
+            # Create default settings if none exist
+            settings = SystemSettings(
+                allow_registration=True,
+                allow_job_posting=True,
+                allow_job_applications=True
+            )
+            db.session.add(settings)
+            db.session.commit()
+        return settings

@@ -70,11 +70,19 @@
             
             {% if jobs %}
                 {% for job in jobs %}
-                <div style="border: 1px solid var(--border-color); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1rem;">
+                <div style="border: 1px solid var(--border-color); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1rem; position: relative;">
+                    <!-- New Job Indicator -->
+                    {% if job.is_new %}
+                    <div class="new-worker-badge">NEW</div>
+                    {% endif %}
+                    
                     <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
                         <div style="flex: 1;">
-                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
                                 <h4 style="margin: 0;">{{ job.title }}</h4>
+                                {% if job.is_new %}
+                                <div class="new-worker-badge" style="position: relative; top: auto; right: auto; margin-left: 0.5rem;">NEW</div>
+                                {% endif %}
                                 {% if job.is_urgent %}
                                 <span class="badge badge-danger">{{ _('urgent') }}</span>
                                 {% endif %}
