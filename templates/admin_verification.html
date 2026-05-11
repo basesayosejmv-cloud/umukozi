@@ -42,7 +42,7 @@
                     <i class='bx bxs-time-five'></i>
                 </div>
                 <div class="stat-info">
-                    <div class="stat-value">{{ pending_verifications|length if pending_verifications else 0 }}</div>
+                    <div class="stat-value">{{ (pending_verifications|length) if pending_verifications else 0 }}</div>
                     <div class="stat-label">Pending Review</div>
                     <div class="stat-change" style="color: var(--warning-color);">
                         <i class='bx bx-time'></i> Requires action
@@ -55,7 +55,7 @@
                     <i class='bx bxs-check-circle'></i>
                 </div>
                 <div class="stat-info">
-                    <div class="stat-value">{{ verified_today|length if verified_today else 0 }}</div>
+                    <div class="stat-value">{{ (verified_today|length) if verified_today else 0 }}</div>
                     <div class="stat-label">Verified Today</div>
                     <div class="stat-change positive">
                         <i class='bx bx-up-arrow-alt'></i> Good progress
@@ -68,7 +68,7 @@
                     <i class='bx bxs-x-circle'></i>
                 </div>
                 <div class="stat-info">
-                    <div class="stat-value">{{ rejected_today|length if rejected_today else 0 }}</div>
+                    <div class="stat-value">{{ (rejected_today|length) if rejected_today else 0 }}</div>
                     <div class="stat-label">Rejected Today</div>
                     <div class="stat-change" style="color: var(--text-secondary);">
                         <i class='bx bx-info-circle'></i> Review needed
@@ -97,7 +97,7 @@
                     <div style="font-size: 2rem;">⚠️</div>
                     <div>
                         <h3 style="margin: 0; color: #92400e;">Pending Verifications</h3>
-                        <p style="margin: 0; color: #92400e; font-size: 0.875rem;">There are {{ pending_verifications|length if pending_verifications else 0 }} users waiting for identity verification</p>
+                        <p style="margin: 0; color: #92400e; font-size: 0.875rem;">There are {{ (pending_verifications|length) if pending_verifications else 0 }} users waiting for identity verification</p>
                     </div>
                 </div>
                 <button class="btn btn-warning" onclick="scrollToFirstPending()" style="border-radius: 0.75rem; background: #f59e0b; color: white;">
@@ -286,7 +286,7 @@ const verificationData = [
 ];
 
 function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
+    const sidebar = document.querySelector('.modern-sidebar');
     const overlay = document.querySelector('.sidebar-overlay');
     
     if (sidebar.classList.contains('active')) {
@@ -299,7 +299,7 @@ function toggleSidebar() {
 }
 
 function closeSidebar() {
-    const sidebar = document.getElementById('sidebar');
+    const sidebar = document.querySelector('.modern-sidebar');
     const overlay = document.querySelector('.sidebar-overlay');
     sidebar.classList.remove('active');
     overlay.classList.remove('active');

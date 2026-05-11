@@ -545,14 +545,6 @@
         overflow-x: hidden;
         position: relative;
     }
-    
-    .sidebar {
-        display: none !important;
-    }
-    
-    .sidebar-overlay {
-        display: none !important;
-    }
 }
 </style>
 {% endblock %}
@@ -621,8 +613,8 @@
                                     </a>
                                 {% else %}
                                     {% if not has_verified_payments %}
-                                        <button class="modern-btn btn-primary-modern payment-modal-btn" data-worker-id="{{ worker.id }}" data-worker-name="{{ worker.user.full_name }}">
-                                            <i class='bx bx-credit-card'></i> Get Contact Info
+                                        <button class="modern-btn btn-primary-modern" disabled>
+                                            <i class='bx bx-credit-card'></i> Contact Unavailable
                                         </button>
                                     {% endif %}
                                 {% endif %}
@@ -755,20 +747,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Add event listener to payment modal button
-    const paymentButton = document.querySelector('.payment-modal-btn');
-    if (paymentButton) {
-        paymentButton.addEventListener('click', function() {
-            const workerId = this.getAttribute('data-worker-id');
-            const workerName = this.getAttribute('data-worker-name');
-            if (typeof showPlatformPaymentModal === 'function') {
-                showPlatformPaymentModal(workerId, workerName);
-            } else {
-                alert('Please complete the payment to access worker contact information.');
-            }
-        });
-    }
-    
+        
     // Add event listener to contact button
     const contactButton = document.querySelector('.contact-btn');
     if (contactButton) {

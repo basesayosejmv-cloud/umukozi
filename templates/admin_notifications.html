@@ -3,10 +3,6 @@
 {% block title %}Notifications - Admin Dashboard{% endblock %}
 
 {% block content %}
-<!-- Mobile Menu Button -->
-<button class="mobile-menu-btn" onclick="toggleSidebar()">
-    <i class='bx bx-menu'></i>
-</button>
 
 <div class="sidebar-overlay" onclick="closeSidebar()"></div>
 
@@ -406,25 +402,6 @@ function updateLastUpdateTime() {
     document.getElementById('lastUpdate').textContent = timeText;
 }
 
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    
-    if (sidebar.classList.contains('active')) {
-        sidebar.classList.remove('active');
-        overlay.classList.remove('active');
-    } else {
-        sidebar.classList.add('active');
-        overlay.classList.add('active');
-    }
-}
-
-function closeSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    sidebar.classList.remove('active');
-    overlay.classList.remove('active');
-}
 
 function switchTab(tab) {
     const buttons = document.querySelectorAll('.tab-btn');
@@ -548,12 +525,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Handle window resize
-window.addEventListener('resize', function() {
-    if (window.innerWidth > 768) {
-        closeSidebar();
-    }
-});
 
 // Add CSS animations
 const style = document.createElement('style');

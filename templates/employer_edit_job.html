@@ -96,7 +96,7 @@
                             <div class="form-group">
                                 <label class="form-label">Salary Amount (RWF)</label>
                                 <input type="number" name="salary_amount" class="form-control" 
-                                       value="{{ form_data.salary_amount if form_data else (job.salary_amount|int if job.salary_amount else '') }}"
+                                       value="{{ form_data.salary_amount if form_data else ((job.salary_amount|int) if job.salary_amount else '') }}"
                                        placeholder="e.g., 50000" min="0" step="500">
                             </div>
                         </div>
@@ -175,18 +175,5 @@
 </style>
 
 <script>
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    sidebar.classList.toggle('active');
-    overlay.classList.toggle('active');
-}
-
-function closeSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    sidebar.classList.remove('active');
-    overlay.classList.remove('active');
-}
 </script>
 {% endblock %}

@@ -172,19 +172,6 @@
 </div>
 
 <script>
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    sidebar.classList.toggle('active');
-    overlay.classList.toggle('active');
-}
-
-function closeSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    sidebar.classList.remove('active');
-    overlay.classList.remove('active');
-}
 
 function refreshActivity() {
     alert('Activity refreshed!');
@@ -211,32 +198,27 @@ function viewMessages() {
     alert('No new messages');
 }
 
-// Handle sidebar item clicks
-document.querySelectorAll('.sidebar-item').forEach(item => {
-    item.addEventListener('click', function(e) {
-        if (this.getAttribute('href') === '#') {
-            e.preventDefault();
-            // Remove active class from all items
-            document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
-            // Add active class to clicked item
-            this.classList.add('active');
-            // Close mobile sidebar
-            closeSidebar();
-        }
-    });
-});
-
-// Close sidebar when clicking outside on mobile
-document.addEventListener('click', function(event) {
-    const sidebar = document.getElementById('sidebar');
-    const toggle = document.querySelector('.mobile-sidebar-toggle');
+// Sidebar functionality
+function toggleSidebar() {
+    const sidebar = document.querySelector('.modern-sidebar') || document.getElementById('sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
     
-    if (window.innerWidth <= 768 && 
-        !sidebar.contains(event.target) && 
-        !toggle.contains(event.target) &&
-        sidebar.classList.contains('active')) {
-        closeSidebar();
+    if (sidebar && overlay) {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
     }
-});
+}
+
+function closeSidebar() {
+    const sidebar = document.querySelector('.modern-sidebar') || document.getElementById('sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    
+    if (sidebar && overlay) {
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+    }
+}
+
 </script>
+
 {% endblock %}

@@ -34,7 +34,7 @@
                     <i class='bx bxs-group'></i>
                 </div>
                 <div class="stat-info">
-                    <div class="stat-value">{{ workers|length if workers else 0 }}</div>
+                    <div class="stat-value">{{ (workers|length) if workers else 0 }}</div>
                     <div class="stat-label">Total Workers</div>
                 </div>
             </div>
@@ -44,7 +44,7 @@
                     <i class='bx bxs-check-circle'></i>
                 </div>
                 <div class="stat-info">
-                    <div class="stat-value">{{ verified_workers|length if verified_workers else 0 }}</div>
+                    <div class="stat-value">{{ (verified_workers|length) if verified_workers else 0 }}</div>
                     <div class="stat-label">Verified Workers</div>
                 </div>
             </div>
@@ -54,7 +54,7 @@
                     <i class='bx bxs-time-five'></i>
                 </div>
                 <div class="stat-info">
-                    <div class="stat-value">{{ pending_workers|length if pending_workers else 0 }}</div>
+                    <div class="stat-value">{{ (pending_workers|length) if pending_workers else 0 }}</div>
                     <div class="stat-label">Pending Verification</div>
                 </div>
             </div>
@@ -64,7 +64,7 @@
                     <i class='bx bxs-user-x'></i>
                 </div>
                 <div class="stat-info">
-                    <div class="stat-value">{{ suspended_workers|length if suspended_workers else 0 }}</div>
+                    <div class="stat-value">{{ (suspended_workers|length) if suspended_workers else 0 }}</div>
                     <div class="stat-label">Suspended Workers</div>
                 </div>
             </div>
@@ -275,8 +275,8 @@ try {
 
 // DOM elements
 const elements = {
-    sidebar: document.getElementById('sidebar'),
-    sidebarOverlay: document.getElementById('sidebarOverlay'),
+    sidebar: document.querySelector('.modern-sidebar'),
+    sidebarOverlay: document.querySelector('.sidebar-overlay'),
     workerSearch: document.getElementById('workerSearch'),
     statusFilter: document.getElementById('statusFilter'),
     verificationFilter: document.getElementById('verificationFilter'),

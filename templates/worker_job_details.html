@@ -3,6 +3,7 @@
 {% block title %}Job Details - {{ job.title }} - Umukozi{% endblock %}
 
 {% block content %}
+
 <div class="sidebar-overlay" onclick="closeSidebar()"></div>
 
 <div class="dashboard-layout">
@@ -10,7 +11,7 @@
     {% include 'includes/worker_sidebar.html' %}
 
     <!-- Main Content -->
-    <main class="main-content">
+    <main class="main-content" style="padding-top: 80px;">
         <!-- Back Button -->
         <a href="{{ url_for('worker_find_jobs') }}" style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); text-decoration: none; margin-bottom: 2rem; font-weight: 600; transition: color 0.2s;">
             <i class='bx bx-arrow-back'></i> Back to Job List
@@ -140,27 +141,290 @@
     </main>
 </div>
 
+<style>
+/* Hide global header from base.html on this page to avoid redundancy and conflicts */
+.header {
+    display: none !important;
+}
+
+/* Notification item styling */
+.notification-item-new {
+    background: rgba(249, 115, 22, 0.05) !important;
+}
+
+.notification-item-read {
+    background: transparent !important;
+}
+</style>
+
 <script>
 function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
+    const sidebar = document.querySelector('.modern-sidebar');
     const overlay = document.querySelector('.sidebar-overlay');
-    sidebar.classList.toggle('active');
-    overlay.classList.toggle('active');
+    if (sidebar) sidebar.classList.toggle('active');
+    if (overlay) overlay.classList.toggle('active');
 }
 
 function closeSidebar() {
-    const sidebar = document.getElementById('sidebar');
+    const sidebar = document.querySelector('.modern-sidebar');
     const overlay = document.querySelector('.sidebar-overlay');
-    sidebar.classList.remove('active');
-    overlay.classList.remove('active');
+    if (sidebar) sidebar.classList.remove('active');
+    if (overlay) overlay.classList.remove('active');
 }
+
+function toggleNotificationDropdown() {
+    const dropdown = document.getElementById('notificationDropdown');
+    const notificationMenu = dropdown.querySelector('.notification-menu');
+    
+    // Toggle notification dropdown
+    if (notificationMenu.style.display === 'none' || notificationMenu.style.display === '') {
+        notificationMenu.style.display = 'block';
+        // Close profile dropdown if open
+        const profileDropdown = document.getElementById('profileDropdown');
+        const profileMenu = profileDropdown.querySelector('.profile-menu');
+        if (profileMenu) profileMenu.style.display = 'none';
+    } else {
+        notificationMenu.style.display = 'none';
+    }
+}
+
+function toggleProfileDropdown() {
+    const dropdown = document.getElementById('profileDropdown');
+    const profileMenu = dropdown.querySelector('.profile-menu');
+    
+    // Toggle profile dropdown
+    if (profileMenu.style.display === 'none' || profileMenu.style.display === '') {
+        profileMenu.style.display = 'block';
+        // Close notification dropdown if open
+        const notificationDropdown = document.getElementById('notificationDropdown');
+        const notificationMenu = notificationDropdown.querySelector('.notification-menu');
+        if (notificationMenu) notificationMenu.style.display = 'none';
+    } else {
+        profileMenu.style.display = 'none';
+    }
+}
+
+function markAsRead(notifId) {
+    fetch(`/notifications/read/${notifId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const item = document.querySelector(`[data-notif-id="${notifId}"]`);
+                if (item) {
+                    item.style.background = 'transparent';
+                }
+            }
+        });
+}
+
+function markAllAsRead() {
+    fetch('/notifications/read-all', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const badge = document.querySelector('.notification-dropdown span[style*="background: var(--danger-color)"]');
+                if (badge) badge.style.display = 'none';
+                const newNotifs = document.querySelectorAll('.notification-item');
+                newNotifs.forEach(n => {
+                    n.style.background = 'transparent';
+                });
+            }
+        });
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', function(event) {
+    const notificationDropdown = document.getElementById('notificationDropdown');
+    const profileDropdown = document.getElementById('profileDropdown');
+    
+    if (!notificationDropdown.contains(event.target)) {
+        const notificationMenu = notificationDropdown.querySelector('.notification-menu');
+        if (notificationMenu) notificationMenu.style.display = 'none';
+    }
+    
+    if (!profileDropdown.contains(event.target)) {
+        const profileMenu = profileDropdown.querySelector('.profile-menu');
+        if (profileMenu) profileMenu.style.display = 'none';
+    }
+    
+    const sidebar = document.getElementById('sidebar');
+    const toggles = document.querySelectorAll('.mobile-sidebar-toggle');
+    
+    // Check if the click was on any toggle button
+    let clickedOnToggle = false;
+    toggles.forEach(toggle => {
+        if (toggle.contains(event.target)) {
+            clickedOnToggle = true;
+        }
+    });
+    
+    if (window.innerWidth <= 768 && 
+        sidebar &&
+        !sidebar.contains(event.target) && 
+        !clickedOnToggle &&
+        sidebar.classList.contains('active')) {
+        closeSidebar();
+    }
+});
 
 function confirmLogout(event) {
     event.preventDefault();
-    const logoutUrl = document.querySelector('[data-logout-url]').getAttribute('data-logout-url');
+    const logoutUrl = event.currentTarget.getAttribute('data-logout-url');
     if (confirm('Are you sure you want to logout?')) {
         window.location.href = logoutUrl;
     }
+}
+
+function showNotifications() {
+    // Toggle notifications dropdown
+    const existingDropdown = document.getElementById('notifications-dropdown');
+    if (existingDropdown) {
+        existingDropdown.remove();
+        return;
+    }
+    
+    // Close profile menu if open
+    const profileDropdown = document.getElementById('profile-dropdown');
+    if (profileDropdown) {
+        profileDropdown.remove();
+    }
+    
+    // Create notifications dropdown
+    const dropdown = document.createElement('div');
+    dropdown.id = 'notifications-dropdown';
+    dropdown.style.cssText = `
+        position: fixed;
+        top: 70px;
+        right: 120px;
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        width: 320px;
+        max-height: 400px;
+        z-index: 1000;
+        overflow: hidden;
+    `;
+    
+    dropdown.innerHTML = `
+        <div style="padding: 1rem; border-bottom: 1px solid var(--border-color); font-weight: 600; display: flex; justify-content: space-between; align-items: center;">
+            <span>Notifications</span>
+            <span style="background: var(--primary-color); color: white; font-size: 0.75rem; padding: 0.25rem 0.5rem; border-radius: 9999px;">2 New</span>
+        </div>
+        <div style="max-height: 300px; overflow-y: auto;">
+            <div style="padding: 1rem; border-bottom: 1px solid var(--light-bg); cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='var(--light-bg)'" onmouseout="this.style.background='white'">
+                <div style="display: flex; gap: 0.75rem; align-items: start;">
+                    <div style="width: 8px; height: 8px; background: var(--primary-color); border-radius: 50%; margin-top: 0.5rem; flex-shrink: 0;"></div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; font-size: 0.875rem; margin-bottom: 0.25rem;">New Job Application</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Your application for "House Cleaning" has been viewed.</div>
+                        <div style="font-size: 0.625rem; color: var(--text-secondary);">2 hours ago</div>
+                    </div>
+                </div>
+            </div>
+            <div style="padding: 1rem; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='var(--light-bg)'" onmouseout="this.style.background='white'">
+                <div style="display: flex; gap: 0.75rem; align-items: start;">
+                    <div style="width: 8px; height: 8px; background: var(--success-color); border-radius: 50%; margin-top: 0.5rem; flex-shrink: 0;"></div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; font-size: 0.875rem; margin-bottom: 0.25rem;">Profile Verified</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Your profile has been successfully verified.</div>
+                        <div style="font-size: 0.625rem; color: var(--text-secondary);">1 day ago</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="padding: 0.75rem; text-align: center; border-top: 1px solid var(--border-color);">
+            <button style="background: none; border: none; color: var(--primary-color); font-weight: 600; font-size: 0.875rem; cursor: pointer;">View All Notifications</button>
+        </div>
+    `;
+    
+    document.body.appendChild(dropdown);
+    
+    // Close dropdown when clicking outside
+    setTimeout(() => {
+        document.addEventListener('click', function closeDropdown(e) {
+            if (!dropdown.contains(e.target) && !e.target.closest('button[onclick="showNotifications()"]')) {
+                dropdown.remove();
+                document.removeEventListener('click', closeDropdown);
+            }
+        });
+    }, 100);
+}
+
+function showProfileMenu() {
+    // Toggle profile dropdown
+    const existingDropdown = document.getElementById('profile-dropdown');
+    if (existingDropdown) {
+        existingDropdown.remove();
+        return;
+    }
+    
+    // Close notifications if open
+    const notificationsDropdown = document.getElementById('notifications-dropdown');
+    if (notificationsDropdown) {
+        notificationsDropdown.remove();
+    }
+    
+    // Create profile dropdown
+    const dropdown = document.createElement('div');
+    dropdown.id = 'profile-dropdown';
+    dropdown.style.cssText = `
+        position: fixed;
+        top: 70px;
+        right: 20px;
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        width: 250px;
+        z-index: 1000;
+        overflow: hidden;
+    `;
+    
+    dropdown.innerHTML = `
+        <div style="padding: 1rem; border-bottom: 1px solid var(--border-color);">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <div class="header-avatar {% if worker and worker.profile_picture %}has-profile-picture{% else %}header-avatar-gradient{% endif %}" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: bold; flex-shrink: 0; overflow: hidden; color: white;">
+                    {% if worker and worker.profile_picture %}
+                        <img src="{{ url_for('static', filename='uploads/' + worker.profile_picture) }}" style="width: 100%; height: 100%; object-fit: cover;" alt="Profile Picture">
+                    {% else %}
+                        {{ current_user.full_name[0].upper() }}
+                    {% endif %}
+                </div>
+                <div>
+                    <div style="font-weight: 600; font-size: 0.875rem;">{{ current_user.full_name.split()|last }}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Worker Account</div>
+                </div>
+            </div>
+        </div>
+        <div>
+            <a href="{{ url_for('worker_complete_profile') }}" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; text-decoration: none; color: inherit; transition: background 0.2s;" onmouseover="this.style.background='var(--light-bg)'" onmouseout="this.style.background='white'">
+                <i class='bx bx-user' style="font-size: 1.125rem;"></i>
+                <span>My Profile</span>
+            </a>
+            <a href="{{ url_for('worker_settings') }}" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; text-decoration: none; color: inherit; transition: background 0.2s;" onmouseover="this.style.background='var(--light-bg)'" onmouseout="this.style.background='white'">
+                <i class='bx bx-cog' style="font-size: 1.125rem;"></i>
+                <span>Settings</span>
+            </a>
+            <div style="border-top: 1px solid var(--border-color); margin: 0.5rem 0;"></div>
+            <a href="javascript:void(0)" onclick="confirmLogout(event)" data-logout-url="{{ url_for('logout') }}" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; text-decoration: none; color: var(--danger-color); transition: background 0.2s;" onmouseover="this.style.background='var(--light-bg)'" onmouseout="this.style.background='white'">
+                <i class='bx bx-log-out' style="font-size: 1.125rem;"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    `;
+    
+    document.body.appendChild(dropdown);
+    
+    // Close dropdown when clicking outside
+    setTimeout(() => {
+        document.addEventListener('click', function closeDropdown(e) {
+            if (!dropdown.contains(e.target) && !e.target.closest('button[onclick="showProfileMenu()"]')) {
+                dropdown.remove();
+                document.removeEventListener('click', closeDropdown);
+            }
+        });
+    }, 100);
 }
 </script>
 {% endblock %}

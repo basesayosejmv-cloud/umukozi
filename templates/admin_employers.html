@@ -3,10 +3,6 @@
 {% block title %}Employer Management - Admin Dashboard{% endblock %}
 
 {% block content %}
-<!-- Mobile Menu Button -->
-<button class="mobile-menu-btn" onclick="toggleSidebar()">
-    <i class='bx bx-menu'></i>
-</button>
 
 <div class="sidebar-overlay" onclick="closeSidebar()"></div>
 
@@ -41,7 +37,7 @@
                     <i class='bx bxs-business'></i>
                 </div>
                 <div class="stat-info">
-                    <div class="stat-value">{{ employers|length if employers else 0 }}</div>
+                    <div class="stat-value">{{ (employers|length) if employers else 0 }}</div>
                     <div class="stat-label">Total Employers</div>
                 </div>
             </div>
@@ -51,7 +47,7 @@
                     <i class='bx bxs-check-circle'></i>
                 </div>
                 <div class="stat-info">
-                    <div class="stat-value">{{ verified_employers|length if verified_employers else 0 }}</div>
+                    <div class="stat-value">{{ (verified_employers|length) if verified_employers else 0 }}</div>
                     <div class="stat-label">Verified Employers</div>
                 </div>
             </div>
@@ -61,7 +57,7 @@
                     <i class='bx bxs-briefcase-alt'></i>
                 </div>
                 <div class="stat-info">
-                    <div class="stat-value">{{ active_jobs|length if active_jobs else 0 }}</div>
+                    <div class="stat-value">{{ (active_jobs|length) if active_jobs else 0 }}</div>
                     <div class="stat-label">Active Jobs</div>
                 </div>
             </div>
@@ -71,7 +67,7 @@
                     <i class='bx bxs-business'></i>
                 </div>
                 <div class="stat-info">
-                    <div class="stat-value">{{ suspended_employers|length if suspended_employers else 0 }}</div>
+                    <div class="stat-value">{{ (suspended_employers|length) if suspended_employers else 0 }}</div>
                     <div class="stat-label">Suspended Employers</div>
                 </div>
             </div>
@@ -257,26 +253,13 @@ const employersData = [
         id: {{ employer.id }},
         name: "{{ employer.user.full_name|lower }}",
         email: "{{ employer.user.email|lower }}",
-        company: "{{ employer.company_name|lower if employer.company_name else '' }}",
+        company: "{{ (employer.company_name|lower) if employer.company_name else '' }}",
         status: "{{ 'suspended' if employer.is_suspended else 'verified' }}",
         jobs: {{ employer.jobs|length }}
     }{% if not loop.last %},{% endif %}
     {% endfor %}
 ];
 
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    sidebar.classList.toggle('active');
-    overlay.classList.toggle('active');
-}
-
-function closeSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    sidebar.classList.remove('active');
-    overlay.classList.remove('active');
-}
 
 function filterEmployers() {
     const searchTerm = document.getElementById('employerSearch').value.toLowerCase();
@@ -449,51 +432,6 @@ function showAddEmployerModal() {
     alert('Add employer functionality would be implemented here');
 }
 
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    
-    if (sidebar.classList.contains('active')) {
-        sidebar.classList.remove('active');
-        overlay.classList.remove('active');
-    } else {
-        sidebar.classList.add('active');
-        overlay.classList.add('active');
-    }
-}
-
-function closeSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    sidebar.classList.remove('active');
-    overlay.classList.remove('active');
-}
-
-// Close sidebar when clicking on navigation links on mobile
-document.addEventListener('DOMContentLoaded', function() {
-    const navLinks = document.querySelectorAll('.nav-link');
-    navLinks.forEach(link => {
-        link.addEventListener('click', function() {
-            if (window.innerWidth <= 768) {
-                closeSidebar();
-            }
-        });
-    });
-    
-    // Close sidebar on escape key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeSidebar();
-        }
-    });
-});
-
-// Handle window resize
-window.addEventListener('resize', function() {
-    if (window.innerWidth > 768) {
-        closeSidebar();
-    }
-});
 
 // Add CSS animation
 const style = document.createElement('style');

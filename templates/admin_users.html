@@ -694,7 +694,7 @@ function showProfileMenu() {
 }
 
 function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
+    const sidebar = document.querySelector('.modern-sidebar');
     const overlay = document.querySelector('.sidebar-overlay');
     
     if (sidebar.classList.contains('active')) {
@@ -707,7 +707,7 @@ function toggleSidebar() {
 }
 
 function closeSidebar() {
-    const sidebar = document.getElementById('sidebar');
+    const sidebar = document.querySelector('.modern-sidebar');
     const overlay = document.querySelector('.sidebar-overlay');
     sidebar.classList.remove('active');
     overlay.classList.remove('active');
@@ -777,9 +777,36 @@ window.addEventListener('resize', function() {
         closeSidebar();
     }
 });
+
+// Close sidebar when clicking outside on mobile
+document.addEventListener('click', function(event) {
+    const sidebar = document.querySelector('.modern-sidebar');
+    const toggles = document.querySelectorAll('.mobile-sidebar-toggle, .mobile-menu-btn');
+    
+    // Check if the click was on any toggle button
+    let clickedOnToggle = false;
+    toggles.forEach(toggle => {
+        if (toggle.contains(event.target)) {
+            clickedOnToggle = true;
+        }
+    });
+    
+    if (window.innerWidth <= 768 && 
+        sidebar &&
+        !sidebar.contains(event.target) && 
+        !clickedOnToggle &&
+        sidebar.classList.contains('active')) {
+        closeSidebar();
+    }
+});
 </script>
 
 <style>
+/* Hide global header from base.html on this page to avoid redundancy and conflicts */
+.header {
+    display: none !important;
+}
+
 /* Sidebar Navigation Styles */
 .sidebar-nav {
     flex: 1;

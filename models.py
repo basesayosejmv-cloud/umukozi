@@ -313,6 +313,7 @@ class Payment(db.Model):
     payment_method = db.Column(db.String(50))  # 'momo', 'airtel', 'bank'
     transaction_id = db.Column(db.String(100))  # Transaction reference
     phone_number = db.Column(db.String(20))  # Payer's phone number
+    payer_name = db.Column(db.String(100))  # Payer's full name
     
     # Status
     status = db.Column(db.String(20), default='pending')  # 'pending', 'verified', 'rejected'

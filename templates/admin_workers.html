@@ -3,11 +3,6 @@
 {% block title %}Worker Management - Admin Dashboard{% endblock %}
 
 {% block content %}
-<!-- Mobile Menu Button -->
-<button class="mobile-menu-btn" onclick="toggleSidebar()">
-    <i class='bx bx-menu'></i>
-</button>
-
 <div class="sidebar-overlay" onclick="closeSidebar()"></div>
 
 <div class="dashboard-layout">
@@ -41,7 +36,7 @@
                     <i class='bx bxs-group'></i>
                 </div>
                 <div class="stat-info">
-                    <div class="stat-value">{{ workers|length if workers else 0 }}</div>
+                    <div class="stat-value">{{ (workers|length) if workers else 0 }}</div>
                     <div class="stat-label">Total Workers</div>
                 </div>
             </div>
@@ -51,7 +46,7 @@
                     <i class='bx bxs-check-circle'></i>
                 </div>
                 <div class="stat-info">
-                    <div class="stat-value">{{ verified_workers|length if verified_workers else 0 }}</div>
+                    <div class="stat-value">{{ (verified_workers|length) if verified_workers else 0 }}</div>
                     <div class="stat-label">Verified Workers</div>
                 </div>
             </div>
@@ -61,7 +56,7 @@
                     <i class='bx bxs-time-five'></i>
                 </div>
                 <div class="stat-info">
-                    <div class="stat-value">{{ pending_workers|length if pending_workers else 0 }}</div>
+                    <div class="stat-value">{{ (pending_workers|length) if pending_workers else 0 }}</div>
                     <div class="stat-label">Pending Verification</div>
                 </div>
             </div>
@@ -71,7 +66,7 @@
                     <i class='bx bxs-user-x'></i>
                 </div>
                 <div class="stat-info">
-                    <div class="stat-value">{{ suspended_workers|length if suspended_workers else 0 }}</div>
+                    <div class="stat-value">{{ (suspended_workers|length) if suspended_workers else 0 }}</div>
                     <div class="stat-label">Suspended Workers</div>
                 </div>
             </div>
@@ -272,58 +267,11 @@
     </div>
 </div>
 
-<!-- Sidebar Overlay -->
-<div class="sidebar-overlay" onclick="closeSidebar()"></div>
 
 <script>
 // Worker data for filtering - populated server-side
-let workersData = {{ workers|map(attribute='id')|map('int')|list|tojson if workers else '[]' }};
+let workersData = {{ (workers|map(attribute='id')|map('int')|list|tojson) if workers else '[]' }};
 
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    
-    if (sidebar.classList.contains('active')) {
-        sidebar.classList.remove('active');
-        overlay.classList.remove('active');
-    } else {
-        sidebar.classList.add('active');
-        overlay.classList.add('active');
-    }
-}
-
-function closeSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    sidebar.classList.remove('active');
-    overlay.classList.remove('active');
-}
-
-// Close sidebar when clicking on navigation links on mobile
-document.addEventListener('DOMContentLoaded', function() {
-    const navLinks = document.querySelectorAll('.nav-link');
-    navLinks.forEach(link => {
-        link.addEventListener('click', function() {
-            if (window.innerWidth <= 768) {
-                closeSidebar();
-            }
-        });
-    });
-    
-    // Close sidebar on escape key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeSidebar();
-        }
-    });
-});
-
-// Handle window resize
-window.addEventListener('resize', function() {
-    if (window.innerWidth > 768) {
-        closeSidebar();
-    }
-});
 
 function filterWorkers() {
     const searchTerm = document.getElementById('workerSearch').value.toLowerCase();
@@ -1078,5 +1026,11 @@ function showNotification(message, type) {
     color: #dc2626;
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
 }
+    /* Hide global header on mobile to prevent overlap with admin header */
+    @media (max-width: 768px) {
+        .header {
+            display: none !important;
+        }
+    }
 </style>
 {% endblock %}

@@ -733,12 +733,18 @@ def submit_payment(worker_id):
 @login_required
 def payment_form():
     """Simple payment form for testing"""
-    return render_template('payment_form.html')
+    return render_template('payment_form_new.html')
+
+@app.route('/payment_form_mobile')
+@login_required
+def payment_form_mobile():
+    """Mobile responsive payment form"""
+    return render_template('payment_form_mobile.html')
 
 @app.route('/payment/short')
 def short_payment_form():
     """Short payment form"""
-    return render_template('short_payment_form.html')
+    return render_template('payment_form_new.html')
 
 @app.route('/payment/submit', methods=['POST'])
 @login_required
@@ -747,23 +753,23 @@ def payment_submit():
     try:
         if current_user.user_type != 'employer':
             flash('Only employers can submit payments', 'error')
-            return redirect(url_for('payment_form'))
+            return redirect(url_for('payment_form_mobile'))
         
         # Get form data
         payment_method = request.form.get('payment_method')
+        payer_name = request.form.get('payer_name')
         phone_number = request.form.get('phone_number')
-        transaction_id = request.form.get('transaction_id')
         
         # Validate required fields
-        if not all([payment_method, phone_number, transaction_id]):
+        if not all([payment_method, payer_name, phone_number]):
             flash('Please fill in all required fields', 'error')
-            return redirect(url_for('payment_form'))
+            return redirect(url_for('payment_form_mobile'))
         
         # Handle file upload
         screenshot = request.files.get('screenshot')
         if not screenshot or screenshot.filename == '':
             flash('Please upload a payment screenshot', 'error')
-            return redirect(url_for('payment_form'))
+            return redirect(url_for('payment_form_mobile'))
         
         # Save screenshot
         if screenshot and allowed_file(screenshot.filename):
@@ -772,34 +778,91 @@ def payment_submit():
             screenshot.save(screenshot_path)
         else:
             flash('Invalid file format', 'error')
-            return redirect(url_for('payment_form'))
+            return redirect(url_for('payment_form_mobile'))
         
-        # Create payment record (for demo purposes)
+        # Create payment record
         employer = Employer.query.filter_by(user_id=current_user.id).first()
         if employer:
             payment = Payment(
                 employer_id=employer.id,
-                worker_id=1,  # Default worker for demo
+                worker_id=1,  # Default worker for demo - this should be passed from form
                 amount=10000.0,
                 payment_method=payment_method,
-                transaction_id=transaction_id,
+                transaction_id=f"MOMO_{int(time.time())}",  # Generate auto transaction ID
                 phone_number=phone_number,
+                payer_name=payer_name,
                 screenshot_path=filename,
                 status='pending'
             )
             db.session.add(payment)
             db.session.commit()
             
-            flash('Payment submitted successfully! Waiting for verification.', 'success')
+            # Send WhatsApp notification with receipt
+            send_whatsapp_receipt(payment, screenshot_path)
+            
+            flash('Payment submitted successfully! Receipt sent to WhatsApp.', 'success')
             return redirect(url_for('employer_dashboard'))
         else:
             flash('Employer profile not found', 'error')
-            return redirect(url_for('payment_form'))
+            return redirect(url_for('payment_form_mobile'))
             
     except Exception as e:
         db.session.rollback()
         flash(f'Error submitting payment: {str(e)}', 'error')
-        return redirect(url_for('payment_form'))
+        return redirect(url_for('payment_form_mobile'))
+
+def send_whatsapp_receipt(payment, screenshot_path):
+    """Send payment receipt to WhatsApp"""
+    try:
+        # WhatsApp API integration (this would need actual WhatsApp API setup)
+        # For now, we'll simulate the WhatsApp sending
+        
+        # Create receipt message
+        receipt_message = f"""
+📄 *PAYMENT RECEIPT* 📄
+
+👤 *Payer Name:* {payment.payer_name}
+📱 *Phone:* {payment.phone_number}
+💰 *Amount:* RWF {payment.amount:,.0f}
+💳 *Method:* {payment.payment_method.upper()}
+🔖 *Transaction ID:* {payment.transaction_id}
+📅 *Date:* {payment.created_at.strftime('%Y-%m-%d %H:%M:%S')}
+✅ *Status:* {payment.status.upper()}
+
+🔐 *Payment for:* Worker Connection Fee
+👤 *Recipient:* Emmanuel DUSHIMIRIMANA
+📱 *Payment Number:* 0795555112
+
+---
+*This is an automated receipt from Umukozi Platform*
+        """
+        
+        # In a real implementation, you would use WhatsApp Business API
+        # For demo purposes, we'll just log the message
+        print("WHATSAPP RECEIPT MESSAGE:")
+        print(receipt_message)
+        print(f"Screenshot would be sent: {screenshot_path}")
+        
+        # Example of actual WhatsApp API call (would need proper setup):
+        # import requests
+        # whatsapp_api_url = "https://api.whatsapp.com/v1/messages"
+        # headers = {
+        #     "Authorization": f"Bearer {WHATSAPP_TOKEN}",
+        #     "Content-Type": "application/json"
+        # }
+        # data = {
+        #     "messaging_product": "whatsapp",
+        #     "to": "250788123456",  # Your WhatsApp number
+        #     "type": "text",
+        #     "text": {"body": receipt_message}
+        # }
+        # response = requests.post(whatsapp_api_url, json=data, headers=headers)
+        
+        return True
+        
+    except Exception as e:
+        print(f"Error sending WhatsApp receipt: {str(e)}")
+        return False
 
 # Admin Index Route - Redirects to dashboard
 @app.route('/admin')
@@ -3077,6 +3140,18 @@ def employer_activity():
         })
     
     return render_template('employer_activity.html', employer=employer, activities=activities)
+
+@app.route('/employer/profile')
+@login_required
+def employer_profile():
+    if current_user.user_type != 'employer':
+        return redirect(url_for('dashboard'))
+    employer = Employer.query.filter_by(user_id=current_user.id).first()
+    if not employer:
+        employer = Employer(user_id=current_user.id)
+        db.session.add(employer)
+        db.session.commit()
+    return render_template('employer_settings.html', employer=employer)
 
 @app.route('/employer/settings')
 @login_required

@@ -4,49 +4,32 @@
 
 {% block extra_css %}
 <style>
-/* Modern Settings Styles */
+/* Settings Page Styles - Matching Platform Design */
 .settings-container {
-    max-width: 1400px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 2rem;
 }
 
 .settings-header {
-    text-align: center;
-    margin-bottom: 3rem;
+    background: white;
+    border-radius: var(--radius);
     padding: 2rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 1.5rem;
-    color: white;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-}
-
-.settings-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.05)"/><circle cx="10" cy="50" r="0.5" fill="rgba(255,255,255,0.05)"/><circle cx="90" cy="30" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-    opacity: 0.3;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
 }
 
 .settings-header h1 {
-    font-size: 2.5rem;
-    font-weight: 800;
-    margin-bottom: 1rem;
-    position: relative;
-    z-index: 2;
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
 }
 
 .settings-header p {
-    font-size: 1.1rem;
-    opacity: 0.9;
-    position: relative;
-    z-index: 2;
+    color: var(--text-secondary);
+    font-size: 1rem;
 }
 
 .settings-layout {
@@ -58,102 +41,101 @@
 
 .settings-sidebar {
     position: sticky;
-    top: 2rem;
+    top: 6rem;
 }
 
 .settings-nav {
     background: white;
-    border-radius: 1.25rem;
+    border-radius: var(--radius);
     padding: 1.5rem;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
 }
 
 .nav-item {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1rem 1.25rem;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
     border-radius: 0.75rem;
     text-decoration: none;
-    color: #6b7280;
-    font-weight: 600;
-    transition: all 0.3s ease;
+    color: var(--text-secondary);
+    font-weight: 500;
+    transition: all 0.2s ease;
     margin-bottom: 0.5rem;
     border: 2px solid transparent;
 }
 
 .nav-item:hover {
-    background: #f8fafc;
+    background: var(--light-bg);
     color: var(--primary-color);
-    transform: translateX(5px);
+    transform: translateX(2px);
 }
 
 .nav-item.active {
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    background: var(--primary-color);
     color: white;
-    box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+    box-shadow: var(--shadow-md);
 }
 
 .nav-item i {
-    font-size: 1.25rem;
-    width: 24px;
+    font-size: 1.125rem;
+    width: 20px;
     text-align: center;
 }
 
 .danger-zone {
-    background: linear-gradient(135deg, #fef2f2, #fff);
+    background: #fef2f2;
     border: 1px solid #fee2e2;
-    border-radius: 1.25rem;
+    border-radius: var(--radius);
     padding: 1.5rem;
     margin-top: 1.5rem;
-    box-shadow: 0 10px 30px rgba(239, 68, 68, 0.05);
+    box-shadow: var(--shadow-sm);
 }
 
 .danger-zone h4 {
     color: #991b1b;
-    font-size: 1rem;
-    font-weight: 700;
-    margin-bottom: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
 }
 
 .danger-zone p {
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     color: #7f1d1d;
     margin-bottom: 1rem;
-    line-height: 1.5;
+    line-height: 1.4;
 }
 
 .settings-content {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 1.5rem;
 }
 
 .settings-section {
     background: white;
-    border-radius: 1.5rem;
-    padding: 2.5rem;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-    border: 1px solid rgba(0,0,0,0.05);
-    transition: all 0.3s ease;
+    border-radius: var(--radius);
+    padding: 2rem;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
 }
 
 .settings-section:hover {
-    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
 }
 
 .section-header {
     display: flex;
     align-items: center;
     gap: 1rem;
-    margin-bottom: 2rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 2px solid #f3f4f6;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .section-icon {
@@ -163,30 +145,31 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     color: white;
 }
 
 .icon-personal {
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    background: var(--primary-color);
 }
 
 .icon-professional {
-    background: linear-gradient(135deg, #10b981, #059669);
+    background: var(--success-color);
 }
 
 .icon-location {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
+    background: var(--accent-color);
 }
 
 .icon-security {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
+    background: var(--danger-color);
 }
 
 .section-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #1f2937;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
 }
 
 .form-grid {
@@ -197,30 +180,43 @@
 
 .form-group {
     position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.settings-section {
+    display: none;
+}
+
+.settings-section.active {
+    display: block;
+}
+
+.settings-section:first-of-type {
+    display: block;
 }
 
 .form-label {
     display: block;
     margin-bottom: 0.5rem;
-    font-weight: 600;
-    color: #374151;
+    font-weight: 500;
+    color: var(--text-primary);
     font-size: 0.875rem;
 }
 
 .form-control {
     width: 100%;
     padding: 0.75rem 1rem;
-    border: 2px solid #e5e7eb;
+    border: 1px solid var(--border-color);
     border-radius: 0.75rem;
-    font-size: 0.95rem;
-    transition: all 0.3s ease;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
     background: white;
 }
 
 .form-control:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
 }
 
 .form-control:hover {
@@ -229,51 +225,51 @@
 
 textarea.form-control {
     resize: vertical;
-    min-height: 120px;
+    min-height: 100px;
     font-family: inherit;
 }
 
 .btn-modern {
     padding: 0.75rem 1.5rem;
     border-radius: 0.75rem;
-    font-weight: 600;
+    font-weight: 500;
     border: none;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    font-size: 0.95rem;
+    font-size: 0.875rem;
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    background: var(--primary-color);
     color: white;
-    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+    box-shadow: var(--shadow-sm);
 }
 
 .btn-primary:hover {
-    background: linear-gradient(135deg, #1d4ed8, #1e40af);
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
 }
 
 .btn-danger {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
+    background: var(--danger-color);
     color: white;
-    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    box-shadow: var(--shadow-sm);
 }
 
 .btn-danger:hover {
-    background: linear-gradient(135deg, #dc2626, #b91c1c);
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4);
+    background: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
 }
 
 .password-strength-meter {
-    height: 6px;
-    background: #e5e7eb;
-    border-radius: 3px;
+    height: 4px;
+    background: var(--border-color);
+    border-radius: 2px;
     overflow: hidden;
     margin-top: 0.5rem;
 }
@@ -282,14 +278,14 @@ textarea.form-control {
     height: 100%;
     width: 0%;
     transition: all 0.3s ease;
-    border-radius: 3px;
+    border-radius: 2px;
 }
 
 .strength-text {
     font-size: 0.75rem;
     margin-top: 0.25rem;
-    font-weight: 600;
-    color: #6b7280;
+    font-weight: 500;
+    color: var(--text-secondary);
 }
 
 .success-alert {
@@ -299,9 +295,9 @@ textarea.form-control {
     z-index: 10000;
     min-width: 300px;
     background: white;
-    border: 1px solid #10b981;
+    border: 1px solid var(--success-color);
     border-radius: 0.75rem;
-    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+    box-shadow: var(--shadow-lg);
     animation: slideInRight 0.3s ease;
     display: flex;
     align-items: center;
@@ -313,15 +309,15 @@ textarea.form-control {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    color: #059669;
-    font-weight: 600;
+    color: var(--success-color);
+    font-weight: 500;
 }
 
 .success-close {
     background: none;
     border: none;
     cursor: pointer;
-    color: #059669;
+    color: var(--success-color);
     font-size: 1.25rem;
     opacity: 0.7;
     transition: opacity 0.3s ease;
@@ -329,27 +325,6 @@ textarea.form-control {
 
 .success-close:hover {
     opacity: 1;
-}
-
-/* WhatsApp Sidebar Item Styles */
-.sidebar-item.whatsapp-link {
-    color: #25d366;
-    border-left: 3px solid #25d366;
-    background: rgba(37, 211, 102, 0.05);
-}
-
-.sidebar-item.whatsapp-link:hover {
-    background: rgba(37, 211, 102, 0.1);
-    color: #128c7e;
-    border-left-color: #128c7e;
-}
-
-.sidebar-item.whatsapp-link i {
-    color: #25d366;
-}
-
-.sidebar-item.whatsapp-link:hover i {
-    color: #128c7e;
 }
 
 @keyframes slideInRight {
@@ -379,63 +354,43 @@ textarea.form-control {
 }
 
 @media (max-width: 768px) {
-    body {
-        margin: 0 !important;
-        padding: 0 !important;
-        overflow-x: hidden;
-        width: 100vw;
-    }
-    
-    html {
-        margin: 0 !important;
-        padding: 0 !important;
-        overflow-x: hidden;
-    }
-    
     .settings-container {
-        padding: 0 !important;
-        margin: 0 !important;
-        max-width: 100vw !important;
-        width: 100vw !important;
+        padding: 1rem;
+        margin: 0;
+        max-width: 100%;
+        width: 100%;
         overflow-x: hidden;
-        position: relative;
-        left: 0;
     }
     
     .settings-header {
-        padding: 1.5rem 1rem;
+        padding: 1.5rem;
         text-align: center;
-        border-radius: 0;
-        margin: 0;
-        width: 100vw;
-        box-sizing: border-box;
-        position: relative;
-        left: 0;
+        border-radius: 0.75rem;
+        margin: 0 0 1rem 0;
     }
     
     .settings-header h1 {
-        font-size: 2rem;
+        font-size: 1.5rem;
+    }
+    
+    .settings-layout {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .settings-sidebar {
+        position: static;
+        order: 2;
+    }
+    
+    .settings-content {
+        order: 1;
     }
     
     .settings-section {
-        padding: 1.5rem 1rem !important;
-        margin: 0 !important;
-        border-radius: 0 !important;
-        border-left: none !important;
-        border-right: none !important;
-        width: 100vw !important;
-        box-shadow: none !important;
-        border-top: 1px solid #e5e7eb;
-        border-bottom: 1px solid #e5e7eb;
-        box-sizing: border-box;
-        position: relative;
-        left: 0;
-        right: 0;
-    }
-    
-    .settings-section:hover {
-        transform: none !important;
-        box-shadow: none !important;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border-radius: 0.75rem;
     }
     
     .form-grid {
@@ -446,55 +401,6 @@ textarea.form-control {
         flex-direction: column;
         text-align: center;
         gap: 0.5rem;
-    }
-    
-    .main-content {
-        padding: 0 !important;
-        margin: 0 !important;
-        width: 100vw !important;
-        max-width: 100vw !important;
-        overflow-x: hidden;
-        position: relative;
-        left: 0;
-    }
-    
-    .settings-layout {
-        grid-template-columns: 1fr;
-        gap: 0 !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        width: 100vw !important;
-        overflow-x: hidden;
-    }
-    
-    .settings-sidebar {
-        position: static;
-        order: 2;
-        padding: 1rem;
-        width: 100vw;
-    }
-    
-    .settings-content {
-        order: 1;
-        width: 100vw;
-        position: relative;
-        left: 0;
-    }
-    
-    .dashboard-layout {
-        padding: 0 !important;
-        margin: 0 !important;
-        width: 100vw !important;
-        overflow-x: hidden;
-        position: relative;
-    }
-    
-    .sidebar {
-        display: none !important;
-    }
-    
-    .sidebar-overlay {
-        display: none !important;
     }
 }
 </style>
@@ -705,23 +611,37 @@ textarea.form-control {
 <script>
 // Navigation functionality
 document.addEventListener('DOMContentLoaded', function() {
+    // Ensure first section is visible
+    const firstSection = document.querySelector('.settings-section');
+    const firstNavItem = document.querySelector('.nav-item');
+    
+    if (firstSection && !firstSection.classList.contains('active')) {
+        firstSection.classList.add('active');
+    }
+    
+    if (firstNavItem && !firstNavItem.classList.contains('active')) {
+        firstNavItem.classList.add('active');
+    }
+    
     // Handle navigation clicks
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(item => {
         item.addEventListener('click', function(e) {
             e.preventDefault();
             
-            // Remove active class from all items
+            // Remove active class from all items and sections
             navItems.forEach(nav => nav.classList.remove('active'));
+            document.querySelectorAll('.settings-section').forEach(section => section.classList.remove('active'));
             
             // Add active class to clicked item
             this.classList.add('active');
             
-            // Scroll to section
-            const targetId = this.getAttribute('href').substring(1);
+            // Show corresponding section
+            const targetId = this.getAttribute('data-section');
             const targetSection = document.getElementById(targetId);
             
             if (targetSection) {
+                targetSection.classList.add('active');
                 targetSection.scrollIntoView({
                     behavior: 'smooth',
                     block: 'start'
@@ -755,27 +675,6 @@ document.addEventListener('DOMContentLoaded', function() {
     sections.forEach(section => observer.observe(section));
 });
 
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    sidebar.classList.toggle('active');
-    overlay.classList.toggle('active');
-}
-
-function closeSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    sidebar.classList.remove('active');
-    overlay.classList.remove('active');
-}
-
-function confirmLogout(event) {
-    event.preventDefault();
-    const logoutUrl = document.querySelector('[data-logout-url]').getAttribute('data-logout-url');
-    if (confirm('Are you sure you want to logout?')) {
-        window.location.href = logoutUrl;
-    }
-}
 
 function updatePersonalInfo() {
     showSuccessMessage('Personal information updated successfully!');
@@ -917,18 +816,32 @@ function deleteAccount() {
     }
 }
 
-// Close sidebar when clicking outside on mobile
-document.addEventListener('click', function(event) {
-    const sidebar = document.getElementById('sidebar');
-    const toggle = document.querySelector('.mobile-sidebar-toggle');
+function autoRefreshAfterAction(delay) {
+    setTimeout(() => {
+        window.location.reload();
+    }, delay);
+}
+
+// Sidebar functionality
+function toggleSidebar() {
+    const sidebar = document.querySelector('.modern-sidebar') || document.getElementById('sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
     
-    if (window.innerWidth <= 768 && 
-        !sidebar.contains(event.target) && 
-        !toggle.contains(event.target) &&
-        sidebar.classList.contains('active')) {
-        closeSidebar();
+    if (sidebar && overlay) {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
     }
-});
+}
+
+function closeSidebar() {
+    const sidebar = document.querySelector('.modern-sidebar') || document.getElementById('sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    
+    if (sidebar && overlay) {
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+    }
+}
+
 </script>
 {% endblock %}
-

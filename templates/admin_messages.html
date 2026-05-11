@@ -3,10 +3,6 @@
 {% block title %}Messages - Admin Dashboard{% endblock %}
 
 {% block content %}
-<!-- Mobile Menu Button -->
-<button class="mobile-menu-btn" onclick="toggleSidebar()">
-    <i class='bx bx-menu'></i>
-</button>
 
 <div class="sidebar-overlay" onclick="closeSidebar()"></div>
 
@@ -212,25 +208,6 @@
 </div>
 
 <script>
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    
-    if (sidebar.classList.contains('active')) {
-        sidebar.classList.remove('active');
-        overlay.classList.remove('active');
-    } else {
-        sidebar.classList.add('active');
-        overlay.classList.add('active');
-    }
-}
-
-function closeSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    sidebar.classList.remove('active');
-    overlay.classList.remove('active');
-}
 
 function showComposeModal() {
     document.getElementById('composeModal').style.display = 'flex';
@@ -351,39 +328,6 @@ function deleteMessage(messageId) {
     }
 }
 
-// Close sidebar when clicking on navigation links on mobile
-document.addEventListener('DOMContentLoaded', function() {
-    const navLinks = document.querySelectorAll('.nav-link');
-    navLinks.forEach(link => {
-        link.addEventListener('click', function() {
-            if (window.innerWidth <= 768) {
-                closeSidebar();
-            }
-        });
-    });
-    
-    // Close sidebar on escape key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeSidebar();
-            hideComposeModal();
-        }
-    });
-    
-    // Close modal when clicking outside
-    document.getElementById('composeModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            hideComposeModal();
-        }
-    });
-});
-
-// Handle window resize
-window.addEventListener('resize', function() {
-    if (window.innerWidth > 768) {
-        closeSidebar();
-    }
-});
 </script>
 
 <style>

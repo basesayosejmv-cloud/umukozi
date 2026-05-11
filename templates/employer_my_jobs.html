@@ -3,6 +3,7 @@
 {% block title %}My Jobs - Umukozi{% endblock %}
 
 {% block content %}
+
 <div class="sidebar-overlay" onclick="closeSidebar()"></div>
 
 <div class="dashboard-layout">
@@ -12,45 +13,61 @@
     <!-- Main Content -->
     <main class="main-content">
         <!-- Header -->
-        <div class="card" style="margin-bottom: 2rem;">
-            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+        <div class="card welcome-card-premium" style="margin-bottom: 2.5rem; padding: 2.5rem; border: none; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); position: relative; overflow: hidden;">
+            <div class="welcome-card-bg-decoration"></div>
+            <div style="position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 2rem;">
                 <div>
-                    <h1 style="margin-bottom: 0.5rem;">{{ _('my_jobs_title') }}</h1>
-                    <p style="color: var(--text-secondary); margin: 0;">
+                    <span class="hp-pill" style="background: rgba(249, 115, 22, 0.2); color: #fb923c; margin-bottom: 1rem; display: inline-block;">Manage Postings</span>
+                    <h1 style="margin-bottom: 0.75rem; color: white; font-size: 2.25rem;">{{ _('my_jobs_title') }}</h1>
+                    <p style="color: rgba(255, 255, 255, 0.7); margin: 0; font-size: 1.1rem; max-width: 500px;">
                         {{ _('manage_job_postings_desc') }}
                     </p>
                 </div>
                 <div>
-                    <button class="btn btn-primary" onclick="postNewJob()">
-                        <span style="margin-right: 0.5rem;">➕</span> {{ _('post_new_job_cta') }}
+                    <button class="btn hero-btn-primary" onclick="postNewJob()" style="padding: 1rem 2rem;">
+                        <i class='bx bx-plus-circle' style="margin-right: 0.5rem;"></i> {{ _('post_new_job_cta') }}
                     </button>
                 </div>
             </div>
         </div>
 
         <!-- Job Stats -->
-        <div class="grid grid-4" style="margin-bottom: 2rem;">
-            <div class="card text-center">
-                <div style="font-size: 2rem; font-weight: bold; color: var(--primary-color);">{{ jobs|length }}</div>
-                <p style="color: var(--text-secondary); font-size: 0.875rem;">{{ _('total_jobs') }}</p>
-            </div>
-            <div class="card text-center">
-                <div style="font-size: 2rem; font-weight: bold; color: var(--success-color);">{{ jobs|selectattr('status', 'equalto', 'open')|list|length }}</div>
-                <p style="color: var(--text-secondary); font-size: 0.875rem;">{{ _('active') }}</p>
-            </div>
-            <div class="card text-center">
-                <div style="font-size: 2rem; font-weight: bold; color: var(--warning-color);">{{ jobs|selectattr('status', 'equalto', 'filled')|list|length }}</div>
-                <p style="color: var(--text-secondary); font-size: 0.875rem;">{{ _('filled') }}</p>
-            </div>
-            <div class="card text-center">
-                <div style="font-size: 2rem; font-weight: bold; color: var(--accent-color);">
-                    {% set total_apps = 0 %}
-                    {% for job in jobs %}
-                        {% set total_apps = total_apps + job.applications|length %}
-                    {% endfor %}
-                    {{ total_apps }}
+        <div class="dashboard-grid" style="margin-bottom: 2rem;">
+            <div class="stat-card-modern">
+                <div class="stat-icon-wrapper" style="background: rgba(249, 115, 22, 0.1); color: var(--primary-color);"><i class='bx bxs-briefcase'></i></div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ jobs|length }}</div>
+                    <div class="stat-label">{{ _('total_jobs') }}</div>
                 </div>
-                <p style="color: var(--text-secondary); font-size: 0.875rem;">{{ _('applications') }}</p>
+            </div>
+            <div class="stat-card-modern">
+                <div class="stat-icon-wrapper" style="background: rgba(16, 185, 129, 0.1); color: var(--secondary-color);"><i class='bx bxs-check-circle'></i></div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ jobs|selectattr('status', 'equalto', 'open')|list|length }}</div>
+                    <div class="stat-label">{{ _('active') }}</div>
+                </div>
+            </div>
+            <div class="stat-card-modern">
+                <div class="stat-icon-wrapper" style="background: rgba(245, 158, 11, 0.1); color: var(--warning-color);"><i class='bx bxs-lock-alt'></i></div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ jobs|selectattr('status', 'equalto', 'filled')|list|length }}</div>
+                    <div class="stat-label">{{ _('filled') }}</div>
+                </div>
+            </div>
+            <div class="stat-card-modern">
+                <div class="stat-icon-wrapper" style="background: rgba(239, 68, 68, 0.1); color: var(--danger-color);"><i class='bx bxs-group'></i></div>
+                <div class="stat-info">
+                    <div class="stat-value">
+                        {% set total_apps = 0 %}
+                        {% if jobs %}
+                            {% for job in jobs %}
+                                {% set total_apps = total_apps + ((job.applications|length) if job.applications else 0) %}
+                            {% endfor %}
+                        {% endif %}
+                        {{ total_apps }}
+                    </div>
+                    <div class="stat-label">Total Applicants</div>
+                </div>
             </div>
         </div>
 
@@ -108,14 +125,14 @@
                             <button class="btn btn-outline btn-sm" onclick="viewJobDetails({{ job.id }})">
                                 {{ _('details') }}
                             </button>
-                            <button class="btn btn-outline btn-sm" onclick="viewApplications({{ job.id }})">
+                            <button class="btn btn-outline btn-sm" onclick="viewApplications({{ job.id }})"> <!-- eslint-disable-line -->
                                 {{ _('applications') }} ({{ job.applications|length }})
                             </button>
                             {% if job.status == 'open' %}
                             <button class="btn btn-outline btn-sm" onclick="editJob({{ job.id }})">
                                 {{ _('edit') }}
                             </button>
-                            <button class="btn btn-outline btn-sm" onclick="closeJob({{ job.id }})">
+                            <button class="btn btn-outline btn-sm" onclick="closeJob({{ job.id }})"> <!-- eslint-disable-line -->
                                 {{ _('close') }}
                             </button>
                             {% endif %}
@@ -140,21 +157,10 @@
     </main>
 </div>
 
+<style>
+</style>
+
 <script>
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    sidebar.classList.toggle('active');
-    overlay.classList.toggle('active');
-}
-
-function closeSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    sidebar.classList.remove('active');
-    overlay.classList.remove('active');
-}
-
 function postNewJob() {
     window.location.href = '{{ url_for("employer_post_job") }}';
 }
@@ -193,33 +199,5 @@ function closeJob(jobId) {
 function filterJobs(status) {
     alert('Filtering jobs by status: ' + status);
 }
-
-// Handle sidebar item clicks
-document.querySelectorAll('.sidebar-item').forEach(item => {
-    item.addEventListener('click', function(e) {
-        if (this.getAttribute('href') === '#') {
-            e.preventDefault();
-            // Remove active class from all items
-            document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
-            // Add active class to clicked item
-            this.classList.add('active');
-            // Close mobile sidebar
-            closeSidebar();
-        }
-    });
-});
-
-// Close sidebar when clicking outside on mobile
-document.addEventListener('click', function(event) {
-    const sidebar = document.getElementById('sidebar');
-    const toggle = document.querySelector('.mobile-sidebar-toggle');
-    
-    if (window.innerWidth <= 768 && 
-        !sidebar.contains(event.target) && 
-        !toggle.contains(event.target) &&
-        sidebar.classList.contains('active')) {
-        closeSidebar();
-    }
-});
 </script>
 {% endblock %}

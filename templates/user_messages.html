@@ -3,25 +3,6 @@
 {% block title %}Messages - Umukozi{% endblock %}
 
 {% block content %}
-<!-- Top Navigation Bar -->
-<div class="top-nav-bar" style="position: fixed; top: 0; left: 0; right: 0; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-color); padding: 0.5rem 1rem; z-index: 1000; display: flex; justify-content: space-between; align-items: center;">
-    <div style="display: flex; align-items: center; gap: 1rem;">
-        <a href="{{ url_for('index') }}" style="text-decoration: none;">
-            <img src="{{ url_for('static', filename='images/modfyed logo (2).png') }}" alt="Umukozi Logo" style="height: 45px; width: auto; object-fit: contain;">
-        </a>
-    </div>
-
-    <div style="display: flex; align-items: center; gap: 1rem;">
-        <button onclick="showProfileMenu()" style="display: flex; align-items: center; gap: 0.75rem; background: var(--white); padding: 0.3rem 0.6rem; border-radius: 9999px; border: 1px solid var(--border-color); cursor: pointer; height: 38px;">
-            <div class="header-avatar" style="width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--primary-color); color: white; font-weight: bold;">
-                {{ current_user.full_name[0].upper() }}
-            </div>
-            <div style="text-align: left;">
-                <div style="font-weight: 600; font-size: 0.875rem; color: var(--text-primary);">{{ current_user.full_name.split()|last }}</div>
-            </div>
-        </button>
-    </div>
-</div>
 
 <div class="sidebar-overlay" onclick="closeSidebar()"></div>
 
@@ -132,19 +113,248 @@
     </main>
 </div>
 
+<style>
+/* Remove header hiding to show navigation bar */
+
+/* Notification item styling */
+.notification-item-new {
+    background: rgba(249, 115, 22, 0.05) !important;
+}
+
+.notification-item-read {
+    background: transparent !important;
+}
+
+.notification-badge {
+    position: absolute; 
+    top: -5px; 
+    right: -5px; 
+    background: var(--danger-color); 
+    color: white; 
+    font-size: 0.7rem; 
+    width: 20px; 
+    height: 20px; 
+    border-radius: 50%; 
+    font-weight: 700; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    border: 2px solid white;
+}
+
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+    .mobile-sidebar-toggle {
+        display: flex !important;
+    }
+    
+    main.main-content {
+        padding: 1rem !important;
+        height: auto !important;
+    }
+    
+    .messages-container {
+        flex-direction: column !important;
+        max-height: none !important;
+        min-height: calc(100vh - 200px) !important;
+    }
+    
+    /* Conversations list */
+    div[style*="width: 350px"] {
+        width: 100% !important;
+        border-right: none !important;
+        border-bottom: 1px solid var(--border-color) !important;
+        max-height: 200px !important;
+        overflow-y: auto !important;
+    }
+    
+    /* Chat area */
+    .messages-container > div:last-child {
+        flex: 1 !important;
+        min-height: auto !important;
+    }
+    
+    /* Chat messages area */
+    div[id="chatMessages"] {
+        max-width: 100% !important;
+    }
+    
+    /* Message bubbles */
+    div[style*="max-width: 70%"] {
+        max-width: 85% !important;
+    }
+    
+    /* Input area */
+    div[style*="padding: 1rem; background: var(--white); border-top: 1px solid"] {
+        padding: 1rem 0.5rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    main.main-content {
+        padding: 0.5rem !important;
+    }
+    
+    .card {
+        margin-bottom: 1rem !important;
+    }
+    
+    .card h1 {
+        font-size: 1.5rem !important;
+    }
+    
+    /* Conversations list on very small screens */
+    div[style*="width: 350px"] {
+        max-height: 150px !important;
+    }
+    
+    /* Chat header */
+    div[style*="padding: 1.5rem; border-bottom: 1px solid var(--border-color); background: var(--white); display: flex; align-items: center; gap: 1rem"] {
+        padding: 1rem 0.5rem !important;
+        gap: 0.5rem !important;
+    }
+    
+    /* Avatar in chat header */
+    div[style*="width: 40px; height: 40px"] {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 0.75rem !important;
+    }
+    
+    /* Chat messages */
+    div[style*="max-width: 70%"] {
+        max-width: 90% !important;
+        padding: 0.75rem !important;
+    }
+    
+    /* Input form */
+    form[style*="display: flex; gap: 1rem"] {
+        gap: 0.5rem !important;
+    }
+    
+    input[placeholder="Type your message..."] {
+        padding: 0.75rem !important;
+        font-size: 16px !important;
+    }
+}
+</style>
+
 <script>
 function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
+    const sidebar = document.querySelector('.modern-sidebar');
     const overlay = document.querySelector('.sidebar-overlay');
-    sidebar.classList.toggle('active');
-    overlay.classList.toggle('active');
+    if (sidebar) sidebar.classList.toggle('active');
+    if (overlay) overlay.classList.toggle('active');
 }
 
 function closeSidebar() {
-    const sidebar = document.getElementById('sidebar');
+    const sidebar = document.querySelector('.modern-sidebar');
     const overlay = document.querySelector('.sidebar-overlay');
-    sidebar.classList.remove('active');
-    overlay.classList.remove('active');
+    if (sidebar) sidebar.classList.remove('active');
+    if (overlay) overlay.classList.remove('active');
 }
+
+function toggleNotificationDropdown() {
+    const dropdown = document.getElementById('notificationDropdown');
+    const notificationMenu = dropdown.querySelector('.notification-menu');
+    
+    // Toggle notification dropdown
+    if (notificationMenu.style.display === 'none' || notificationMenu.style.display === '') {
+        notificationMenu.style.display = 'block';
+        // Close profile dropdown if open
+        const profileDropdown = document.getElementById('profileDropdown');
+        const profileMenu = profileDropdown.querySelector('.profile-menu');
+        if (profileMenu) profileMenu.style.display = 'none';
+    } else {
+        notificationMenu.style.display = 'none';
+    }
+}
+
+function toggleProfileDropdown() {
+    const dropdown = document.getElementById('profileDropdown');
+    const profileMenu = dropdown.querySelector('.profile-menu');
+    
+    // Toggle profile dropdown
+    if (profileMenu.style.display === 'none' || profileMenu.style.display === '') {
+        profileMenu.style.display = 'block';
+        // Close notification dropdown if open
+        const notificationDropdown = document.getElementById('notificationDropdown');
+        const notificationMenu = notificationDropdown.querySelector('.notification-menu');
+        if (notificationMenu) notificationMenu.style.display = 'none';
+    } else {
+        profileMenu.style.display = 'none';
+    }
+}
+
+function markAsRead(notifId) {
+    fetch(`/notifications/read/${notifId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const item = document.querySelector(`[data-notif-id="${notifId}"]`);
+                if (item) {
+                    item.style.background = 'transparent';
+                }
+            }
+        });
+}
+
+function markAllAsRead() {
+    fetch('/notifications/read-all', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const badge = document.querySelector('.notification-dropdown span[style*="background: var(--danger-color)"]');
+                if (badge) badge.style.display = 'none';
+                const newNotifs = document.querySelectorAll('.notification-item');
+                newNotifs.forEach(n => {
+                    n.style.background = 'transparent';
+                });
+            }
+        });
+}
+
+function confirmLogout(event) {
+    event.preventDefault();
+    const logoutUrl = event.currentTarget.getAttribute('data-logout-url');
+    if (confirm('Are you sure you want to logout?')) {
+        window.location.href = logoutUrl;
+    }
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', function(event) {
+    const notificationDropdown = document.getElementById('notificationDropdown');
+    const profileDropdown = document.getElementById('profileDropdown');
+    
+    if (!notificationDropdown.contains(event.target)) {
+        const notificationMenu = notificationDropdown.querySelector('.notification-menu');
+        if (notificationMenu) notificationMenu.style.display = 'none';
+    }
+    
+    if (!profileDropdown.contains(event.target)) {
+        const profileMenu = profileDropdown.querySelector('.profile-menu');
+        if (profileMenu) profileMenu.style.display = 'none';
+    }
+    
+    const sidebar = document.getElementById('sidebar');
+    const toggles = document.querySelectorAll('.mobile-sidebar-toggle');
+    
+    // Check if the click was on any toggle button
+    let clickedOnToggle = false;
+    toggles.forEach(toggle => {
+        if (toggle.contains(event.target)) {
+            clickedOnToggle = true;
+        }
+    });
+    
+    if (window.innerWidth <= 768 && 
+        sidebar &&
+        !sidebar.contains(event.target) && 
+        !clickedOnToggle &&
+        sidebar.classList.contains('active')) {
+        closeSidebar();
+    }
+});
 </script>
 {% endblock %}

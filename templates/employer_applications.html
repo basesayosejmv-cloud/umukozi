@@ -3,6 +3,7 @@
 {% block title %}Applications - Umukozi{% endblock %}
 
 {% block content %}
+
 <div class="sidebar-overlay" onclick="closeSidebar()"></div>
 
 <div class="dashboard-layout">
@@ -12,39 +13,53 @@
     <!-- Main Content -->
     <main class="main-content">
         <!-- Header -->
-        <div class="card applications-header">
-            <div class="applications-header-content">
-                <div class="applications-header-text">
-                    <h1>Applications</h1>
-                    <p>
+        <div class="card welcome-card-premium" style="margin-bottom: 2.5rem; padding: 2.5rem; border: none; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); position: relative; overflow: hidden;">
+            <div class="welcome-card-bg-decoration"></div>
+            <div style="position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 2rem;">
+                <div>
+                    <span class="hp-pill" style="background: rgba(249, 115, 22, 0.2); color: #fb923c; margin-bottom: 1rem; display: inline-block;">Applicant Tracking</span>
+                    <h1 style="margin-bottom: 0.75rem; color: white; font-size: 2.25rem;">Applications</h1>
+                    <p style="color: rgba(255, 255, 255, 0.7); margin: 0; font-size: 1.1rem; max-width: 500px;">
                         Review and manage applications for your job postings.
                     </p>
                 </div>
-                <div class="applications-header-action">
-                    <a href="{{ url_for('employer_my_jobs') }}" class="btn btn-primary">
-                        <span>📋</span> View My Jobs
+                <div>
+                    <a href="{{ url_for('employer_my_jobs') }}" class="btn hero-btn-primary" style="padding: 1rem 2rem;">
+                        <i class='bx bx-briefcase' style="margin-right: 0.5rem;"></i> View My Jobs
                     </a>
                 </div>
             </div>
         </div>
 
         <!-- Application Stats -->
-        <div class="grid grid-4" style="margin-bottom: 2rem;">
-            <div class="card text-center">
-                <div style="font-size: 2rem; font-weight: bold; color: var(--primary-color);">{{ applications|length }}</div>
-                <p style="color: var(--text-secondary); font-size: 0.875rem;">Total Applications</p>
+        <div class="dashboard-grid" style="margin-bottom: 2rem;">
+            <div class="stat-card-modern">
+                <div class="stat-icon-wrapper" style="background: rgba(249, 115, 22, 0.1); color: var(--primary-color);"><i class='bx bxs-file-doc'></i></div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ applications|length }}</div>
+                    <div class="stat-label">Total Applications</div>
+                </div>
             </div>
-            <div class="card text-center">
-                <div style="font-size: 2rem; font-weight: bold; color: var(--warning-color);">{{ applications|selectattr('status', 'equalto', 'pending')|list|length }}</div>
-                <p style="color: var(--text-secondary); font-size: 0.875rem;">Pending Review</p>
+            <div class="stat-card-modern">
+                <div class="stat-icon-wrapper" style="background: rgba(245, 158, 11, 0.1); color: var(--warning-color);"><i class='bx bx-time-five'></i></div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ applications|selectattr('status', 'equalto', 'pending')|list|length }}</div>
+                    <div class="stat-label">Pending Review</div>
+                </div>
             </div>
-            <div class="card text-center">
-                <div style="font-size: 2rem; font-weight: bold; color: var(--success-color);">{{ applications|selectattr('status', 'equalto', 'accepted')|list|length }}</div>
-                <p style="color: var(--text-secondary); font-size: 0.875rem;">Accepted</p>
+            <div class="stat-card-modern">
+                <div class="stat-icon-wrapper" style="background: rgba(16, 185, 129, 0.1); color: var(--secondary-color);"><i class='bx bxs-check-circle'></i></div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ applications|selectattr('status', 'equalto', 'accepted')|list|length }}</div>
+                    <div class="stat-label">Accepted</div>
+                </div>
             </div>
-            <div class="card text-center">
-                <div style="font-size: 2rem; font-weight: bold; color: var(--danger-color);">{{ applications|selectattr('status', 'equalto', 'rejected')|list|length }}</div>
-                <p style="color: var(--text-secondary); font-size: 0.875rem;">Rejected</p>
+            <div class="stat-card-modern">
+                <div class="stat-icon-wrapper" style="background: rgba(239, 68, 68, 0.1); color: var(--danger-color);"><i class='bx bxs-x-circle'></i></div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ applications|selectattr('status', 'equalto', 'rejected')|list|length }}</div>
+                    <div class="stat-label">Rejected</div>
+                </div>
             </div>
         </div>
 
@@ -135,10 +150,10 @@
                             {% else %}
                             {% if not has_verified_payments %}
                             <div class="application-contact-actions">
-                                <button data-worker-id="{{ application.worker.id }}" data-worker-name="{{ application.worker.user.full_name|replace('"', '&quot;')|replace("'", '&#39;') }}" onclick="showPlatformPaymentModal(this.dataset.workerId, this.dataset.workerName)" class="btn btn-disabled btn-sm">
+                                <button class="btn btn-disabled btn-sm" disabled>
                                     <i class='bx bxl-whatsapp'></i> WhatsApp
                                 </button>
-                                <button data-worker-id="{{ application.worker.id }}" data-worker-name="{{ application.worker.user.full_name|replace('"', '&quot;')|replace("'", '&#39;') }}" onclick="showPlatformPaymentModal(this.dataset.workerId, this.dataset.workerName)" class="btn btn-disabled btn-sm">
+                                <button class="btn btn-disabled btn-sm" disabled>
                                     <i class='bx bxs-phone'></i> Call
                                 </button>
                             </div>
@@ -176,20 +191,10 @@
     </main>
 </div>
 
-<script>
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    sidebar.classList.toggle('active');
-    overlay.classList.toggle('active');
-}
+<style>
+</style>
 
-function closeSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.querySelector('.sidebar-overlay');
-    sidebar.classList.remove('active');
-    overlay.classList.remove('active');
-}
+<script>
 
 function viewWorkerProfile(workerId) {
     window.location.href = '/worker/profile/' + workerId;
@@ -207,19 +212,11 @@ function formatRwandanPhone(phone) {
 }
 
 function openWhatsApp(phone) {
-    if (typeof showPlatformPaymentModal === 'function') {
-        showPlatformPaymentModal();
-    } else {
-        alert("Please pay 10,000 FRW to 079 555 5112 to connect with this worker.");
-    }
+    alert("Contact feature is currently unavailable.");
 }
 
 function makeCall(phone) {
-    if (typeof showPlatformPaymentModal === 'function') {
-        showPlatformPaymentModal();
-    } else {
-        alert("Please pay 10,000 FRW to 079 555 5112 to connect with this worker.");
-    }
+    alert("Contact feature is currently unavailable.");
 }
 
 function acceptApplication(applicationId) {
@@ -285,32 +282,5 @@ function showNotification(message, type) {
     }, 5000);
 }
 
-// Handle sidebar item clicks
-document.querySelectorAll('.sidebar-item').forEach(item => {
-    item.addEventListener('click', function(e) {
-        if (this.getAttribute('href') === '#') {
-            e.preventDefault();
-            // Remove active class from all items
-            document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
-            // Add active class to clicked item
-            this.classList.add('active');
-            // Close mobile sidebar
-            closeSidebar();
-        }
-    });
-});
-
-// Close sidebar when clicking outside on mobile
-document.addEventListener('click', function(event) {
-    const sidebar = document.getElementById('sidebar');
-    const toggle = document.querySelector('.mobile-sidebar-toggle');
-    
-    if (window.innerWidth <= 768 && 
-        !sidebar.contains(event.target) && 
-        !toggle.contains(event.target) &&
-        sidebar.classList.contains('active')) {
-        closeSidebar();
-    }
-});
 </script>
 {% endblock %}

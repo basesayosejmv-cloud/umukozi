@@ -180,6 +180,15 @@ TRANSLATIONS = {
         'browse_jobs': 'Browse Jobs',
         'new_opportunity': 'New Opportunity',
         'check_back_later': 'Check back later for new opportunities',
+        # Worker Dashboard
+        'worker_dashboard_title': 'Worker Dashboard',
+        'worker_dashboard_subtitle': 'Track your applications and manage your profile',
+        'applications_submitted': 'Applications Submitted',
+        'profile_complete': 'Profile Complete',
+        'profile_views': 'Profile Views',
+        'quick_actions': 'Quick Actions',
+        'my_applications': 'My Applications',
+        'edit_profile': 'Edit Profile',
     },
     'fr': {
         'welcome_back': 'Bon retour',
@@ -331,6 +340,15 @@ TRANSLATIONS = {
         'browse_jobs': 'Voir les offres',
         'new_opportunity': 'Nouvelle opportunité',
         'check_back_later': 'Revenez plus tard pour de nouvelles opportunités',
+        # Worker Dashboard
+        'worker_dashboard_title': 'Tableau de bord du travailleur',
+        'worker_dashboard_subtitle': 'Suivez vos candidatures et gérez votre profil',
+        'applications_submitted': 'Candidatures soumises',
+        'profile_complete': 'Profil complet',
+        'profile_views': 'Vues du profil',
+        'quick_actions': 'Actions rapides',
+        'my_applications': 'Mes candidatures',
+        'edit_profile': 'Modifier le profil',
     },
     'rw': {
         'welcome_back': 'Muraho, nishimiye kukubona',
@@ -482,5 +500,14 @@ TRANSLATIONS = {
         'browse_jobs': 'Reba akazi',
         'new_opportunity': 'Aya mahirwa mashya',
         'check_back_later': 'Subira kureba vuba haza',
+        # Worker Dashboard
+        'worker_dashboard_title': 'Urupapuro rw\'umukozi',
+        'worker_dashboard_subtitle': 'Kurikira gusaba akazi no gucunga profil yawe',
+        'applications_submitted': 'Ibyo wagusabye',
+        'profile_complete': 'Profil yuzuye',
+        'profile_views': 'Abareba profil',
+        'quick_actions': 'Igikorwa cya vuba',
+        'my_applications': 'Ibyo nagusabye',
+        'edit_profile': 'Hindura profil',
     }
 }

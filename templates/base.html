@@ -7,12 +7,12 @@
     <meta name="description" content="{% block description %}Find trusted household workers and connect with employers in Rwanda. Safe, reliable, and easy to use platform.{% endblock %}">
     
     <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#10b981">
+    <meta name="theme-color" content="#f97316">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Umukozi">
     <meta name="application-name" content="Umukozi">
-    <meta name="msapplication-TileColor" content="#10b981">
+    <meta name="msapplication-TileColor" content="#f97316">
     <meta name="msapplication-config" content="{{ url_for('static', filename='browserconfig.xml') }}">
     
     <!-- PWA Manifest -->
@@ -25,6 +25,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;700;900&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
     <!-- Header -->
@@ -41,19 +43,19 @@
                 {% endif %}
 
                 {% if current_user.is_authenticated %}
-                <button class="mobile-sidebar-toggle" onclick="toggleSidebar()" style="background: none; border: none; font-size: 1.75rem; cursor: pointer; color: var(--text-primary); display: none; align-items: center; justify-content: center; padding: 0.25rem;">
+                <button class="mobile-sidebar-toggle" onclick="toggleSidebar()" style="background: none; border: none; font-size: 1.75rem; cursor: pointer; color: var(--text-primary); align-items: center; justify-content: center; padding: 0.25rem;">
                     <i class='bx bx-menu-alt-left'></i>
                 </button>
                 <a href="{{ url_for('index') }}" class="logo" style="margin-right: auto;">
                     <img src="{{ url_for('static', filename='images/modfyed logo (2).png') }}" alt="Umukozi Logo" style="height: 64px; width: auto; object-fit: contain;">
                 </a>
                 <div class="nav-auth-actions" style="display: flex; align-items: center; gap: 1rem;">
-                    <button id="pwa-install-btn" onclick="installApp()" style="display: none; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 6px 12px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px;">
+                    <button id="pwa-install-btn" onclick="installApp()" style="display: none; background: linear-gradient(135deg, #f97316, #ea580c); color: white; border: none; padding: 6px 12px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px;">
                         <i class='bx bxs-download'></i> Install
                     </button>
                     
                     <div class="notification-dropdown" id="notificationDropdown" style="position: relative;">
-                        <button class="notification-toggle" onclick="toggleNotificationDropdown()" style="background: none; border: none; cursor: pointer; position: relative; padding: 0.25rem;">
+                        <button type="button" class="notification-toggle" onclick="toggleNotificationDropdown(event)" style="background: none; border: none; cursor: pointer; position: relative; padding: 0.25rem;">
                             <span class="notification-icon" style="color: var(--text-primary);"><i class='bx bxs-bell' style="font-size: 1.5rem;"></i></span>
                             {% if unread_count > 0 %}
                             <span class="notification-badge" id="notifBadge" style="position: absolute; top: 0; right: 0; background: var(--danger-color); color: white; border-radius: 50%; font-size: 0.65rem; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; font-weight: bold;">{{ unread_count }}</span>
@@ -72,7 +74,7 @@
                                 {% if notifs %}
                                     {% for notif in notifs %}
                                     <div class="notification-item {{ 'notification-item-new' if not notif.is_read else 'notification-item-read' }}" data-notif-id="{{ notif.id }}">
-                                        <div class="notif-icon-circle" style="background: rgba(37, 99, 235, 0.1); color: var(--primary-color);">
+                                        <div class="notif-icon-circle" style="background: rgba(249, 115, 22, 0.1); color: var(--primary-color);">
                                             <i class='bx bxs-bell'></i>
                                         </div>
                                         <div class="notif-content">
@@ -96,7 +98,7 @@
                                             
                     <!-- Profile Dropdown -->
                     <div class="profile-dropdown" id="profileDropdown" style="position: relative;">
-                        <button class="profile-toggle" onclick="toggleProfileDropdown()" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; padding: 0;">
+                        <button type="button" class="profile-toggle" onclick="toggleProfileDropdown(event)" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; padding: 0;">
                             <div class="profile-avatar" style="width: 36px; height: 36px; border-radius: 50%; overflow: hidden; background: var(--border-color); display: flex; align-items: center; justify-content: center; color: var(--text-secondary); font-weight: bold; border: 2px solid var(--primary-color);">
                                 {% if current_user.user_type == 'worker' and worker is defined and worker.profile_picture %}
                                     <img src="{{ url_for('static', filename='uploads/' + worker.profile_picture) }}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" alt="Profile Picture">
@@ -125,20 +127,30 @@
                                 {% endif %}
                             </div>
                             
-                            <a href="#" class="profile-menu-item">
+                            {% if current_user.user_type == 'worker' %}
+                            <a href="{{ url_for('worker_complete_profile') }}" class="profile-menu-item">
                                 <i class='bx bxs-user-circle' style="margin-right: 0.8rem; font-size: 1.25rem;"></i> My Profile
                             </a>
-                            <a href="#" class="profile-menu-item">
+                            <a href="{{ url_for('worker_settings') }}" class="profile-menu-item">
                                 <i class='bx bxs-cog' style="margin-right: 0.8rem; font-size: 1.25rem;"></i> Account Settings
                             </a>
-                            <a href="#" class="profile-menu-item">
-                                <i class='bx bxs-lock-alt' style="margin-right: 0.8rem; font-size: 1.25rem;"></i> Privacy & Security
+                            {% elif current_user.user_type == 'employer' %}
+                            <a href="{{ url_for('employer_profile') }}" class="profile-menu-item">
+                                <i class='bx bxs-user-circle' style="margin-right: 0.8rem; font-size: 1.25rem;"></i> My Profile
+                            </a>
+                            <a href="{{ url_for('employer_settings') }}" class="profile-menu-item">
+                                <i class='bx bxs-cog' style="margin-right: 0.8rem; font-size: 1.25rem;"></i> Account Settings
+                            </a>
+                            {% elif current_user.user_type == 'admin' %}
+                            <a href="{{ url_for('admin_dashboard') }}" class="profile-menu-item">
+                                <i class='bx bxs-user-circle' style="margin-right: 0.8rem; font-size: 1.25rem;"></i> Admin Dashboard
+                            </a>
+                            {% endif %}
+                            <a href="{{ url_for('messages') }}" class="profile-menu-item">
+                                <i class='bx bxs-message-rounded' style="margin-right: 0.8rem; font-size: 1.25rem;"></i> Messages
                             </a>
                             <div class="profile-menu-divider"></div>
-                            <a href="#" class="profile-menu-item">
-                                <i class='bx bxs-help-circle' style="margin-right: 0.8rem; font-size: 1.25rem;"></i> Help & Support
-                            </a>
-                            <a href="javascript:void(0)" data-logout-url="{{ url_for('logout') }}" class="profile-menu-item logout">
+                            <a href="javascript:void(0)" onclick="confirmLogout(event, '{{ url_for('logout') }}')" class="profile-menu-item logout">
                                 <i class='bx bx-log-out' style="margin-right: 0.8rem; font-size: 1.25rem;"></i> Logout
                             </a>
                         </div>
@@ -238,6 +250,7 @@
         </div>
     </div>
 
+    <div class="sidebar-overlay" onclick="closeSidebar()"></div>
     <!-- JavaScript -->
     <script>
         function toggleMobileMenu() {
@@ -245,8 +258,24 @@
             navLinks.classList.toggle('active');
         }
 
-        function toggleNotificationDropdown() {
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.modern-sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            if (sidebar) sidebar.classList.toggle('active');
+            if (overlay) overlay.classList.toggle('active');
+        }
+
+        function closeSidebar() {
+            const sidebar = document.querySelector('.modern-sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            if (sidebar) sidebar.classList.remove('active');
+            if (overlay) overlay.classList.remove('active');
+        }
+
+        function toggleNotificationDropdown(event) {
+            if (event) event.stopPropagation();
             const dropdown = document.getElementById('notificationDropdown');
+            if (!dropdown) return;
             dropdown.classList.toggle('active');
             
             // Close profile dropdown if open
@@ -284,9 +313,14 @@
                 });
         }
 
-        function toggleProfileDropdown() {
+        function toggleProfileDropdown(event) {
+            if (event) event.stopPropagation();
             const profileDropdown = document.getElementById('profileDropdown');
+            if (!profileDropdown) return;
             profileDropdown.classList.toggle('active');
+            
+            // Close notification dropdown if open
+            document.getElementById('notificationDropdown')?.classList.remove('active');
         }
 
         // Logout Confirmation Logic
@@ -722,35 +756,50 @@
             if (event.target === modal) {
                 closeLogoutModal();
             }
-        });
 
-        // Close mobile menu when clicking outside
-        document.addEventListener('click', function(event) {
-            const navLinks = document.getElementById('navLinks');
-            const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
-            
-            if (navLinks && !navLinks.contains(event.target) && mobileMenuToggle && !mobileMenuToggle.contains(event.target)) {
-                navLinks.classList.remove('active');
-            }
-            
-            // Close profile dropdown when clicking outside
+            // Close dropdowns when clicking outside
+            const notificationDropdown = document.getElementById('notificationDropdown');
             const profileDropdown = document.getElementById('profileDropdown');
+
+            if (notificationDropdown && !notificationDropdown.contains(event.target)) {
+                notificationDropdown.classList.remove('active');
+            }
+
             if (profileDropdown && !profileDropdown.contains(event.target)) {
                 profileDropdown.classList.remove('active');
             }
 
-            // Close notification dropdown when clicking outside
-            const notifDropdown = document.getElementById('notificationDropdown');
-            if (notifDropdown && !notifDropdown.contains(event.target)) {
-                notifDropdown.classList.remove('active');
+            // Close sidebar when clicking outside on mobile
+            const sidebar = document.querySelector('.modern-sidebar') || document.getElementById('sidebar');
+            const toggles = document.querySelectorAll('.mobile-sidebar-toggle, .mobile-menu-btn');
+
+            if (sidebar && window.innerWidth <= 768 && sidebar.classList.contains('active')) {
+                let clickedOnToggle = false;
+                toggles.forEach(toggle => {
+                    if (toggle.contains(event.target)) {
+                        clickedOnToggle = true;
+                    }
+                });
+
+                if (!sidebar.contains(event.target) && !clickedOnToggle) {
+                    closeSidebar();
+                }
             }
-            
+
+            // Close mobile menu when clicking outside
+            const navLinks = document.getElementById('navLinks');
+            const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+
+            if (navLinks && !navLinks.contains(event.target) && mobileMenuToggle && !mobileMenuToggle.contains(event.target)) {
+                navLinks.classList.remove('active');
+            }
+
             // Handle notification item clicks
             const notifItem = event.target.closest('.notification-item');
             if (notifItem && notifItem.dataset.notifId) {
                 markAsRead(notifItem.dataset.notifId);
             }
-            
+
             // Handle logout link clicks
             const logoutLink = event.target.closest('.profile-menu-item.logout');
             if (logoutLink && logoutLink.dataset.logoutUrl) {
